@@ -64,3 +64,27 @@ export function createEventEnvelope<TPayload>(
     schemaVersion: 1,
   };
 }
+
+export type TenantContext = Readonly<{
+  organizationId: string;
+  placementId: string;
+  actorId: string;
+  correlationId: string;
+}>;
+
+export function createTenantContext(input: TenantContext): TenantContext {
+  const requiredFields = [
+    "organizationId",
+    "placementId",
+    "actorId",
+    "correlationId",
+  ] as const;
+
+  for (const field of requiredFields) {
+    if (input[field].trim().length === 0) {
+      throw new Error(`${field} must not be empty`);
+    }
+  }
+
+  return input;
+}
