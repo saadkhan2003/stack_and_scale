@@ -13,11 +13,12 @@
     "@types/react-dom": "19.2.3"
   },
   "scripts": {
-    "dev": "next dev",
-    "lint": "eslint app src test",
+    "dev": "next dev --webpack",
+    "lint": "eslint app src test e2e playwright.config.ts vitest.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=/media/saad/Data/.playwright-browsers PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/google/chrome/chrome playwright test",
     "build": "next build --webpack"
   }
 }
