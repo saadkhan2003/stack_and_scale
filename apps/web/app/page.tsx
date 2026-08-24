@@ -1,24 +1,10 @@
 import { homepageModel } from "../src/homepage-content";
+import { SiteHeader } from "../src/site-header";
 
 export default function HomePage() {
   return (
     <main className="site-shell">
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Stack & Scale home">
-          <img
-            src="/brand/stack-and-scale-logo.jpeg"
-            alt="Stack & Scale Technologies"
-          />
-        </a>
-        <nav aria-label="Main navigation">
-          <a href="/solutions">Solutions</a>
-          <a href="/approach">Approach</a>
-          <a href="#contact">Contact</a>
-        </nav>
-        <a className="header-cta" href="#contact">
-          Book a demo <span aria-hidden="true">↗</span>
-        </a>
-      </header>
+      <SiteHeader currentPath="/" />
 
       <section className="hero" id="top" aria-labelledby="hero-heading">
         <div className="hero-copy">

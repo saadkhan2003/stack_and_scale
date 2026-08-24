@@ -1,26 +1,10 @@
 import { solutionsPageModel } from "../../src/solutions-content";
+import { SiteHeader } from "../../src/site-header";
 
 export default function SolutionsPage() {
   return (
     <main className="site-shell solutions-page">
-      <header className="site-header">
-        <a className="brand" href="/" aria-label="Stack & Scale home">
-          <img
-            src="/brand/stack-and-scale-logo.jpeg"
-            alt="Stack & Scale Technologies"
-          />
-        </a>
-        <nav aria-label="Main navigation">
-          <a href="/solutions" aria-current="page">
-            Solutions
-          </a>
-          <a href="/approach">Approach</a>
-          <a href="/#contact">Contact</a>
-        </nav>
-        <a className="header-cta" href="/#contact">
-          Book a demo <span aria-hidden="true">↗</span>
-        </a>
-      </header>
+      <SiteHeader currentPath="/solutions" />
 
       <section className="solutions-hero" aria-labelledby="solutions-heading">
         <p className="eyebrow">Solutions</p>

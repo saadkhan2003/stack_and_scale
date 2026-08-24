@@ -33,6 +33,8 @@ export const designTokens = {
   },
 } as const;
 
+export { contrastRatio } from "./contrast.js";
+
 export type ButtonVariant = "primary" | "secondary";
 
 export function getButtonClassName(variant: ButtonVariant): string {

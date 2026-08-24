@@ -1,26 +1,10 @@
 import { approachPageModel } from "../../src/approach-content";
+import { SiteHeader } from "../../src/site-header";
 
 export default function ApproachPage() {
   return (
     <main className="site-shell approach-page">
-      <header className="site-header">
-        <a className="brand" href="/" aria-label="Stack & Scale home">
-          <img
-            src="/brand/stack-and-scale-logo.jpeg"
-            alt="Stack & Scale Technologies"
-          />
-        </a>
-        <nav aria-label="Main navigation">
-          <a href="/solutions">Solutions</a>
-          <a href="/approach" aria-current="page">
-            Approach
-          </a>
-          <a href="/#contact">Contact</a>
-        </nav>
-        <a className="header-cta" href="/#contact">
-          Book a demo <span aria-hidden="true">↗</span>
-        </a>
-      </header>
+      <SiteHeader currentPath="/approach" />
 
       <section className="approach-hero" aria-labelledby="approach-heading">
         <p className="eyebrow">How we work</p>
