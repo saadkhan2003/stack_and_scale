@@ -17,6 +17,10 @@
     "test:integration": "pnpm -r --if-present run test:integration",
     "test:e2e": "pnpm -r --if-present run test:e2e",
     "build": "pnpm -r --if-present run build",
+    "db:up": "docker compose -f infra/compose.yaml up -d postgres",
+    "db:down": "docker compose -f infra/compose.yaml down",
+    "db:logs": "docker compose -f infra/compose.yaml logs -f postgres",
+    "db:reset": "./scripts/reset-local-database.sh",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
