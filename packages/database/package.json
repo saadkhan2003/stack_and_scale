@@ -1,0 +1,13 @@
+{
+  "name": "@stack-and-scale/database",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint src test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json",
+    "migrate": "tsx src/migrate.ts"
+  }
+}
