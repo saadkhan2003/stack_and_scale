@@ -1,4 +1,4 @@
-import { healthPageModel } from "../src/health-page.js";
+import { healthPageModel } from "../src/health-page";
 
 export default function HomePage() {
   return (
