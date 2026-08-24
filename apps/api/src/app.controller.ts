@@ -20,4 +20,23 @@ export class AppController {
       version: health.version,
     };
   }
+
+  @Get("ready")
+  readiness(): {
+    service: string;
+    status: "ready";
+    version: string;
+    checks: { application: "up" };
+  } {
+    const health = this.health();
+
+    return {
+      service: health.service,
+      status: "ready",
+      version: health.version,
+      checks: {
+        application: "up",
+      },
+    };
+  }
 }
