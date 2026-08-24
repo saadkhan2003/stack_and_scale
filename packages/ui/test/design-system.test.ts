@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { designTokens, getButtonClassName } from "../src/index";
+import { designTokens, getButtonClassName } from "../src/index.js";
 
 describe("design system foundation", () => {
   it("exposes semantic color and motion tokens", () => {
@@ -10,6 +10,8 @@ describe("design system foundation", () => {
 
   it("creates stable button classes for the approved variants", () => {
     expect(getButtonClassName("primary")).toBe("ss-button ss-button--primary");
-    expect(getButtonClassName("secondary")).toBe("ss-button ss-button--secondary");
+    expect(getButtonClassName("secondary")).toBe(
+      "ss-button ss-button--secondary",
+    );
   });
 });

@@ -1,0 +1,53 @@
+:root {
+  --ss-color-night: #0b1616;
+  --ss-color-petrol: #135d61;
+  --ss-color-solar: #f4c542;
+  --ss-color-seafoam: #80ddd1;
+  --ss-color-sand: #f5f2e8;
+  --ss-color-ink: #122323;
+  --ss-color-muted: #5a6b69;
+  --ss-radius-card: 20px;
+  --ss-radius-control: 999px;
+  --ss-motion-fast: 160ms;
+  --ss-motion-standard: 240ms;
+  --ss-focus-ring: 0 0 0 3px rgba(244, 197, 66, 0.9);
+}
+
+.ss-button {
+  align-items: center;
+  border-radius: var(--ss-radius-control);
+  display: inline-flex;
+  font:
+    750 0.9rem/1 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  gap: 0.65rem;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.8rem 1.1rem;
+  transition:
+    background var(--ss-motion-fast) ease,
+    transform var(--ss-motion-fast) ease;
+}
+
+.ss-button--primary {
+  background: var(--ss-color-night);
+  color: var(--ss-color-sand);
+}
+.ss-button--secondary {
+  border: 1px solid rgba(11, 22, 22, 0.16);
+  color: var(--ss-color-ink);
+}
+.ss-button:hover {
+  transform: translateY(-2px);
+}
+:where(a, button, input, textarea, select):focus-visible {
+  box-shadow: var(--ss-focus-ring);
+  outline: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-button {
+    transition-duration: 0ms;
+  }
+}
