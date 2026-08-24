@@ -1,4 +1,4 @@
-import { healthPageModel } from '../src/health-page.js'
+import { healthPageModel } from "../src/health-page.js";
 
 export default function HomePage() {
   return (
@@ -8,5 +8,5 @@ export default function HomePage() {
         {healthPageModel.message}
       </p>
     </main>
-  )
+  );
 }
