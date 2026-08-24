@@ -11,6 +11,16 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { AppModule } from "../src/app.module.js";
 
+type ApiErrorBody = {
+  error: {
+    code: string;
+    message: string;
+  };
+  path: string;
+  requestId: string;
+  timestamp: string;
+};
+
 @Controller("test-errors")
 class TestErrorsController {
   @Get("expected")
@@ -100,15 +110,18 @@ describe("API foundation", () => {
       headers: { "x-correlation-id": correlationId },
     });
 
+    const body = response.json<ApiErrorBody>();
+
     expect(response.statusCode).toBe(400);
-    expect(response.json()).toEqual({
+    expect(typeof body.timestamp).toBe("string");
+    expect(body).toEqual({
       error: {
         code: "BAD_REQUEST",
         message: "The request is invalid",
       },
       path: "/test-errors/expected",
       requestId: correlationId,
-      timestamp: expect.any(String),
+      timestamp: body.timestamp,
     });
   });
 
@@ -120,16 +133,19 @@ describe("API foundation", () => {
       headers: { "x-correlation-id": correlationId },
     });
 
+    const body = response.json<ApiErrorBody>();
+
     expect(response.statusCode).toBe(500);
     expect(response.body).not.toContain("database-password-must-never-leak");
-    expect(response.json()).toEqual({
+    expect(typeof body.timestamp).toBe("string");
+    expect(body).toEqual({
       error: {
         code: "INTERNAL_SERVER_ERROR",
         message: "Internal server error",
       },
       path: "/test-errors/unexpected",
       requestId: correlationId,
-      timestamp: expect.any(String),
+      timestamp: body.timestamp,
     });
   });
 });

@@ -47,9 +47,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
       });
     }
 
-    reply.status(status).send(
-      this.createEnvelope(exception, status, request.url, requestId),
-    );
+    reply
+      .status(status)
+      .send(this.createEnvelope(exception, status, request.url, requestId));
   }
 
   private createEnvelope(
