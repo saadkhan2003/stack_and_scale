@@ -22,3 +22,45 @@ export function createHealthContract(
     version,
   };
 }
+
+export type EventEnvelope<TPayload = unknown> = Readonly<{
+  eventId: string;
+  eventType: string;
+  schemaVersion: 1;
+  occurredAt: string;
+  organizationId?: string;
+  payload: TPayload;
+  correlationId: string;
+}>;
+
+export type CreateEventEnvelopeInput<TPayload> = Omit<
+  EventEnvelope<TPayload>,
+  "schemaVersion"
+>;
+
+const eventTypePattern = /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/;
+
+export function createEventEnvelope<TPayload>(
+  input: CreateEventEnvelopeInput<TPayload>,
+): EventEnvelope<TPayload> {
+  if (!eventTypePattern.test(input.eventType)) {
+    throw new Error("eventType must use domain.action format");
+  }
+
+  if (input.eventId.trim().length === 0) {
+    throw new Error("eventId must not be empty");
+  }
+
+  if (input.correlationId.trim().length === 0) {
+    throw new Error("correlationId must not be empty");
+  }
+
+  if (Number.isNaN(Date.parse(input.occurredAt))) {
+    throw new Error("occurredAt must be an ISO-8601 timestamp");
+  }
+
+  return {
+    ...input,
+    schemaVersion: 1,
+  };
+}
