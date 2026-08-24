@@ -1,4 +1,4 @@
-import { primaryNavigation } from "./navigation.js";
+import { primaryNavigation } from "./navigation";
 
 type SiteHeaderProps = {
   currentPath?: string;

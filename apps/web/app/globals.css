@@ -1,3 +1,5 @@
+@import "../../../packages/ui/src/tokens.css";
+
 :root {
   --night: #0b1616;
   --petrol: #135d61;
@@ -591,6 +593,52 @@ h1 {
   max-width: 710px;
 }
 
+.design-system-page {
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 5rem 2rem;
+}
+.design-system-page h1 {
+  font-size: clamp(3rem, 6vw, 6rem);
+  margin-bottom: 1.25rem;
+}
+.design-system-intro {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 640px;
+}
+.design-system-page section {
+  margin-top: 4rem;
+}
+.design-system-page section > h2 {
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+.design-system-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.design-system-card {
+  border: 1px solid var(--line);
+  border-radius: var(--ss-radius-card);
+  min-height: 180px;
+  padding: 1.5rem;
+}
+.design-system-card h3 {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0 0 2rem;
+}
+.design-system-card--dark {
+  background: var(--night);
+  color: var(--sand);
+}
+.design-system-card--dark p {
+  color: rgba(245, 242, 232, 0.72);
+  line-height: 1.6;
+}
+
 @media (max-width: 880px) {
   .site-header > nav {
     display: none;
@@ -686,6 +734,9 @@ h1 {
   }
   .approach-steps {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .design-system-grid {
+    grid-template-columns: 1fr;
   }
   .approach-step:nth-child(2) {
     border-right: 0;

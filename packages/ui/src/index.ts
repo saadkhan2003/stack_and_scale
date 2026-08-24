@@ -22,6 +22,18 @@ export const designTokens = {
     card: "20px",
     control: "999px",
   },
+  spacing: {
+    compact: "8px",
+    control: "16px",
+    card: "24px",
+    section: "112px",
+  },
+  border: {
+    subtle: "1px solid rgba(11, 22, 22, 0.12)",
+  },
+  shadow: {
+    card: "0 30px 60px rgba(11, 22, 22, 0.18)",
+  },
   motion: {
     fast: "160ms",
     standard: "240ms",
@@ -30,6 +42,12 @@ export const designTokens = {
   breakpoint: {
     compact: "520px",
     tablet: "880px",
+  },
+  zIndex: {
+    content: 1,
+    navigation: 10,
+    dialog: 20,
+    toast: 30,
   },
 } as const;
 

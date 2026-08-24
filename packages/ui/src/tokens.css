@@ -8,8 +8,17 @@
   --ss-color-muted: #5a6b69;
   --ss-radius-card: 20px;
   --ss-radius-control: 999px;
+  --ss-space-compact: 8px;
+  --ss-space-control: 16px;
+  --ss-space-card: 24px;
+  --ss-space-section: 112px;
+  --ss-border-subtle: 1px solid rgba(11, 22, 22, 0.12);
+  --ss-shadow-card: 0 30px 60px rgba(11, 22, 22, 0.18);
   --ss-motion-fast: 160ms;
   --ss-motion-standard: 240ms;
+  --ss-z-navigation: 10;
+  --ss-z-dialog: 20;
+  --ss-z-toast: 30;
   --ss-focus-ring: 0 0 0 3px rgba(244, 197, 66, 0.9);
 }
 
