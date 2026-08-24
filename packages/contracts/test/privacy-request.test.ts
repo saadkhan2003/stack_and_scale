@@ -35,7 +35,10 @@ describe("privacy request contracts", () => {
         { ...request, verificationStatus: "verified" },
         "identity_verified",
       ),
-    ).toMatchObject({ status: "identity_verified", verificationStatus: "verified" });
+    ).toMatchObject({
+      status: "identity_verified",
+      verificationStatus: "verified",
+    });
   });
 
   it("rejects unbounded requests and invalid lifecycle transitions", () => {
