@@ -11,7 +11,7 @@ export default function HomePage() {
           />
         </a>
         <nav aria-label="Main navigation">
-          <a href="#solutions">Solutions</a>
+          <a href="/solutions">Solutions</a>
           <a href="#approach">Approach</a>
           <a href="#contact">Contact</a>
         </nav>
