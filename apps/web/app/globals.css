@@ -509,6 +509,81 @@ h1 {
   max-width: 780px;
 }
 
+.approach-page {
+  background: var(--night);
+  color: var(--sand);
+  min-height: 100vh;
+}
+.approach-page .site-header {
+  background: var(--sand);
+  color: var(--ink);
+  max-width: none;
+}
+.approach-hero {
+  border-bottom: 1px solid rgba(128, 221, 209, 0.26);
+  padding: clamp(5rem, 10vw, 9rem) max(2rem, calc((100vw - 1200px) / 2));
+}
+.approach-hero .eyebrow {
+  color: var(--seafoam);
+}
+.approach-hero h1 {
+  font-size: clamp(3.3rem, 7vw, 7rem);
+  max-width: 960px;
+}
+.approach-hero > p:last-child {
+  color: rgba(245, 242, 232, 0.7);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  max-width: 650px;
+}
+.approach-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 0 2rem;
+}
+.approach-step {
+  border-right: 1px solid rgba(128, 221, 209, 0.2);
+  min-height: 330px;
+  padding: 2.4rem 1.5rem 2.4rem 0;
+}
+.approach-step:not(:first-child) {
+  padding-left: 1.5rem;
+}
+.approach-step:last-child {
+  border-right: 0;
+}
+.approach-step > span {
+  color: var(--seafoam);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.approach-step h2 {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 3.6rem 0 1rem;
+}
+.approach-step p {
+  color: rgba(245, 242, 232, 0.66);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.approach-close {
+  background: var(--sand);
+  color: var(--ink);
+  padding: 7rem max(2rem, calc((100vw - 1200px) / 2));
+}
+.approach-close h2 {
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  line-height: 0.95;
+  margin-bottom: 2rem;
+  max-width: 710px;
+}
+
 @media (max-width: 880px) {
   .site-header nav {
     display: none;
@@ -562,6 +637,15 @@ h1 {
   .solution-summary {
     grid-column: 2;
   }
+  .approach-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .approach-step:nth-child(2) {
+    border-right: 0;
+  }
+  .approach-step:nth-child(-n + 2) {
+    border-bottom: 1px solid rgba(128, 221, 209, 0.2);
+  }
 }
 @media (max-width: 520px) {
   .site-header {
@@ -600,6 +684,25 @@ h1 {
   }
   .contact-panel {
     padding: 5rem 1.2rem;
+  }
+  .approach-hero,
+  .approach-close {
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+  .approach-steps {
+    grid-template-columns: 1fr;
+    padding: 0 1.2rem;
+  }
+  .approach-step,
+  .approach-step:not(:first-child) {
+    border-bottom: 1px solid rgba(128, 221, 209, 0.2);
+    border-right: 0;
+    min-height: auto;
+    padding: 2rem 0;
+  }
+  .approach-step h2 {
+    margin-top: 1.5rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {

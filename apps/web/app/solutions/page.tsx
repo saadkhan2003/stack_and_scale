@@ -14,7 +14,7 @@ export default function SolutionsPage() {
           <a href="/solutions" aria-current="page">
             Solutions
           </a>
-          <a href="/#approach">Approach</a>
+          <a href="/approach">Approach</a>
           <a href="/#contact">Contact</a>
         </nav>
         <a className="header-cta" href="/#contact">
