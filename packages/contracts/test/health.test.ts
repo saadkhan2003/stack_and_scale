@@ -1,20 +1,21 @@
-import assert from 'node:assert/strict'
-import test from 'node:test'
+import { describe, expect, it } from 'vitest'
 
-import { createHealthContract } from '../src/index.ts'
+import { createHealthContract } from '../src/index.js'
 
-test('createHealthContract returns the stable service health shape', () => {
-  assert.deepEqual(createHealthContract('api', '0.0.0'), {
+describe('createHealthContract', () => {
+  it('returns the stable service health shape', () => {
+    expect(createHealthContract('api', '0.0.0')).toEqual({
       service: 'api',
       status: 'ok',
       version: '0.0.0'
+    })
   })
-})
 
-test('createHealthContract rejects an empty service name', () => {
-  assert.throws(() => createHealthContract('', '0.0.0'), /service must not be empty/)
-})
+  it('rejects an empty service name', () => {
+    expect(() => createHealthContract('', '0.0.0')).toThrow('service must not be empty')
+  })
 
-test('createHealthContract rejects an empty version', () => {
-  assert.throws(() => createHealthContract('api', ''), /version must not be empty/)
+  it('rejects an empty version', () => {
+    expect(() => createHealthContract('api', '')).toThrow('version must not be empty')
+  })
 })
