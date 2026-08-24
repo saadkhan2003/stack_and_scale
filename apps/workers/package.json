@@ -1,0 +1,17 @@
+{
+  "name": "@stack-and-scale/workers",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@stack-and-scale/contracts": "workspace:*"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "lint": "eslint src test",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "build": "tsc -p tsconfig.build.json"
+  }
+}

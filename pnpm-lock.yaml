@@ -36,6 +36,12 @@ importers:
         specifier: 4.0.16
         version: 4.0.16(@types/node@24.10.1)(tsx@4.21.0)
 
+  apps/workers:
+    dependencies:
+      '@stack-and-scale/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+
   packages/config: {}
 
   packages/contracts: {}
