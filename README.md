@@ -14,3 +14,7 @@ Before local development, run `source scripts/development-environment.sh` to kee
 ## Current phase
 
 Phase 01 is building repository foundations only. No business features, production infrastructure, provider accounts, or production credentials belong in this repository yet.
+
+## Database package
+
+`@stack-and-scale/database` contains dependency-free policy helpers for reviewing migration plans and managing transactional-outbox state transitions. It does not connect to PostgreSQL, run migrations, or deliver events. Database access and worker integrations are implemented only in their approved Phase 04 steps.
