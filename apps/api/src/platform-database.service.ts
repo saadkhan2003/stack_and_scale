@@ -22,6 +22,10 @@ export class PlatformDatabaseService implements OnModuleDestroy {
     return checkDatabaseReadiness(this.pool);
   }
 
+  public query(text: string, values?: readonly unknown[]) {
+    return this.pool.query(text, values);
+  }
+
   public async createPrivacyRequest(
     input: CreatePrivacyRequestRecordInput,
   ): Promise<CreatePrivacyRequestRecordResult> {
