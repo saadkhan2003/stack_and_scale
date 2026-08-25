@@ -13,65 +13,65 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
-  | 'Pacific/Midway'
-  | 'Pacific/Niue'
-  | 'Pacific/Honolulu'
-  | 'Pacific/Rarotonga'
-  | 'America/Anchorage'
-  | 'Pacific/Gambier'
-  | 'America/Los_Angeles'
-  | 'America/Tijuana'
-  | 'America/Denver'
-  | 'America/Phoenix'
-  | 'America/Chicago'
-  | 'America/Guatemala'
-  | 'America/New_York'
-  | 'America/Bogota'
-  | 'America/Caracas'
-  | 'America/Santiago'
-  | 'America/Buenos_Aires'
-  | 'America/Sao_Paulo'
-  | 'Atlantic/South_Georgia'
-  | 'Atlantic/Azores'
-  | 'Atlantic/Cape_Verde'
-  | 'Europe/London'
-  | 'Europe/Berlin'
-  | 'Africa/Lagos'
-  | 'Europe/Athens'
-  | 'Africa/Cairo'
-  | 'Europe/Moscow'
-  | 'Asia/Riyadh'
-  | 'Asia/Dubai'
-  | 'Asia/Baku'
-  | 'Asia/Karachi'
-  | 'Asia/Tashkent'
-  | 'Asia/Calcutta'
-  | 'Asia/Dhaka'
-  | 'Asia/Almaty'
-  | 'Asia/Jakarta'
-  | 'Asia/Bangkok'
-  | 'Asia/Shanghai'
-  | 'Asia/Singapore'
-  | 'Asia/Tokyo'
-  | 'Asia/Seoul'
-  | 'Australia/Brisbane'
-  | 'Australia/Sydney'
-  | 'Pacific/Guam'
-  | 'Pacific/Noumea'
-  | 'Pacific/Auckland'
-  | 'Pacific/Fiji';
+  | "Pacific/Midway"
+  | "Pacific/Niue"
+  | "Pacific/Honolulu"
+  | "Pacific/Rarotonga"
+  | "America/Anchorage"
+  | "Pacific/Gambier"
+  | "America/Los_Angeles"
+  | "America/Tijuana"
+  | "America/Denver"
+  | "America/Phoenix"
+  | "America/Chicago"
+  | "America/Guatemala"
+  | "America/New_York"
+  | "America/Bogota"
+  | "America/Caracas"
+  | "America/Santiago"
+  | "America/Buenos_Aires"
+  | "America/Sao_Paulo"
+  | "Atlantic/South_Georgia"
+  | "Atlantic/Azores"
+  | "Atlantic/Cape_Verde"
+  | "Europe/London"
+  | "Europe/Berlin"
+  | "Africa/Lagos"
+  | "Europe/Athens"
+  | "Africa/Cairo"
+  | "Europe/Moscow"
+  | "Asia/Riyadh"
+  | "Asia/Dubai"
+  | "Asia/Baku"
+  | "Asia/Karachi"
+  | "Asia/Tashkent"
+  | "Asia/Calcutta"
+  | "Asia/Dhaka"
+  | "Asia/Almaty"
+  | "Asia/Jakarta"
+  | "Asia/Bangkok"
+  | "Asia/Shanghai"
+  | "Asia/Singapore"
+  | "Asia/Tokyo"
+  | "Asia/Seoul"
+  | "Australia/Brisbane"
+  | "Australia/Sydney"
+  | "Pacific/Guam"
+  | "Pacific/Noumea"
+  | "Pacific/Auckland"
+  | "Pacific/Fiji";
 
 export interface Config {
   auth: {
-    'cms-users': CmsUserAuthOperations;
+    "cms-users": CmsUserAuthOperations;
   };
   blocks: {};
   collections: {
-    'cms-users': CmsUser;
+    "cms-users": CmsUser;
     media: Media;
     pages: Page;
     navigation: Navigation;
-    'site-settings': SiteSetting;
+    "site-settings": SiteSetting;
     redirects: Redirect;
     products: Product;
     services: Service;
@@ -84,18 +84,18 @@ export interface Config {
     clients: Client;
     careers: Career;
     faqs: Faq;
-    'payload-kv': PayloadKv;
-    'payload-locked-documents': PayloadLockedDocument;
-    'payload-preferences': PayloadPreference;
-    'payload-migrations': PayloadMigration;
+    "payload-kv": PayloadKv;
+    "payload-locked-documents": PayloadLockedDocument;
+    "payload-preferences": PayloadPreference;
+    "payload-migrations": PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
-    'cms-users': CmsUsersSelect<false> | CmsUsersSelect<true>;
+    "cms-users": CmsUsersSelect<false> | CmsUsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
-    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    "site-settings": SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     services: ServicesSelect<false> | ServicesSelect<true>;
@@ -108,10 +108,16 @@ export interface Config {
     clients: ClientsSelect<false> | ClientsSelect<true>;
     careers: CareersSelect<false> | CareersSelect<true>;
     faqs: FaqsSelect<false> | FaqsSelect<true>;
-    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
-    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
-    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
-    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+    "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>;
+    "payload-locked-documents":
+      | PayloadLockedDocumentsSelect<false>
+      | PayloadLockedDocumentsSelect<true>;
+    "payload-preferences":
+      | PayloadPreferencesSelect<false>
+      | PayloadPreferencesSelect<true>;
+    "payload-migrations":
+      | PayloadMigrationsSelect<false>
+      | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: number;
@@ -153,7 +159,7 @@ export interface CmsUserAuthOperations {
  */
 export interface CmsUser {
   id: number;
-  role: 'administrator' | 'publisher' | 'editor' | 'author';
+  role: "administrator" | "publisher" | "editor" | "author";
   displayName?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -172,7 +178,7 @@ export interface CmsUser {
       }[]
     | null;
   password?: string | null;
-  collection: 'cms-users';
+  collection: "cms-users";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -188,7 +194,7 @@ export interface Media {
   /**
    * Internal assets must never be referenced by public pages.
    */
-  classification: 'public' | 'internal';
+  classification: "public" | "internal";
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -252,7 +258,7 @@ export interface Page {
   layout?:
     | (
         | {
-            variant: 'split' | 'centered' | 'minimal';
+            variant: "split" | "centered" | "minimal";
             /**
              * Short line shown above the heading.
              */
@@ -263,7 +269,7 @@ export interface Page {
               | {
                   label: string;
                   url: string;
-                  style: 'primary' | 'secondary';
+                  style: "primary" | "secondary";
                   id?: string | null;
                 }[]
               | null;
@@ -273,7 +279,7 @@ export interface Page {
             image?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'hero';
+            blockType: "hero";
           }
         | {
             content: {
@@ -284,8 +290,15 @@ export interface Page {
                   version: number;
                   [k: string]: unknown;
                 }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                direction: ("ltr" | "rtl") | null;
+                format:
+                  | "left"
+                  | "start"
+                  | "center"
+                  | "right"
+                  | "end"
+                  | "justify"
+                  | "";
                 indent: number;
                 version: number;
               };
@@ -293,7 +306,7 @@ export interface Page {
             };
             id?: string | null;
             blockName?: string | null;
-            blockType: 'richText';
+            blockType: "richText";
           }
         | {
             heading?: string | null;
@@ -310,7 +323,7 @@ export interface Page {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'featureGroup';
+            blockType: "featureGroup";
           }
         | {
             items?:
@@ -326,7 +339,7 @@ export interface Page {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'metricGroup';
+            blockType: "metricGroup";
           }
         | {
             items?:
@@ -342,7 +355,7 @@ export interface Page {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'testimonialGroup';
+            blockType: "testimonialGroup";
           }
         | {
             /**
@@ -352,7 +365,7 @@ export interface Page {
             caption?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'mediaBlock';
+            blockType: "mediaBlock";
           }
         | {
             /**
@@ -361,7 +374,7 @@ export interface Page {
             images: (number | Media)[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'gallery';
+            blockType: "gallery";
           }
         | {
             url: string;
@@ -371,14 +384,14 @@ export interface Page {
             poster?: (number | null) | Media;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'videoEmbed';
+            blockType: "videoEmbed";
           }
         | {
             headline?: string | null;
             product: number | Product;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'productShowcase';
+            blockType: "productShowcase";
           }
         | {
             heading?: string | null;
@@ -392,7 +405,7 @@ export interface Page {
             }[];
             id?: string | null;
             blockName?: string | null;
-            blockType: 'process';
+            blockType: "process";
           }
         | {
             heading?: string | null;
@@ -412,7 +425,7 @@ export interface Page {
               | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'faqBlock';
+            blockType: "faqBlock";
           }
         | {
             heading?: string | null;
@@ -423,7 +436,7 @@ export interface Page {
             resources?: (number | Resource)[] | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'relatedContent';
+            blockType: "relatedContent";
           }
         | {
             heading: string;
@@ -432,13 +445,13 @@ export interface Page {
             buttonUrl: string;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'cta';
+            blockType: "cta";
           }
       )[]
     | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -461,8 +474,8 @@ export interface Product {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -515,7 +528,7 @@ export interface Product {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -541,8 +554,8 @@ export interface Service {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -569,7 +582,7 @@ export interface Service {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -590,8 +603,8 @@ export interface Industry {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -619,7 +632,7 @@ export interface Industry {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -636,7 +649,7 @@ export interface Faq {
   order?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -663,8 +676,8 @@ export interface Project {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -678,8 +691,8 @@ export interface Project {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -693,8 +706,8 @@ export interface Project {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -708,8 +721,8 @@ export interface Project {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -738,7 +751,7 @@ export interface Project {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -751,7 +764,7 @@ export interface Resource {
    * Unique URL-safe identifier for this resource.
    */
   slug: string;
-  type: 'article' | 'guide' | 'whitepaper' | 'video';
+  type: "article" | "guide" | "whitepaper" | "video";
   authors?: (number | Author)[] | null;
   body: {
     root: {
@@ -761,8 +774,8 @@ export interface Resource {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -783,7 +796,7 @@ export interface Resource {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -801,8 +814,8 @@ export interface Author {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -824,13 +837,13 @@ export interface Navigation {
   id: number;
   items: {
     label: string;
-    linkType?: ('internal' | 'external') | null;
+    linkType?: ("internal" | "external") | null;
     page?: (number | null) | Page;
     url?: string | null;
     children?:
       | {
           label: string;
-          linkType?: ('internal' | 'external') | null;
+          linkType?: ("internal" | "external") | null;
           page?: (number | null) | Page;
           url?: string | null;
           id?: string | null;
@@ -897,7 +910,7 @@ export interface Team {
   order?: number | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -912,7 +925,7 @@ export interface Testimonial {
   avatar?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -928,7 +941,7 @@ export interface Client {
   url?: string | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -942,7 +955,7 @@ export interface Career {
    */
   slug: string;
   location?: string | null;
-  employmentType: 'full-time' | 'part-time' | 'contract';
+  employmentType: "full-time" | "part-time" | "contract";
   description: {
     root: {
       type: string;
@@ -951,8 +964,8 @@ export interface Career {
         version: number;
         [k: string]: unknown;
       }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      direction: ("ltr" | "rtl") | null;
+      format: "left" | "start" | "center" | "right" | "end" | "justify" | "";
       indent: number;
       version: number;
     };
@@ -962,7 +975,7 @@ export interface Career {
   postedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+  _status?: ("draft" | "published") | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -989,76 +1002,76 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'cms-users';
+        relationTo: "cms-users";
         value: number | CmsUser;
       } | null)
     | ({
-        relationTo: 'media';
+        relationTo: "media";
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'pages';
+        relationTo: "pages";
         value: number | Page;
       } | null)
     | ({
-        relationTo: 'navigation';
+        relationTo: "navigation";
         value: number | Navigation;
       } | null)
     | ({
-        relationTo: 'site-settings';
+        relationTo: "site-settings";
         value: number | SiteSetting;
       } | null)
     | ({
-        relationTo: 'redirects';
+        relationTo: "redirects";
         value: number | Redirect;
       } | null)
     | ({
-        relationTo: 'products';
+        relationTo: "products";
         value: number | Product;
       } | null)
     | ({
-        relationTo: 'services';
+        relationTo: "services";
         value: number | Service;
       } | null)
     | ({
-        relationTo: 'industries';
+        relationTo: "industries";
         value: number | Industry;
       } | null)
     | ({
-        relationTo: 'projects';
+        relationTo: "projects";
         value: number | Project;
       } | null)
     | ({
-        relationTo: 'resources';
+        relationTo: "resources";
         value: number | Resource;
       } | null)
     | ({
-        relationTo: 'authors';
+        relationTo: "authors";
         value: number | Author;
       } | null)
     | ({
-        relationTo: 'team';
+        relationTo: "team";
         value: number | Team;
       } | null)
     | ({
-        relationTo: 'testimonials';
+        relationTo: "testimonials";
         value: number | Testimonial;
       } | null)
     | ({
-        relationTo: 'clients';
+        relationTo: "clients";
         value: number | Client;
       } | null)
     | ({
-        relationTo: 'careers';
+        relationTo: "careers";
         value: number | Career;
       } | null)
     | ({
-        relationTo: 'faqs';
+        relationTo: "faqs";
         value: number | Faq;
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'cms-users';
+    relationTo: "cms-users";
     value: number | CmsUser;
   };
   updatedAt: string;
@@ -1071,7 +1084,7 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: number;
   user: {
-    relationTo: 'cms-users';
+    relationTo: "cms-users";
     value: number | CmsUser;
   };
   key?: string | null;
@@ -1704,7 +1717,7 @@ export interface CollectionsWidget {
   data?: {
     [k: string]: unknown;
   };
-  width: 'full';
+  width: "full";
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1714,7 +1727,6 @@ export interface Auth {
   [k: string]: unknown;
 }
 
-
-declare module 'payload' {
+declare module "payload" {
   export interface GeneratedTypes extends Config {}
 }
