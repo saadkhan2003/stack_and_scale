@@ -29,7 +29,8 @@ Core choices already locked:
 
 ## Current Completion Summary
 
-Completed execution phases: 7 of 19 (Phases 00 through 06)
+Implemented execution phases: 7 of 19 (Phases 00 through 06), with two
+strict-evidence closeout items recorded below.
 
 - Phase 00: complete as planning/program foundation, but many Phase 00 docs are
   currently untracked in Git.
@@ -58,8 +59,8 @@ Remaining execution phases: 12 of 19 (Phases 07 through 18)
 |    02 | Brand, UX and design system                      | Complete and verified                               | `docs/evidence/phase-02/VERIFICATION.md`                                                      | Later: SVG/icon logo exports, visual snapshots, richer form/dialog primitives.                                                  |
 |    03 | Architecture contracts and threat model          | Complete and verified                               | `docs/evidence/phase-03/VERIFICATION.md`                                                      | None for contracts; later phases must obey these docs.                                                                          |
 |    04 | Data and backend foundation                      | Complete and verified locally                       | `docs/evidence/phase-04/VERIFICATION.md`                                                      | Production backup/secrets/monitoring execution remains for Phases 10 and 11.                                                    |
-|    05 | Identity, tenancy and authorization              | Complete and verified locally (152 tests green)     | `docs/evidence/phase-05/VERIFICATION.md`, `.planning/phase-05/`                               | Provider-side password recovery/email verification operational setup in Phases 10/11.                                           |
-|    06 | CMS and content platform                         | Complete and verified locally                       | `docs/evidence/phase-06/VERIFICATION.md`, `apps/cms`                                          | Live-preview wiring into web app, scheduled publishing, CMS ESLint re-integration (typed-lint follow-up).                       |
+|    05 | Identity, tenancy and authorization              | Implemented and locally verified (152 tests green)  | `docs/evidence/phase-05/VERIFICATION.md`, `.planning/phase-05/`                               | Strict closeout: provider-side password recovery/email-verification flow needs end-to-end operational evidence.                 |
+|    06 | CMS and content platform                         | Implemented and locally verified                    | `docs/evidence/phase-06/VERIFICATION.md`, `apps/cms`                                          | Strict closeout: browser evidence for create/preview/approve/publish of every core record type; live-preview remains Phase 07.  |
 |    07 | Public website experience                        | Not started as full phase; early public pages exist | `plans/phase-07-public-website-experience.md`, `apps/web`                                     | Build full public website experience from CMS/design system: product, service, industry, work, resource, contact/form journeys. |
 |    08 | Content, SEO and public search                   | Not started                                         | `plans/phase-08-content-seo-public-search.md`                                                 | SEO schema, sitemap, metadata, content architecture, search, resource pages and publishing flow.                                |
 |    09 | Lead engine, demo booking and CRM                | Not started                                         | `plans/phase-09-lead-engine-demo-crm.md`                                                      | Forms, consent capture, demo booking, lead routing, CRM pipeline, notifications and idempotent lead intake.                     |
@@ -246,7 +247,7 @@ cd packages/database && ../../node_modules/.bin/tsx src/migrate.ts
 
 Start Phase 07: public website experience.
 
-Phase 05 is complete for local scope; its verification evidence includes:
+Phase 05 is implemented for local scope; its verification evidence includes:
 
 1. Identity provider ADR: self-hosted Keycloak
    (`docs/decisions/ADR-IDENTITY-PLATFORM.md`).
@@ -255,7 +256,8 @@ Phase 05 is complete for local scope; its verification evidence includes:
 4. Identity schema migration `0003_identity_tenancy_v1.sql`.
 5. Tenant-safe protected route with cross-tenant denial tests.
 
-Phase 07 should consume the approved CMS contracts and Phase 02 design system.
+Phase 07 can consume the approved CMS contracts and Phase 02 design system,
+while the two strict-evidence closeout items above are completed.
 Follow `plans/phase-07-public-website-experience.md`; do not start Phase 08+
 until its public-route, accessibility, performance and CMS-preview gates pass.
 
@@ -298,7 +300,7 @@ The next concrete remaining thing is Phase 07.
 
 ## Handoff One-Liner
 
-Stack & Scale has completed Phases 00-06 locally. Phase 07 is next: build the
-CMS-backed public website while preserving the USD 50/month budget,
-self-hosted-first platform choices and the untracked planning/assets until
-they are reviewed.
+Stack & Scale has implemented Phases 00-06 locally. Phase 07 is next: build
+the CMS-backed public website while completing the outstanding Phase 05/06
+strict-evidence checks, preserving the USD 50/month budget, self-hosted-first
+platform choices and the untracked planning/assets until they are reviewed.
