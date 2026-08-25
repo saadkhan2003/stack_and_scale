@@ -98,6 +98,10 @@ describe("API foundation", () => {
       version: "0.0.0",
       checks: {
         application: "up",
+        database: "up",
+        migrations: "up",
+        outbox: "up",
+        privacy: "up",
       },
     });
   });

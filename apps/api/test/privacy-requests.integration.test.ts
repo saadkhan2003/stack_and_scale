@@ -35,8 +35,8 @@ describe("POST /privacy-requests", () => {
       payload: {
         id: "privacy-api-001",
         requesterKind: "account_holder",
-        requesterContactId: "contact-001",
-        organizationId: "org-alpha",
+        requesterContactId: null,
+        organizationId: null,
         requestType: "erasure",
         identityVerified: true,
         scope: { email: "person@example.test" },

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@stack-and-scale/contracts": "workspace:*"
+    "@stack-and-scale/contracts": "workspace:*",
+    "@stack-and-scale/database": "workspace:*"
   },
   "scripts": {
     "dev": "tsx watch src/main.ts",

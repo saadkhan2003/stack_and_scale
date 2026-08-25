@@ -8,6 +8,7 @@
     "@nestjs/core": "11.2.1",
     "@nestjs/platform-fastify": "11.2.1",
     "@stack-and-scale/contracts": "workspace:*",
+    "@stack-and-scale/database": "workspace:*",
     "fastify": "5.12.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2"
