@@ -23,6 +23,9 @@ secret.
 
 - CMS collection and page content are fetched with a 60-second Next cache and
   clearly labelled demonstration fallbacks when no published record exists.
+- CMS page edit views point their live-preview iframe to the public page URL;
+  the public page sends the Payload readiness signal and applies same-origin
+  live-preview document messages without exposing a CMS credential.
 - Product filters, reduced-motion rules, keyboard-visible focus styles and
   responsive layouts are implemented.
 - The Browser Use CDP connector could not launch its own Chrome session, but
