@@ -511,6 +511,10 @@ h1 {
 .metric-list strong, .metric-list span { display: block; }
 .metric-list strong { color: var(--seafoam); font-size: 1.5rem; }
 .metric-list span { color: rgba(245, 242, 232, .7); font-size: .82rem; margin-top: .3rem; }
+.interface-gallery { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.interface-gallery img { border: 1px solid rgba(128, 221, 209, .3); border-radius: 12px; height: auto; max-width: 100%; }
+.related-links { display: flex; flex-wrap: wrap; gap: .75rem; }
+.related-links a { border: 1px solid rgba(128, 221, 209, .3); border-radius: 99px; color: var(--seafoam); font-size: .88rem; font-weight: 700; padding: .7rem .9rem; }
 .cms-blocks { color: var(--ink); }
 .cms-hero, .cms-feature-group, .cms-process, .cms-cta, .cms-rich-text { margin: 3rem auto; max-width: 1000px; padding: 2rem; }
 .cms-hero, .cms-cta { background: var(--seafoam); }

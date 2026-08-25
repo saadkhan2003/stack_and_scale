@@ -22,6 +22,10 @@ function stringValue(item: UnknownRecord, key: string): string | null {
   return typeof item[key] === "string" ? item[key] : null;
 }
 
+function relatedDocuments(value: unknown): readonly CmsDocument[] {
+  return entries(value).filter((item): item is CmsDocument => typeof item.id === "string" || typeof item.id === "number");
+}
+
 export function CmsDetailSections({ document }: Readonly<{ document: CmsDocument }>) {
   const richSections = ["overview", "description", "summary", "challenge", "approach", "outcome", "body"]
     .map((key) => ({ key, value: text(document[key]) }))
@@ -29,12 +33,22 @@ export function CmsDetailSections({ document }: Readonly<{ document: CmsDocument
   const features = entries(document.features);
   const deliverables = entries(document.deliverables);
   const metrics = entries(document.metrics ?? document.stats);
+  const screenshots = entries(document.interfaceShowcase)
+    .map((item) => record(item.screenshot))
+    .filter((image): image is UnknownRecord => image !== null && typeof image.url === "string");
+  const related = [
+    { label: "Products", path: "/products", documents: relatedDocuments(document.relatedProducts) },
+    { label: "Services", path: "/services", documents: relatedDocuments(document.relatedServices ?? document.servicesDelivered) },
+    { label: "Industries", path: "/industries", documents: relatedDocuments(document.relatedIndustries) },
+  ].filter((group) => group.documents.length > 0);
 
   return <div className="cms-detail-sections">
     {richSections.map((section) => <p key={section.key}>{section.value}</p>)}
     {features.length > 0 ? <section><h2>What it includes</h2><ul>{features.map((feature, index) => <li key={`${stringValue(feature, "title") ?? "feature"}-${index}`}><strong>{stringValue(feature, "title")}</strong>{stringValue(feature, "description") ? ` — ${stringValue(feature, "description")}` : ""}</li>)}</ul></section> : null}
     {deliverables.length > 0 ? <section><h2>Deliverables</h2><ul>{deliverables.map((item, index) => <li key={`${stringValue(item, "deliverable") ?? "deliverable"}-${index}`}>{stringValue(item, "deliverable")}</li>)}</ul></section> : null}
     {metrics.length > 0 ? <section className="metric-list" aria-label="Published metrics">{metrics.map((item, index) => <div key={`${stringValue(item, "label") ?? "metric"}-${index}`}><strong>{stringValue(item, "value")}</strong><span>{stringValue(item, "label")}</span></div>)}</section> : null}
+    {screenshots.length > 0 ? <section><h2>Inside the interface</h2><div className="interface-gallery">{screenshots.map((image, index) => <img alt={stringValue(image, "alt") ?? "Product interface screenshot"} key={`${stringValue(image, "url")}-${index}`} src={stringValue(image, "url") ?? ""} />)}</div></section> : null}
+    {related.map((group) => <section key={group.label}><h2>Related {group.label.toLowerCase()}</h2><div className="related-links">{group.documents.map((relatedDocument) => <a href={`${group.path}/${relatedDocument.slug ?? relatedDocument.id}`} key={String(relatedDocument.id)}>{relatedDocument.title ?? relatedDocument.slug ?? "View related content"} <span aria-hidden="true">→</span></a>)}</div></section>)}
   </div>;
 }
 
