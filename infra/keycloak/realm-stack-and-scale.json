@@ -6,6 +6,15 @@
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": true,
   "verifyEmail": true,
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "no-reply@stackandscale.local",
+    "fromDisplayName": "Stack and Scale",
+    "auth": "false",
+    "ssl": "false",
+    "starttls": "false"
+  },
   "sslRequired": "external",
   "roles": {
     "realm": [

@@ -45,3 +45,11 @@ an init script or manual setup. Keep credentials in env, never in files.
 
 Management/health probes are enabled on port 9000 inside the container
 (`/health`, `/health/ready`) and wired into the compose healthcheck.
+
+## Local recovery email verification
+
+`docker compose -f infra/compose.yaml up -d mailpit` starts the
+development-only Mailpit inbox at http://localhost:8025. The local realm sends
+password-update and verification messages to the `mailpit` service on SMTP
+port 1025; no message leaves the Docker network. Never copy this SMTP setting
+to a shared or production realm.

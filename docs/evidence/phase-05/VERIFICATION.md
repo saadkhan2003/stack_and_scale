@@ -79,6 +79,18 @@ formatting, typecheck and builds clean.
   Keycloak tests skipped in the ordinary local suite.
 
 Remaining (post-closure, non-blocking): password recovery/email verification
-flows are provider-side configuration tracked for Phase 10/11 operational
-setup. Staff-facing UI routing remains part of the later staff-operations
-phase.
+flows have a local verification path: Mailpit captures Keycloak recovery
+messages inside the Docker network. Browser-facing staff routing remains part
+of the later staff-operations phase.
+
+## Local recovery-mail verification
+
+- Added development-only Mailpit (`infra/compose.yaml`, web inbox on :8025,
+  SMTP on :1025) and realm SMTP configuration for the `mailpit` Docker
+  service.
+- Keycloak accepted an `UPDATE_PASSWORD` action-email request for the local
+  test identity with HTTP 204; Mailpit received the resulting **Update Your
+  Account** message. The message recipient is `example.local`, so it never
+  leaves local development infrastructure.
+- The final new-password submission remains intentionally user-controlled;
+  the verification proves the configured recovery request and delivery path.
