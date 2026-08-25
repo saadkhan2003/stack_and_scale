@@ -10,10 +10,17 @@ export default tseslint.config(
       "**/node_modules/**",
       "**/playwright-report/**",
       "**/test-results/**",
+      "**/payload-types.ts",
+      "**/importMap.js",
+      "**/src/migrations/**",
+      "apps/cms/**",
     ],
   },
   eslint.configs.recommended,
-  tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ["**/*.{ts,tsx}"],
+  })),
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
