@@ -19,5 +19,35 @@ services:
       timeout: 5s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: stack-and-scale-keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-local-development-only}
+      KC_DB: dev-file
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_PORT: "8084"
+    ports:
+      - "${KEYCLOAK_PORT:-8084}:8084"
+    volumes:
+      - stack-and-scale-keycloak-data:/opt/keycloak/data
+      - ./keycloak/realm-stack-and-scale.json:/opt/keycloak/data/import/realm-stack-and-scale.json:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready
+          HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep
+          -q '200 OK' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
 volumes:
   stack-and-scale-postgres-data:
+  stack-and-scale-keycloak-data:
