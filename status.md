@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-25 (refreshed after full-codebase review)
 Current branch: `master`
-Current latest commit: `8989b65 docs: add project status handoff`
+Current latest commit: `66a4d30 chore: sync next env types`
 Initial external-platform budget ceiling: USD 50/month
 
 This file is the cold-start handoff for any future agent. Read this before
@@ -46,8 +46,10 @@ Completed execution phases: 4 of 19, with Phase 05 in progress
 
 Remaining execution phases: 14 of 19 (Phase 05 nearly done)
 
-- Phase 06 through Phase 18 are not implemented yet.
-- Phase 05 must finish before Phase 06 starts.
+- Phase 06: complete and verified locally (Payload CMS on Next.js +
+  PostgreSQL: 17 collections, 13-block registry, editorial workflow, media
+  rules, contract tests, browser-verified admin).
+- Phase 07 through Phase 18 are not implemented yet.
 
 ## Phase Status Table
 
@@ -59,7 +61,7 @@ Remaining execution phases: 14 of 19 (Phase 05 nearly done)
 |    03 | Architecture contracts and threat model          | Complete and verified                               | `docs/evidence/phase-03/VERIFICATION.md`                                                      | None for contracts; later phases must obey these docs.                                                                          |
 |    04 | Data and backend foundation                      | Complete and verified locally                       | `docs/evidence/phase-04/VERIFICATION.md`                                                      | Production backup/secrets/monitoring execution remains for Phases 10 and 11.                                                    |
 |    05 | Identity, tenancy and authorization              | Near-complete (145 tests green)                     | `docs/evidence/phase-05/VERIFICATION.md`, `.planning/phase-05/`                               | Live Keycloak sign-in E2E, swap x-actor-id for OIDC tokens, apply rate limiting, wire audit call sites, recovery flows.         |
-|    06 | CMS and content platform                         | Not started                                         | `plans/phase-06-cms-content-platform.md`                                                      | Install/configure Payload CMS, content collections, workflows, media rules, SEO fields, previews and CMS roles.                 |
+|    06 | CMS and content platform                         | Complete and verified locally                       | `docs/evidence/phase-06/VERIFICATION.md`, `apps/cms`                                          | Live-preview wiring into web app, scheduled publishing, CMS ESLint re-integration (typed-lint follow-up).                       |
 |    07 | Public website experience                        | Not started as full phase; early public pages exist | `plans/phase-07-public-website-experience.md`, `apps/web`                                     | Build full public website experience from CMS/design system: product, service, industry, work, resource, contact/form journeys. |
 |    08 | Content, SEO and public search                   | Not started                                         | `plans/phase-08-content-seo-public-search.md`                                                 | SEO schema, sitemap, metadata, content architecture, search, resource pages and publishing flow.                                |
 |    09 | Lead engine, demo booking and CRM                | Not started                                         | `plans/phase-09-lead-engine-demo-crm.md`                                                      | Forms, consent capture, demo booking, lead routing, CRM pipeline, notifications and idempotent lead intake.                     |
