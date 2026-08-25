@@ -1,5 +1,7 @@
 export const primaryNavigation = [
-  { href: "/solutions", label: "Solutions" },
+  { href: "/products", label: "Products" },
+  { href: "/services", label: "Services" },
+  { href: "/work", label: "Work" },
   { href: "/approach", label: "Approach" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ] as const;

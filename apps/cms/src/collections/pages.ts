@@ -15,6 +15,17 @@ export const pages: CollectionConfig = {
     group: "Content",
     useAsTitle: "title",
     defaultColumns: ["title", "slug", "_status"],
+    livePreview: {
+      breakpoints: [
+        { label: "Mobile", name: "mobile", width: 390, height: 844 },
+        { label: "Desktop", name: "desktop", width: "100%", height: "100%" },
+      ],
+      url: ({ data }) => {
+        if (typeof data.slug !== "string" || data.slug.length === 0) return null;
+        const publicUrl = process.env["WEB_PUBLIC_URL"] ?? "http://127.0.0.1:3100";
+        return `${publicUrl}/${data.slug}`;
+      },
+    },
   },
   labels: {
     singular: "Page",

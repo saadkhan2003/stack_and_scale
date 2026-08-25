@@ -1,4 +1,5 @@
 import { homepageModel } from "../src/homepage-content";
+import { SiteFooter } from "../src/site-footer";
 import { SiteHeader } from "../src/site-header";
 
 export default function HomePage() {
@@ -98,6 +99,19 @@ export default function HomePage() {
         <h2>Clear thinking. Dependable delivery. Software that earns trust.</h2>
       </section>
 
+      <section className="feature-strip" aria-labelledby="explore-heading">
+        <div>
+          <p className="eyebrow">Explore the practice</p>
+          <h2 id="explore-heading">Start where the work is most urgent.</h2>
+        </div>
+        <div className="feature-links">
+          <a href="/products">Products <span aria-hidden="true">→</span></a>
+          <a href="/services">Services <span aria-hidden="true">→</span></a>
+          <a href="/industries">Industries <span aria-hidden="true">→</span></a>
+          <a href="/work">Our work <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
       <section
         className="contact-panel"
         id="contact"
@@ -116,6 +130,7 @@ export default function HomePage() {
           Discuss your project <span aria-hidden="true">→</span>
         </a>
       </section>
+      <SiteFooter />
     </main>
   );
 }

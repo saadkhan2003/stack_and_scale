@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Stack & Scale",
-  description: "Stack & Scale platform foundation",
+  title: { default: "Stack & Scale | Software for real operations", template: "%s | Stack & Scale" },
+  description: "Purposeful products, services and delivery partnership for clearer operations.",
 };
 
 export default function RootLayout({
