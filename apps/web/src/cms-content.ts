@@ -1,4 +1,5 @@
 export type CmsDocument = Readonly<{
+  [field: string]: unknown;
   id: number | string;
   slug?: string;
   title?: string;
@@ -6,7 +7,7 @@ export type CmsDocument = Readonly<{
   tagline?: string;
   _status?: "draft" | "published";
   seo?: Readonly<{ metaDescription?: string; metaTitle?: string }>;
-}>;
+}>; 
 
 type CmsResponse = Readonly<{ docs?: CmsDocument[] }>;
 

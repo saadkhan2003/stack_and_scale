@@ -10,7 +10,7 @@ Only approved, truthful material may be published. Missing material is a tracked
 | Typography and extended identity | Not finalized | Design-system decision and licenses | Phase 02 | Define before public design implementation |
 | Product records (POS, tailor management, others) | Needs inventory | Name, audience, features, screenshots, support/contact path, approval | Product owner | Publish only verified records |
 | Custom services | Needs inventory | Scope, outcomes, capabilities, exclusions and CTA | Business owner | Build capability-first pages |
-| Work/case studies | Needs approval inventory | Client permission, problem, solution, proof, privacy classification | Business/content owner | Target 3–5 truthful flagship experiences; defer count if assets are unavailable |
+| Work/case studies | **Asset-driven deferral recorded (Phase 07):** no approved client permissions, screenshots or verified outcomes are present in the repository | Client permission, problem, solution, proof, privacy classification | Business/content owner | Public site uses clearly labelled illustrative demonstrations only. The required 3–5 truthful flagship experiences remain deferred until approved assets are supplied. |
 | Testimonials/client logos | Unknown | Written permission, exact wording/logo rights, source | Business owner | Omit until approved |
 | Team/about/careers | Needs inventory | Current facts, portraits/bios, job details and approval | Company owner | Omit incomplete claims |
 | Resources/guides | Not yet authored | Author, accuracy review, publication date, related CTA | Content owner | Seed only verified foundational content |
