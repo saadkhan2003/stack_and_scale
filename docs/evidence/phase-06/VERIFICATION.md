@@ -48,6 +48,12 @@ Date: 2026-08-25
   added hero block via layout editor → saved draft (Versions=2) →
   published → REST confirmed `_status: published` with hero block and
   heading intact. Screenshots captured.
+- Follow-up browser QA (local production CMS): replacement administrator sign-in
+  succeeded; all 16 configured collection create screens opened and exposed
+  their save/publish controls; a clearly marked temporary Page was created,
+  saved as a draft, published (Versions=2), then deleted through the admin
+  confirmation dialog. This confirms the authenticated editorial UI and its
+  cleanup path without leaving demonstration content behind.
 
 ## Notes and follow-ups
 
@@ -57,3 +63,5 @@ Date: 2026-08-25
   (`next build && next start`) for local admin work.
 - Publishing/scheduled publishing UI controls come from Payload versions;
   scheduled publish lands with Phase 08 workflow work if needed.
+- Public live preview is intentionally not configured here: Phase 07 wires
+  CMS preview and published-content rendering into the public web app.
