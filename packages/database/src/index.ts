@@ -45,3 +45,16 @@ export {
   type OutboxTransition,
   type RetryDelayInput,
 } from "./outbox-policy.js";
+export {
+  resolveTenantPlacement,
+  type PlacementTier,
+  type RoutingDecision,
+  type TenantPlacement,
+} from "./placement-routing.js";
+export {
+  AuditEventError,
+  containsSensitiveMetadataKey,
+  normalizeIdentityAction,
+  recordIdentityAuditEvent,
+  type IdentityAuditEventInput,
+} from "./audit-operations.js";

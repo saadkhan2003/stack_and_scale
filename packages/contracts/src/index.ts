@@ -365,3 +365,21 @@ export function createLegalHold(input: CreateLegalHoldInput): LegalHold {
     status: "active",
   };
 }
+
+export {
+  authorize,
+  isStaffRole,
+  permissionsForRole,
+  type AuthorizationDecision,
+  type AuthorizeInput,
+  type MembershipSnapshot,
+  type Permission,
+  type StaffRole,
+} from "./authorization.js";
+export {
+  evaluateMfaRequirement,
+  type EvaluateMfaInput,
+  type MfaRequirementDecision,
+  type MfaRequirementOutcome,
+  type StaffMfaPolicy,
+} from "./mfa.js";
