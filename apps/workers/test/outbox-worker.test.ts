@@ -12,41 +12,45 @@ class FakeOutboxRepository implements OutboxDeliveryRepository {
   public attempts = 0;
   public readonly log: string[] = [];
 
-  async claimNext() {
+  claimNext() {
     if (this.state !== "pending") {
-      return null;
+      return Promise.resolve(null);
     }
 
     this.state = "processing";
     this.attempts += 1;
     this.log.push("claim:event-001");
 
-    return {
+    return Promise.resolve({
       id: "event-001",
       eventType: "lead.created",
       payload: { leadId: "lead-001" },
       attempts: this.attempts,
-    };
+    });
   }
 
-  async markDelivered(eventId: string) {
+  markDelivered(eventId: string) {
     this.state = "delivered";
     this.log.push(`delivered:${eventId}`);
+    return Promise.resolve();
   }
 
-  async releaseForRetry(eventId: string, delayMs: number, reason: string) {
+  releaseForRetry(eventId: string, delayMs: number, reason: string) {
     this.state = "pending";
     this.log.push(`retry:${eventId}:${delayMs}:${reason}`);
+    return Promise.resolve();
   }
 
-  async markDeadLetter(eventId: string, reason: string) {
+  markDeadLetter(eventId: string, reason: string) {
     this.state = "dead_letter";
     this.log.push(`dead-letter:${eventId}:${reason}`);
+    return Promise.resolve();
   }
 
-  async authorizeReplay(eventId: string, approverId: string, reason: string) {
+  authorizeReplay(eventId: string, approverId: string, reason: string) {
     this.state = "pending";
     this.log.push(`replay:${eventId}:${approverId}:${reason}`);
+    return Promise.resolve();
   }
 }
 
@@ -54,8 +58,9 @@ describe("outbox worker delivery", () => {
   it("claims a pending event and marks it delivered after the handler succeeds", async () => {
     const repository = new FakeOutboxRepository();
 
-    const result = await runOutboxDeliveryCycle(repository, async (event) => {
+    const result = await runOutboxDeliveryCycle(repository, (event) => {
       expect(event.id).toBe("event-001");
+      return Promise.resolve();
     });
 
     expect(result).toEqual({
@@ -71,9 +76,7 @@ describe("outbox worker delivery", () => {
 
     const result = await runOutboxDeliveryCycle(
       repository,
-      async () => {
-        throw new Error("downstream unavailable");
-      },
+      () => Promise.reject(new Error("downstream unavailable")),
       { maxAttempts: 1, retryDelayMs: 25 },
     );
 

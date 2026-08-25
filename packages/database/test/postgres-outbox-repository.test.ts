@@ -39,7 +39,9 @@ describe("PostgresOutboxRepository", () => {
       attempts: 2,
     });
     expect(client.calls[0]?.text).toContain("FOR UPDATE SKIP LOCKED");
-    expect(client.calls[0]?.text).toContain("RETURNING id, event_type, payload, attempts");
+    expect(client.calls[0]?.text).toContain(
+      "RETURNING id, event_type, payload, attempts",
+    );
   });
 
   it("persists terminal delivery, retry, dead-letter and authorized replay states", async () => {

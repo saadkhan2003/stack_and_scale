@@ -9,15 +9,21 @@ describe("privacy and DLQ migration", () => {
       "utf8",
     );
 
-    expect(migration).toContain("CREATE TABLE IF NOT EXISTS platform.privacy_requests");
+    expect(migration).toContain(
+      "CREATE TABLE IF NOT EXISTS platform.privacy_requests",
+    );
     expect(migration).toContain(
       "CREATE TABLE IF NOT EXISTS platform.privacy_request_targets",
     );
-    expect(migration).toContain("CREATE TABLE IF NOT EXISTS platform.legal_holds");
+    expect(migration).toContain(
+      "CREATE TABLE IF NOT EXISTS platform.legal_holds",
+    );
     expect(migration).toContain(
       "CREATE TABLE IF NOT EXISTS platform.consent_evidence",
     );
     expect(migration).toContain("ADD COLUMN IF NOT EXISTS last_error");
-    expect(migration).toContain("ADD COLUMN IF NOT EXISTS replay_authorized_by");
+    expect(migration).toContain(
+      "ADD COLUMN IF NOT EXISTS replay_authorized_by",
+    );
   });
 });

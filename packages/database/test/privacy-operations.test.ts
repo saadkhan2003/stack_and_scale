@@ -12,13 +12,13 @@ class RecordingClient implements Queryable {
     values: readonly unknown[];
   }> = [];
 
-  async query(text: string, values: readonly unknown[] = []) {
+  query(text: string, values: readonly unknown[] = []) {
     (this.calls as Array<{ text: string; values: readonly unknown[] }>).push({
       text,
       values,
     });
 
-    return { rows: [] };
+    return Promise.resolve({ rows: [] });
   }
 }
 
@@ -78,10 +78,10 @@ describe("privacy operation persistence", () => {
     expect(client.calls).toEqual([]);
   });
 
-  it("enforces the approved privacy lifecycle", async () => {
-    expect(
-      transitionPrivacyRequestStatus("identity_verified", "scoped"),
-    ).toBe("scoped");
+  it("enforces the approved privacy lifecycle", () => {
+    expect(transitionPrivacyRequestStatus("identity_verified", "scoped")).toBe(
+      "scoped",
+    );
     expect(transitionPrivacyRequestStatus("executing", "completed")).toBe(
       "completed",
     );

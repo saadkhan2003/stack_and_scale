@@ -4,6 +4,15 @@ import { describe, expect, it } from "vitest";
 
 import { AppModule } from "../src/app.module.js";
 
+type OpenApiTestDocument = {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+  };
+  paths: Record<string, unknown>;
+};
+
 describe("GET /openapi.json", () => {
   it("publishes the implemented API contract", async () => {
     const module = await Test.createTestingModule({
@@ -20,19 +29,18 @@ describe("GET /openapi.json", () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({
-      openapi: "3.1.0",
-      info: {
-        title: "Stack and Scale API",
-        version: "0.0.0",
-      },
-      paths: {
-        "/health": expect.any(Object),
-        "/ready": expect.any(Object),
-        "/version": expect.any(Object),
-        "/privacy-requests": expect.any(Object),
-      },
+    const body = response.json<OpenApiTestDocument>();
+    expect(body.openapi).toBe("3.1.0");
+    expect(body.info).toEqual({
+      title: "Stack and Scale API",
+      version: "0.0.0",
     });
+    expect(Object.keys(body.paths).sort()).toEqual([
+      "/health",
+      "/privacy-requests",
+      "/ready",
+      "/version",
+    ]);
 
     await app.close();
   });

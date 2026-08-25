@@ -6,12 +6,12 @@ function createQueryable(
   registry: Record<string, string | null>,
 ): Queryable<{ regclass: string | null }> {
   return {
-    async query(_text, values) {
-      const tableName = String(values?.[0] ?? "");
+    query(_text, values) {
+      const tableName = typeof values?.[0] === "string" ? values[0] : "";
 
-      return {
+      return Promise.resolve({
         rows: [{ regclass: registry[tableName] ?? null }],
-      };
+      });
     },
   };
 }

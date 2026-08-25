@@ -79,7 +79,8 @@ export class AppController {
   @Post("privacy-requests")
   @HttpCode(HttpStatus.CREATED)
   async createPrivacyRequest(
-    @Body() input: Omit<CreatePrivacyRequestRecordInput, "actorId" | "correlationId">,
+    @Body()
+    input: Omit<CreatePrivacyRequestRecordInput, "actorId" | "correlationId">,
   ) {
     try {
       return await this.database.createPrivacyRequest({

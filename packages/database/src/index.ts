@@ -7,11 +7,20 @@ export {
   type MigrationRecovery,
 } from "./migration-policy.js";
 export {
+  getMigrationName,
+  runMigrations,
+  shouldApplyMigration,
+} from "./migrate.js";
+export {
   createPostgresPool,
   createPostgresPoolFromEnv,
   type DatabaseConnectionOptions,
   type DatabasePool,
 } from "./postgres.js";
+export {
+  PostgresOutboxRepository,
+  type PostgresOutboxEvent,
+} from "./postgres-outbox-repository.js";
 export {
   createPrivacyRequestRecord,
   transitionPrivacyRequestStatus,

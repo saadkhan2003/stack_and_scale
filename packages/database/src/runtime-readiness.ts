@@ -62,10 +62,9 @@ async function tableExists(
   client: Queryable,
   tableName: string,
 ): Promise<DatabaseReadinessCheck> {
-  const result = await client.query(
-    "SELECT to_regclass($1) AS regclass",
-    [tableName],
-  );
+  const result = await client.query("SELECT to_regclass($1) AS regclass", [
+    tableName,
+  ]);
 
   return result.rows[0]?.["regclass"] === null ? "missing" : "up";
 }
