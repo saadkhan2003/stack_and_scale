@@ -3,6 +3,9 @@ import { Module, type Provider } from "@nestjs/common";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 
 import { ActorResolverService } from "./actor-resolver.service.js";
+import { OidcFlowService } from "./oidc-flow.service.js";
+import { OidcFlowController } from "./oidc-flow.controller.js";
+import { RateLimitModule } from "../common/http/rate-limit.module.js";
 import {
   DatabaseSubjectResolver,
   TOKEN_VALIDATOR,
@@ -27,11 +30,14 @@ const tokenValidatorProvider: Provider = {
 };
 
 @Module({
+  imports: [RateLimitModule],
+  controllers: [OidcFlowController],
   providers: [
     PlatformDatabaseService,
     DatabaseSubjectResolver,
     tokenValidatorProvider,
     ActorResolverService,
+    OidcFlowService,
   ],
   exports: [tokenValidatorProvider, ActorResolverService],
 })

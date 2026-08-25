@@ -29,7 +29,7 @@ Core choices already locked:
 
 ## Current Completion Summary
 
-Completed execution phases: 4 of 19, with Phase 05 in progress
+Completed execution phases: 7 of 19 (Phases 00 through 06)
 
 - Phase 00: complete as planning/program foundation, but many Phase 00 docs are
   currently untracked in Git.
@@ -37,14 +37,12 @@ Completed execution phases: 4 of 19, with Phase 05 in progress
 - Phase 02: complete and verified.
 - Phase 03: complete and verified.
 - Phase 04: complete and verified for local data/backend foundation.
-- Phase 05: complete for local scope via 10 parallel workstreams (see
-  `.planning/phase-05/ORCHESTRATION.md`) plus closure: live Keycloak E2E
-  sign-in verified, bearer-token auth replaces the x-actor-id stand-in
-  (dev fallback only), rate limiting applied to identity routes, audit
-  call sites wired. Docker storage migrated to a 25 GB ext4 image on the
-  Data partition (`/mnt/docker-data`).
+- Phase 05: complete and verified locally, including live Keycloak bearer
+  verification, OIDC Authorization Code + PKCE browser-flow endpoints,
+  MFA checks for privileged roles, invitations, sessions, rate limiting and
+  identity audit events.
 
-Remaining execution phases: 14 of 19 (Phase 05 nearly done)
+Remaining execution phases: 12 of 19 (Phases 07 through 18)
 
 - Phase 06: complete and verified locally (Payload CMS on Next.js +
   PostgreSQL: 17 collections, 13-block registry, editorial workflow, media
@@ -60,7 +58,7 @@ Remaining execution phases: 14 of 19 (Phase 05 nearly done)
 |    02 | Brand, UX and design system                      | Complete and verified                               | `docs/evidence/phase-02/VERIFICATION.md`                                                      | Later: SVG/icon logo exports, visual snapshots, richer form/dialog primitives.                                                  |
 |    03 | Architecture contracts and threat model          | Complete and verified                               | `docs/evidence/phase-03/VERIFICATION.md`                                                      | None for contracts; later phases must obey these docs.                                                                          |
 |    04 | Data and backend foundation                      | Complete and verified locally                       | `docs/evidence/phase-04/VERIFICATION.md`                                                      | Production backup/secrets/monitoring execution remains for Phases 10 and 11.                                                    |
-|    05 | Identity, tenancy and authorization              | Near-complete (145 tests green)                     | `docs/evidence/phase-05/VERIFICATION.md`, `.planning/phase-05/`                               | Live Keycloak sign-in E2E, swap x-actor-id for OIDC tokens, apply rate limiting, wire audit call sites, recovery flows.         |
+|    05 | Identity, tenancy and authorization              | Complete and verified locally (152 tests green)     | `docs/evidence/phase-05/VERIFICATION.md`, `.planning/phase-05/`                               | Provider-side password recovery/email verification operational setup in Phases 10/11.                                           |
 |    06 | CMS and content platform                         | Complete and verified locally                       | `docs/evidence/phase-06/VERIFICATION.md`, `apps/cms`                                          | Live-preview wiring into web app, scheduled publishing, CMS ESLint re-integration (typed-lint follow-up).                       |
 |    07 | Public website experience                        | Not started as full phase; early public pages exist | `plans/phase-07-public-website-experience.md`, `apps/web`                                     | Build full public website experience from CMS/design system: product, service, industry, work, resource, contact/form journeys. |
 |    08 | Content, SEO and public search                   | Not started                                         | `plans/phase-08-content-seo-public-search.md`                                                 | SEO schema, sitemap, metadata, content architecture, search, resource pages and publishing flow.                                |
@@ -246,9 +244,9 @@ cd packages/database && ../../node_modules/.bin/tsx src/migrate.ts
 
 ## Next Recommended Phase
 
-Finish Phase 05: identity, tenancy and authorization.
+Start Phase 07: public website experience.
 
-Already done (verified in `docs/evidence/phase-05/VERIFICATION.md`):
+Phase 05 is complete for local scope; its verification evidence includes:
 
 1. Identity provider ADR: self-hosted Keycloak
    (`docs/decisions/ADR-IDENTITY-PLATFORM.md`).
@@ -257,31 +255,16 @@ Already done (verified in `docs/evidence/phase-05/VERIFICATION.md`):
 4. Identity schema migration `0003_identity_tenancy_v1.sql`.
 5. Tenant-safe protected route with cross-tenant denial tests.
 
-Remaining Phase 05 order:
-
-1. Run Keycloak via compose; OIDC Authorization Code + PKCE client in the API;
-   replace the `x-actor-id` local stand-in with token validation.
-2. Email verification and password recovery flows.
-3. Staff MFA policy enforcement and recovery flow.
-4. Invitation accept/expire/consume lifecycle endpoints.
-5. Session creation/revocation/timeout endpoints on `identity.sessions`.
-6. Audit events for login, recovery, invitation, role and session changes;
-   rate-limiting and suspicious-attempt hooks.
-7. Security test suite expansion: invite replay, revoked sessions, direct API
-   access with hidden UI routes, vertical escalation.
-8. Identity backup/restore procedure; Phase 05 verification completion.
-
-Do not start CMS, CRM, public search or deployment before the Phase 05 auth
-boundary is complete.
+Phase 07 should consume the approved CMS contracts and Phase 02 design system.
+Follow `plans/phase-07-public-website-experience.md`; do not start Phase 08+
+until its public-route, accessibility, performance and CMS-preview gates pass.
 
 ## Remaining Work Count
 
-Execution phases remaining: 14
+Execution phases remaining: 12
 
 Critical-path phases remaining before V1 launch:
 
-- Phase 05 identity/tenancy/auth
-- Phase 06 CMS/content platform
 - Phase 07 public website experience
 - Phase 08 content/SEO/search
 - Phase 09 lead engine/demo/CRM
@@ -300,7 +283,7 @@ Post-V1 phases remaining:
 
 Approximate large work packages remaining: 100+ across all phase plans.
 
-The next concrete remaining thing is Phase 05, not Phase 06 or Phase 07.
+The next concrete remaining thing is Phase 07.
 
 ## Do Not Do Yet
 
@@ -315,9 +298,7 @@ The next concrete remaining thing is Phase 05, not Phase 06 or Phase 07.
 
 ## Handoff One-Liner
 
-Stack & Scale has completed Phases 00-04 locally and Phase 05 is in progress:
-identity ADR (Keycloak), deny-by-default authorization, placement routing,
-the identity schema and the first tenant-safe protected route are verified
-(80 tests). Finish Phase 05 (Keycloak sign-in, MFA, invitations, sessions,
-audit) before Phase 06, preserving the USD 50/month budget, self-hosted-first
-platform choices and the untracked planning/assets until they are reviewed.
+Stack & Scale has completed Phases 00-06 locally. Phase 07 is next: build the
+CMS-backed public website while preserving the USD 50/month budget,
+self-hosted-first platform choices and the untracked planning/assets until
+they are reviewed.

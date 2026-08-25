@@ -18,10 +18,11 @@ export interface TokenValidatorOptions {
   readonly audience: string;
   readonly loadJwks: JwksLoader;
   readonly resolveSubject?: SubjectResolver;
+  readonly requireSubject?: boolean;
 }
 
 export type TokenValidationResult =
-  | Readonly<{ valid: true; subject: string; actorId: string }>
+  | Readonly<{ valid: true; subject: string; actorId?: string }>
   | Readonly<{
       valid: false;
       reason:
@@ -148,6 +149,10 @@ export class TokenValidator {
     const signatureValid = cryptoVerify("rsa-sha256", signed, key, signature);
     if (!signatureValid) {
       return { valid: false, reason: "invalid_signature" };
+    }
+
+    if (this.options.requireSubject === false) {
+      return { valid: true, subject: claims.sub };
     }
 
     const resolve =

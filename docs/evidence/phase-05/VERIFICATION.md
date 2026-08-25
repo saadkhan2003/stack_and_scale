@@ -62,7 +62,23 @@ Test totals after closure: API 54 passed (+3 gated E2E skipped in normal
 runs, 3/3 pass with KEYCLOAK_E2E=1), all other suites unchanged; lint,
 formatting, typecheck and builds clean.
 
+## Browser OIDC completion increment
+
+- `GET /api/auth/oidc/start` starts an Authorization Code + PKCE flow, issues
+  short-lived state/verifier cookies and redirects to the configured Keycloak
+  authorization endpoint.
+- `GET /api/auth/oidc/callback` rejects failed or tampered callbacks, verifies
+  the ID token before reading its claims, provisions the local user, enforces
+  MFA for privileged roles, writes the login audit event and creates the
+  server-side session.
+- `GET /api/auth/logout` revokes the local session before clearing cookies and
+  redirecting to the provider logout endpoint.
+- `test/oidc-flow.test.ts` covers the successful flow, state mismatch, token
+  exchange failure, privileged-role MFA denial/allowance and logout revocation.
+  API verification after this increment: **61 passed**, with 3 opt-in live
+  Keycloak tests skipped in the ordinary local suite.
+
 Remaining (post-closure, non-blocking): password recovery/email verification
 flows are provider-side configuration tracked for Phase 10/11 operational
-setup; OIDC start/callback browser redirect route lands with the staff
-portal phase.
+setup. Staff-facing UI routing remains part of the later staff-operations
+phase.
