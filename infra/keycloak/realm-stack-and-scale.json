@@ -9,10 +9,18 @@
   "sslRequired": "external",
   "roles": {
     "realm": [
-      { "name": "owner" },
-      { "name": "admin" },
-      { "name": "manager" },
-      { "name": "member" }
+      {
+        "name": "owner"
+      },
+      {
+        "name": "admin"
+      },
+      {
+        "name": "manager"
+      },
+      {
+        "name": "member"
+      }
     ]
   },
   "clients": [
@@ -22,22 +30,14 @@
       "publicClient": true,
       "protocol": "openid-connect",
       "standardFlowEnabled": true,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "rootUrl": "http://localhost:3000",
-      "redirectUris": [
-        "http://localhost:3000/*"
-      ],
-      "webOrigins": [
-        "http://localhost:3000"
-      ],
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
       "attributes": {
         "pkce.code.challenge.method": "S256"
       },
-      "defaultClientScopes": [
-        "profile",
-        "email",
-        "roles"
-      ]
+      "defaultClientScopes": ["basic", "profile", "email", "roles"]
     },
     {
       "clientId": "api",
@@ -53,11 +53,27 @@
   "users": [
     {
       "username": "test-user",
-      "enabled": false,
+      "enabled": true,
       "email": "test-user@example.local",
       "emailVerified": true,
       "realmRoles": ["member"],
-      "credentials": []
+      "credentials": [
+        {
+          "type": "password",
+          "value": "local-development-only",
+          "temporary": false
+        }
+      ],
+      "id": "local-e2e-member-sub",
+      "requiredActions": []
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "VERIFY_PROFILE",
+      "name": "Verify Profile",
+      "enabled": false,
+      "defaultAction": false
     }
   ]
 }

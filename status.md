@@ -37,11 +37,12 @@ Completed execution phases: 4 of 19, with Phase 05 in progress
 - Phase 02: complete and verified.
 - Phase 03: complete and verified.
 - Phase 04: complete and verified for local data/backend foundation.
-- Phase 05: near-complete via 10 parallel workstreams (see
-  `.planning/phase-05/ORCHESTRATION.md`): Keycloak infra, OIDC validation,
-  MFA policy, invitations, sessions, audit writer, rate-limit hooks,
-  security matrix, backup runbook, sign-in UI. Remaining: live E2E sign-in
-  and swapping the x-actor-id stand-in for token-backed auth.
+- Phase 05: complete for local scope via 10 parallel workstreams (see
+  `.planning/phase-05/ORCHESTRATION.md`) plus closure: live Keycloak E2E
+  sign-in verified, bearer-token auth replaces the x-actor-id stand-in
+  (dev fallback only), rate limiting applied to identity routes, audit
+  call sites wired. Docker storage migrated to a 25 GB ext4 image on the
+  Data partition (`/mnt/docker-data`).
 
 Remaining execution phases: 14 of 19 (Phase 05 nearly done)
 

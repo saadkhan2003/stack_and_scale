@@ -55,6 +55,7 @@ interface JwtClaims {
   readonly aud?: unknown;
   readonly exp?: unknown;
   readonly nbf?: unknown;
+  readonly azp?: unknown;
   readonly sub?: unknown;
 }
 
@@ -116,7 +117,10 @@ export class TokenValidator {
       return { valid: false, reason: "untrusted_issuer" };
     }
 
-    if (!audienceMatches(claims.aud, this.options.audience)) {
+    if (
+      !audienceMatches(claims.aud, this.options.audience) &&
+      claims.azp !== this.options.audience
+    ) {
       return { valid: false, reason: "invalid_audience" };
     }
 

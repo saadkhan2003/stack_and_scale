@@ -7,32 +7,30 @@ import {
   Param,
   Req,
   UnauthorizedException,
+  UseInterceptors,
 } from "@nestjs/common";
 import type { FastifyRequest } from "fastify";
 
 import { SessionService } from "./session.service.js";
-
-function actorFromRequest(request: FastifyRequest): string | undefined {
-  const header = request.headers["x-actor-id"];
-  if (Array.isArray(header)) {
-    return undefined;
-  }
-  return header;
-}
+import { ActorResolverService } from "../../auth/actor-resolver.service.js";
+import { RateLimitInterceptor } from "../../common/http/rate-limit.interceptor.js";
 
 @Controller("api/v1/sessions")
+@UseInterceptors(RateLimitInterceptor)
 export class SessionController {
   public constructor(
     @Inject(SessionService)
     private readonly sessions: SessionService,
+    @Inject(ActorResolverService)
+    private readonly actorResolver: ActorResolverService,
   ) {}
 
   @Get()
   public async listOwn(@Req() request: FastifyRequest): Promise<{
     data: unknown;
   }> {
-    const actorId = actorFromRequest(request);
-    if (actorId === undefined || actorId.trim().length === 0) {
+    const actorId = await this.actorResolver.fromRequest(request);
+    if (actorId === undefined) {
       throw new UnauthorizedException("Authentication is required.");
     }
 
@@ -44,12 +42,16 @@ export class SessionController {
     @Req() request: FastifyRequest,
     @Param("id") sessionId: string,
   ): Promise<{ revoked: boolean }> {
-    const actorId = actorFromRequest(request);
-    if (actorId === undefined || actorId.trim().length === 0) {
+    const actorId = await this.actorResolver.fromRequest(request);
+    if (actorId === undefined) {
       throw new UnauthorizedException("Authentication is required.");
     }
 
-    const revoked = await this.sessions.revokeOwn(actorId, sessionId);
+    const revoked = await this.sessions.revokeOwn(
+      actorId,
+      sessionId,
+      request.id,
+    );
     if (!revoked) {
       throw new NotFoundException("Session not found.");
     }

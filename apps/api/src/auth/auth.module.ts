@@ -2,6 +2,7 @@ import { Module, type Provider } from "@nestjs/common";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
 
+import { ActorResolverService } from "./actor-resolver.service.js";
 import {
   DatabaseSubjectResolver,
   TOKEN_VALIDATOR,
@@ -30,7 +31,8 @@ const tokenValidatorProvider: Provider = {
     PlatformDatabaseService,
     DatabaseSubjectResolver,
     tokenValidatorProvider,
+    ActorResolverService,
   ],
-  exports: [tokenValidatorProvider],
+  exports: [tokenValidatorProvider, ActorResolverService],
 })
 export class AuthModule {}

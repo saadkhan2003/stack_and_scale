@@ -8,28 +8,26 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  UseInterceptors,
 } from "@nestjs/common";
 import type { FastifyRequest } from "fastify";
 import { isStaffRole, type StaffRole } from "@stack-and-scale/contracts";
 
 import { InvitationService } from "./invitation.service.js";
-
-function actorFromRequest(request: FastifyRequest): string | undefined {
-  const header = request.headers["x-actor-id"];
-  if (Array.isArray(header)) {
-    return undefined;
-  }
-  return header;
-}
+import { ActorResolverService } from "../../auth/actor-resolver.service.js";
+import { RateLimitInterceptor } from "../../common/http/rate-limit.interceptor.js";
 
 type CreateBody = { email?: unknown; role?: unknown };
 type AcceptBody = { token?: unknown; email?: unknown };
 
 @Controller("api/v1")
+@UseInterceptors(RateLimitInterceptor)
 export class InvitationController {
   public constructor(
     @Inject(InvitationService)
     private readonly invitations: InvitationService,
+    @Inject(ActorResolverService)
+    private readonly actorResolver: ActorResolverService,
   ) {}
 
   @Post("organizations/:organizationId/invitations")
@@ -50,8 +48,9 @@ export class InvitationController {
       );
     }
 
+    const actorId = await this.actorResolver.fromRequest(request);
     const decision = await this.invitations.authorizeAction(
-      actorFromRequest(request),
+      actorId,
       organizationId,
       "member:invite",
       body.role as StaffRole,
@@ -61,7 +60,10 @@ export class InvitationController {
       this.throwDecisionError(decision.reason);
     }
 
-    const actorId = actorFromRequest(request) ?? "";
+    if (actorId === undefined) {
+      throw new UnauthorizedException("Authentication is required.");
+    }
+
     const invitation = await this.invitations.create({
       organizationId,
       email: body.email.trim().toLowerCase(),
@@ -92,16 +94,16 @@ export class InvitationController {
       );
     }
 
-    const actorId = actorFromRequest(request);
+    const acceptActorId = await this.actorResolver.fromRequest(request);
 
-    if (actorId === undefined || actorId.trim().length === 0) {
+    if (acceptActorId === undefined || acceptActorId.trim().length === 0) {
       throw new UnauthorizedException("Authentication is required.");
     }
 
     const accepted = await this.invitations.accept({
       id: invitationId,
       token: body.token,
-      actorId,
+      actorId: acceptActorId,
     });
 
     if (!accepted.accepted) {

@@ -1,11 +1,17 @@
 import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import {
+  randomBytes,
+  createHash,
+  timingSafeEqual,
+  randomUUID,
+} from "node:crypto";
 import {
   authorize,
   isStaffRole,
   type Permission,
   type StaffRole,
 } from "@stack-and-scale/contracts";
+import { recordIdentityAuditEvent } from "@stack-and-scale/database";
 
 import { PlatformDatabaseService } from "../../platform-database.service.js";
 
@@ -166,6 +172,15 @@ export class InvitationService {
       ],
     );
 
+    await recordIdentityAuditEvent(this.database, {
+      id: randomUUID(),
+      eventName: "invitation_created",
+      correlationId: input.organizationId,
+      organizationId: input.organizationId,
+      actorId: input.invitedBy,
+      metadata: { invitationId: id, role: input.role },
+    });
+
     return {
       id,
       email: input.email,
@@ -231,6 +246,15 @@ export class InvitationService {
         null,
       ],
     );
+
+    await recordIdentityAuditEvent(this.database, {
+      id: randomUUID(),
+      eventName: "invitation_accepted",
+      correlationId: row.id,
+      organizationId: row.organization_id,
+      actorId: input.actorId,
+      metadata: { invitationId: row.id, role: row.role },
+    });
 
     return {
       accepted: true,

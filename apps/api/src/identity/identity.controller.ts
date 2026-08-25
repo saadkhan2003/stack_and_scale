@@ -12,6 +12,7 @@ import type { FastifyRequest } from "fastify";
 import { TenantAccessService } from "./tenant-access.service.js";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import type { CorrelatedRequest } from "../common/http/correlated-request.js";
+import { ActorResolverService } from "../auth/actor-resolver.service.js";
 
 type MemberRow = {
   user_id: string;
@@ -20,14 +21,6 @@ type MemberRow = {
   accepted_at: Date | null;
 };
 
-function actorFromRequest(request: FastifyRequest): string | undefined {
-  const header = request.headers["x-actor-id"];
-  if (Array.isArray(header)) {
-    return undefined;
-  }
-  return header;
-}
-
 @Controller("api/v1/organizations")
 export class IdentityController {
   public constructor(
@@ -35,6 +28,8 @@ export class IdentityController {
     private readonly tenantAccess: TenantAccessService,
     @Inject(PlatformDatabaseService)
     private readonly database: PlatformDatabaseService,
+    @Inject(ActorResolverService)
+    private readonly actorResolver: ActorResolverService,
   ) {}
 
   @Get(":organizationId/members")
@@ -43,8 +38,9 @@ export class IdentityController {
     @Param("organizationId") organizationId: string,
   ): Promise<{ data: unknown }> {
     const correlationId = (request as CorrelatedRequest).correlationId ?? "";
+    const actorId = await this.actorResolver.fromRequest(request);
     const decision = await this.tenantAccess.resolve(
-      actorFromRequest(request),
+      actorId,
       organizationId,
       "member:read",
       correlationId,

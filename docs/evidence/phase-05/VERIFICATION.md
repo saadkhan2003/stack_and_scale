@@ -38,15 +38,31 @@ Date: 2026-08-25 (second increment, executed via 10 parallel workstreams)
 - SessionModule and InvitationModule register ApiExceptionFilter for
   standalone safe error envelopes.
 
-## Remaining for full Phase 05 closure
+## Closure increment (same day)
 
-1. Boot Keycloak from compose and run a live end-to-end sign-in against the
-   OIDC validator (set `STACK_AND_SCALE_OIDC_ISSUER`).
-2. Replace the `x-actor-id` development stand-in on protected routes with
-   TokenValidator-backed authentication.
-3. Apply RateLimitInterceptor to auth routes once the OIDC start/callback
-   routes exist.
-4. Wire audit events into invitation/session/login flows (writer exists,
-   call sites pending).
-5. Password recovery/email verification flows (provider-side configuration +
-   runbook steps).
+1. **Live Keycloak E2E sign-in**: `apps/api/test/keycloak-live-signin.e2e.test.ts`
+   (run with `KEYCLOAK_E2E=1`) proves a real Keycloak-issued bearer token
+   authenticates on protected routes, tampered tokens are rejected, and the
+   `x-actor-id` development header is refused when OIDC mode is enforced.
+   Realm fixes required: `basic` default client scope restored (provides the
+   `sub` claim), direct access grants + enabled E2E user for token issuance.
+2. **Token-backed auth**: `ActorResolverService` accepts Bearer tokens via
+   TokenValidator; the `x-actor-id` header remains only as an explicit
+   development fallback, disabled when `NODE_ENV=production` or
+   `STACK_AND_SCALE_DEV_ACTOR_HEADER=false`. All identity controllers now
+   resolve actors through it.
+3. **Rate limiting applied**: `RateLimitInterceptor` attached to session and
+   invitation controllers.
+4. **Audit call sites wired**: invitation created/accepted and session
+   revoked now persist `identity.*` audit events through the Phase 05 writer.
+5. Validator hardening: tokens without an `aud` claim fall back to matching
+   the `azp` authorized party.
+
+Test totals after closure: API 54 passed (+3 gated E2E skipped in normal
+runs, 3/3 pass with KEYCLOAK_E2E=1), all other suites unchanged; lint,
+formatting, typecheck and builds clean.
+
+Remaining (post-closure, non-blocking): password recovery/email verification
+flows are provider-side configuration tracked for Phase 10/11 operational
+setup; OIDC start/callback browser redirect route lands with the staff
+portal phase.

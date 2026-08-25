@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
+import { recordIdentityAuditEvent } from "@stack-and-scale/database";
 import { PlatformDatabaseService } from "../../platform-database.service.js";
 
 export const SESSION_IDLE_EXPIRY_MS = 12 * 60 * 60 * 1000;
@@ -49,7 +50,11 @@ export class SessionService {
     }));
   }
 
-  public async revokeOwn(actorId: string, sessionId: string): Promise<boolean> {
+  public async revokeOwn(
+    actorId: string,
+    sessionId: string,
+    correlationId?: string,
+  ): Promise<boolean> {
     const result = await this.database.query(
       `UPDATE identity.sessions
           SET status = 'revoked', revoked_at = now()
@@ -61,6 +66,18 @@ export class SessionService {
       [sessionId, actorId],
     );
 
-    return result.rows.length > 0;
+    if (result.rows.length === 0) {
+      return false;
+    }
+
+    await recordIdentityAuditEvent(this.database, {
+      id: crypto.randomUUID(),
+      eventName: "session_revoked",
+      correlationId: correlationId ?? crypto.randomUUID(),
+      actorId,
+      metadata: { sessionId },
+    });
+
+    return true;
   }
 }

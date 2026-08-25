@@ -15,6 +15,10 @@ import {
     },
     RateLimitInterceptor,
   ],
-  exports: [SlidingWindowRateLimitStore, RateLimitInterceptor],
+  exports: [
+    SlidingWindowRateLimitStore,
+    { provide: RATE_LIMIT_STORE, useExisting: SlidingWindowRateLimitStore },
+    RateLimitInterceptor,
+  ],
 })
 export class RateLimitModule {}
