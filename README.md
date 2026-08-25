@@ -13,7 +13,10 @@ Before local development, run `source scripts/development-environment.sh` to kee
 
 ## Current phase
 
-Phase 01 is building repository foundations only. No business features, production infrastructure, provider accounts, or production credentials belong in this repository yet.
+Phases 00-06 are complete (program foundation through CMS platform). See
+[status.md](./status.md) for the authoritative handoff state. No production
+infrastructure, provider accounts, or production credentials belong in this
+repository yet.
 
 ## Database package
 
