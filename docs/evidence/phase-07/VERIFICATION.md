@@ -10,13 +10,14 @@ Run from the repository root on 2026-08-25:
 - `pnpm --filter @stack-and-scale/web build` — PASS
 - `pnpm --filter @stack-and-scale/cms lint` — PASS
 - `pnpm --filter @stack-and-scale/cms build` — PASS
+- `pnpm --filter @stack-and-scale/web test:e2e` — PASS (3 Chromium browser journeys)
 
 ## Runtime checks
 
-The production web server returned `200` for the homepage and representative
-catalog, detail, services, industries, work, resources, company, contact and
-privacy routes. An unknown page renders the not-found experience. The preview
-endpoint returns `401` when called without its secret.
+The Chromium suite verifies the homepage CTAs, catalog/service/industry/work/
+resource/company/contact routes, accessible product search, mobile menu and
+not-found state. The preview endpoint returns `401` when called without its
+secret.
 
 ## Scope and release caveats
 
@@ -24,9 +25,9 @@ endpoint returns `401` when called without its secret.
   clearly labelled demonstration fallbacks when no published record exists.
 - Product filters, reduced-motion rules, keyboard-visible focus styles and
   responsive layouts are implemented.
-- Browser Use could not launch a Chrome CDP session in this local environment,
-  so this file does not claim a fresh visual-browser, automated accessibility,
-  poor-network or performance-trace pass.
+- The Browser Use CDP connector could not launch its own Chrome session, but
+  the repository's Playwright Chromium suite passed. This file does not claim
+  an automated accessibility scan, poor-network simulation or performance trace.
 - The Phase 00 content inventory records the asset-driven case-study deferral.
 - The privacy/cookie text is explicitly demonstration-only. Production release
   remains blocked until the company owner and legal reviewer supply and approve
