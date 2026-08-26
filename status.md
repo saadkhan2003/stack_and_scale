@@ -82,6 +82,8 @@ requires a configured Identity/Keycloak membership in `CRM_ORGANIZATION_ID`.
 - `docs/operations/transactional-email.md`
 - `docs/evidence/phase-10/VERIFICATION.md`
 - `docs/operations/PHASE-10-DELIVERY.md`
+- `docs/decisions/ADR-PHASE-10-SINGLE-SERVER-TOPOLOGY.md` — current
+  cost-first one-server decision and the exact two-server restoration guide.
 
 ## Workspace notes
 
