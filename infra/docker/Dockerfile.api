@@ -6,7 +6,9 @@ COPY apps/api/package.json apps/api/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/database/package.json packages/database/package.json
-RUN pnpm install --frozen-lockfile
+# Restore only the API and its workspace dependency closure, not CMS/browser
+# tooling that is irrelevant to this image.
+RUN pnpm --filter @stack-and-scale/api... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/api build
 

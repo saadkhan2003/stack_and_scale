@@ -43,7 +43,9 @@ ssh "${remote}" "${compose} run --rm api node packages/database/dist/src/migrate
 ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak"
 ssh "${remote}" "for attempt in \$(seq 1 12); do ${compose} exec -T api node -e \"fetch('http://127.0.0.1:3100/ready').then(r => process.exit(r.ok ? 0 : 1))\" && break; test \$attempt -eq 12 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1))\""
+ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/api/demo-slots').then(r => process.exit(r.ok ? 0 : 1))\""
 ssh "${remote}" "docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-keycloak-1 | grep -qx healthy"
-ssh "${remote}" "mkdir -p ${remote_root}/deployments && printf '%s\\n' '{\"environment\":\"${environment}\",\"imageTag\":\"${image_tag}\"}' | tee ${remote_root}/deployments/${image_tag}.json > ${remote_root}/deployments/current.json"
+schema_version="$(ssh "${remote}" "${compose} exec -T api node -e \"const fs=require('fs'); const files=fs.readdirSync('packages/database/migrations').filter(f=>/^[0-9]+.*\\.sql$/.test(f)).sort(); process.stdout.write(files.at(-1) || 'unknown')\"" || true)"
+ssh "${remote}" "mkdir -p ${remote_root}/deployments && printf '%s\\n' '{\"environment\":\"${environment}\",\"imageTag\":\"${image_tag}\",\"schemaVersion\":\"${schema_version:-unknown}\"}' | tee ${remote_root}/deployments/${image_tag}.json > ${remote_root}/deployments/current.json"
 trap - ERR
 echo "Promotion completed: ${environment} ${image_tag}"

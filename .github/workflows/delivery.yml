@@ -63,6 +63,8 @@ jobs:
           file: infra/docker/Dockerfile.web
           push: true
           tags: ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER=${{ vars.NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER }}
       - uses: docker/build-push-action@v6
         with:
           context: .

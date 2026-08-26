@@ -9,8 +9,10 @@ export function CmsPageLivePreview({ initialPage }: Readonly<{ initialPage: CmsD
   const [page, setPage] = useState(initialPage);
 
   useEffect(() => {
-    const serverURL = process.env["NEXT_PUBLIC_CMS_PUBLIC_URL"] ?? "http://127.0.0.1:3200";
-    const cmsOrigin = new URL(serverURL).origin;
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const cmsOrigin = isLocal
+      ? "http://127.0.0.1:3200"
+      : `${window.location.protocol}//cms.${window.location.host}`;
     const onMessage = (event: MessageEvent<unknown>) => {
       if (event.origin !== cmsOrigin || event.data === null || typeof event.data !== "object") return;
       const payload = event.data as { type?: unknown; data?: unknown };

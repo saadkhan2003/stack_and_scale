@@ -17,8 +17,17 @@
 - Production and database Compose files, plus Caddy configuration, parse with
   non-secret placeholder configuration.
 - Script syntax and refusal paths pass without cloud credentials.
-- The browser target is currently not running locally, so browser evidence of
-  the deployed edge cannot be recorded until a staging URL exists.
+- Staging destruction and drift helpers have explicit confirmation/exit paths;
+  their provider execution is intentionally pending protected state and token.
+- Headed in-app browser verification passed for `http://127.0.0.1:3000/` and
+  `/contact`: page titles and public content render, and the contact form,
+  consent acknowledgement and intent choices are visible. This does not prove
+  the future Caddy/Cloudflare edge; that requires a staging URL.
+- With the local API started against local PostgreSQL, `GET /health`, `GET
+  /ready` (application/database/migrations/outbox/privacy all `up`) and the
+  web proxy `GET /api/demo-slots` returned successful contracts. The headed
+  browser client blocks direct JSON `/api/*` navigation, so this last check is
+  recorded from the server request rather than a browser rendering.
 
 ## External evidence required before marking production complete
 

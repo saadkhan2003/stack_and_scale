@@ -3,7 +3,8 @@ WORKDIR /workspace
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/cms/package.json apps/cms/package.json
-RUN pnpm install --frozen-lockfile
+# Restore only CMS dependencies; do not fetch the application test toolchain.
+RUN pnpm --filter @stack-and-scale/cms... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/cms build
 

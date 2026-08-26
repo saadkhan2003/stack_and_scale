@@ -1,12 +1,15 @@
 FROM node:24.18.0-bookworm-slim AS build
 WORKDIR /workspace
 RUN corepack enable
+ARG NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER=""
+ENV NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER=${NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER}
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/database/package.json packages/database/package.json
-RUN pnpm install --frozen-lockfile
+# Restore only web dependencies; API/CMS tooling is not part of this image.
+RUN pnpm --filter @stack-and-scale/web... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/web build
 

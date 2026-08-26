@@ -15,7 +15,8 @@ Build images once from a commit SHA. Promote the same SHA to staging and then
 production; never rebuild a tag during promotion. `scripts/deploy-promote.sh`
 requires the target, immutable tag, remote target and explicit production
 confirmation. It pulls the exact image, runs forward-only migrations, starts
-services, performs health checks and writes a deployment record.
+services, performs health checks and writes a deployment record containing the
+image SHA and discovered schema version.
 
 Use `scripts/deploy-rollback.sh <environment> <previous-sha>` only after
 checking the previous image is retained and the current schema remains
@@ -36,6 +37,12 @@ reviewed plan plus `CONFIRM_INFRA_APPLY=<environment>`. A provider account,
 real domain/Cloudflare zone, SSH key name, operator CIDR and protected backup
 location are user-owned prerequisites; no script creates them implicitly.
 
+Run `scripts/tofu-drift.sh production` at least weekly and before every
+production apply. An exit code of `2` means drift was found and must be
+reviewed before any apply. Staging is explicitly disposable: after its
+evidence is exported, use `CONFIRM_STAGING_DESTROY=staging
+scripts/tofu-destroy-staging.sh`. Never use the destroy helper for production.
+
 After the infrastructure apply, the secret custodian creates untracked
 `.env.database.production` and `.env.production` files from the examples.
 Bootstrap the private database node with `scripts/bootstrap-database.sh`, then
@@ -52,6 +59,12 @@ the Hetzner private network and its host firewall. Production values live in an
 untracked `.env.production` based on `.env.production.example`; never bake
 them into images.
 
+The web image is promotion-safe across environments: `SITE_URL` is resolved
+server-side at runtime and CMS live-preview derives `cms.<current-domain>` in
+the browser. The WhatsApp business number is public, is intentionally supplied
+as a protected GitHub *variable* at image build time, and must never be an API
+secret.
+
 The production Keycloak realm is imported once from
 `infra/keycloak/realm-stack-and-scale.production.json.tmpl`; it deliberately
 contains neither local Mailpit SMTP settings nor test users. Configure the
@@ -66,6 +79,11 @@ promotion script logs the host into the container registry with that token,
 retries readiness, and restores the previous image on a failed gate. This
 rollback is permitted only because migrations are forward-only and must remain
 backward-compatible.
+
+Keep the current plus two previous immutable image tags in GHCR. Set GitHub
+Actions artifact retention to 14 days and set provider budget alerts at 50%,
+75%, 90% and 100% of USD 50. Staging is created only for a release rehearsal
+and destroyed immediately afterward; Cloudflare remains on its Free plan.
 
 Before production apply, select and document an independently credentialed,
 geographically separate encrypted backup target. Verify that primary Hetzner

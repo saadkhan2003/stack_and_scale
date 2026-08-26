@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 
 import { getPublishedBySlug } from "./cms-content";
 
-export const siteUrl = new URL(process.env["NEXT_PUBLIC_SITE_URL"] ?? "http://127.0.0.1:3100");
+// Keep this server-only so a single immutable image can adopt the target
+// environment's public origin at runtime instead of baking localhost/one env.
+export const siteUrl = new URL(process.env["SITE_URL"] ?? "http://127.0.0.1:3100");
 
 export function metadataForPath(path: string, title: string, description: string): Metadata {
   return { title, description, alternates: { canonical: path }, openGraph: { title, description, type: "website", url: path } };

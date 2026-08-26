@@ -2,6 +2,7 @@
 set -euo pipefail
 
 environment="${1:?usage: scripts/tofu-plan.sh <staging|production>}"
+shift || true
 directory="infra/tofu/environments/${environment}"
 
 if [[ ! -f "${directory}/backend.hcl" ]]; then
@@ -14,4 +15,4 @@ if [[ ! -f "infra/tofu/${environment}.tfvars" || -z "${HCLOUD_TOKEN:-}" ]]; then
 fi
 
 tofu -chdir="${directory}" init -backend-config=backend.hcl
-tofu -chdir="${directory}" plan -var-file="../../${environment}.tfvars"
+tofu -chdir="${directory}" plan -var-file="../../${environment}.tfvars" "$@"

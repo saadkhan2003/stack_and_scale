@@ -6,7 +6,8 @@ COPY apps/workers/package.json apps/workers/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/contracts/package.json packages/contracts/package.json
 COPY packages/database/package.json packages/database/package.json
-RUN pnpm install --frozen-lockfile
+# Restore only the worker and its workspace dependency closure.
+RUN pnpm --filter @stack-and-scale/workers... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/workers build
 
