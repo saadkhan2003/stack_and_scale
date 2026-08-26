@@ -22,6 +22,19 @@ function stringValue(item: UnknownRecord, key: string): string | null {
   return typeof item[key] === "string" ? item[key] : null;
 }
 
+export type FaqEntry = Readonly<{ question: string; answer: string }>;
+
+export function pageFaqs(document: CmsDocument): readonly FaqEntry[] {
+  return entries(document.layout).flatMap((block) => {
+    if (stringValue(block, "blockType") !== "faqBlock") return [];
+    return [...entries(block.faqs), ...entries(block.items)].flatMap((item) => {
+      const question = stringValue(item, "question");
+      const answer = stringValue(item, "answer");
+      return question && answer ? [{ question, answer }] : [];
+    });
+  });
+}
+
 function relatedDocuments(value: unknown): readonly CmsDocument[] {
   return entries(value).filter((item): item is CmsDocument => typeof item.id === "string" || typeof item.id === "number");
 }
@@ -61,6 +74,7 @@ export function CmsPageBlocks({ document }: Readonly<{ document: CmsDocument }>)
     if (type === "featureGroup") return <section className="cms-feature-group" key={index}><h2>{stringValue(block, "heading")}</h2><div>{entries(block.items).map((item, itemIndex) => <article key={itemIndex}><h3>{stringValue(item, "title")}</h3><p>{stringValue(item, "description")}</p></article>)}</div></section>;
     if (type === "process") return <section className="cms-process" key={index}><h2>{stringValue(block, "heading")}</h2><ol>{entries(block.steps).map((step, stepIndex) => <li key={stepIndex}><strong>{stringValue(step, "title")}</strong><p>{stringValue(step, "description")}</p></li>)}</ol></section>;
     if (type === "cta") return <section className="cms-cta" key={index}><h2>{stringValue(block, "heading")}</h2><p>{stringValue(block, "body")}</p><a className="button button-primary" href={stringValue(block, "buttonUrl") ?? "/contact"}>{stringValue(block, "buttonLabel") ?? "Contact us"}</a></section>;
+    if (type === "faqBlock") { const faqs = [...entries(block.faqs), ...entries(block.items)].flatMap((item) => { const question = stringValue(item, "question"); const answer = stringValue(item, "answer"); return question && answer ? [{ question, answer }] : []; }); return faqs.length > 0 ? <section className="cms-faq" key={index}><h2>{stringValue(block, "heading") ?? "Frequently asked questions"}</h2>{faqs.map((faq) => <details key={faq.question}><summary>{faq.question}</summary><p>{faq.answer}</p></details>)}</section> : null; }
     if (type === "richText") return <section className="cms-rich-text" key={index}><p>{text(block.content)}</p></section>;
     return null;
   })}</div>;

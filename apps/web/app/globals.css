@@ -547,6 +547,9 @@ h1 {
 .cms-feature-group article, .cms-process li { border-top: 1px solid var(--line); padding-top: 1rem; }
 .cms-feature-group p, .cms-process p { color: var(--muted); line-height: 1.6; }
 .cms-process ol { display: grid; gap: 1rem; grid-template-columns: repeat(3, 1fr); list-style-position: inside; padding: 0; }
+.cms-faq details { border-top: 1px solid var(--line); padding: 1rem 0; }
+.cms-faq summary { cursor: pointer; font-family: var(--display); font-size: 1.25rem; }
+.cms-faq p { color: var(--muted); line-height: 1.7; margin: .8rem 0 0; }
 .narrative { max-width: 900px; padding-bottom: 7rem; padding-top: 6rem; }
 .narrative p, .contact-options p, .legal-page p { color: var(--muted); font-size: 1.05rem; line-height: 1.8; max-width: 720px; }
 .narrative .button { margin-top: 1rem; }

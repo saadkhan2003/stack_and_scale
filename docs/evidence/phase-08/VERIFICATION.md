@@ -9,6 +9,8 @@
 - `robots.txt` excludes admin, sign-in, maintenance and API paths.
 - Organization and published Product, Service, Article and work JSON-LD are
   emitted without fabricated locations, offers or customer proof.
+- CMS FAQ blocks render with native disclosure controls and emit FAQPage schema
+  only when complete question/answer data exists.
 - CMS-indexed command search covers published products, services, work and
   resources and has a no-result state and keyboard-close behavior.
 - Consent defaults to no analytics. The optional adapter only calls a configured
