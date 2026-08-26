@@ -61,3 +61,14 @@ test("command search and consent controls are keyboard-accessible", async ({ pag
   await page.getByRole("button", { name: "Decline" }).click();
   await expect(page.getByRole("complementary", { name: "Analytics preference" })).toBeHidden();
 });
+
+test("lead form exposes consent and progressive demo booking controls", async ({ page }) => {
+  await page.goto("/contact");
+  await expect(page.getByLabel("Name")).toBeVisible();
+  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: /i agree that stack/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Privacy details" })).toBeVisible();
+  await page.getByLabel("How can we help?").selectOption("demo");
+  await expect(page.getByRole("group", { name: /book a product demo/i })).toBeVisible();
+  await expect(page.getByLabel("Alternative time or notes")).toBeVisible();
+});
