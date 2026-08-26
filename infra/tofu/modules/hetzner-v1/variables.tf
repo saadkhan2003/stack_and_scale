@@ -10,3 +10,5 @@ variable "network_ip_range" { type = string }
 variable "subnet_ip_range" { type = string }
 variable "app_private_ip" { type = string }
 variable "database_private_ip" { type = string }
+variable "edge_source_cidrs" { type = set(string) }
+variable "app_primary_ip_delete_protection" { type = bool }

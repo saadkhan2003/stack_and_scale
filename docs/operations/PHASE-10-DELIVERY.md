@@ -49,7 +49,8 @@ Bootstrap the private database node with `scripts/bootstrap-database.sh`, then
 run the delivery workflow. Only `infra/` is synchronized; secret files never
 move through CI. The database bootstrap transfers its own secret file only
 over the secret custodian's encrypted SSH session; it must be run from that
-custodian's managed workstation, not a shared developer environment.
+custodian's managed workstation, not a shared developer environment. Database
+SSH is private-only and the bootstrap script uses the app node as its bastion.
 
 ## Edge, secrets and backups
 
@@ -58,6 +59,12 @@ CMS, API and identity routes share Caddy; the database is reachable only over
 the Hetzner private network and its host firewall. Production values live in an
 untracked `.env.production` based on `.env.production.example`; never bake
 them into images.
+
+The IaC reserves a stable, delete-protected production app IPv4 for DNS. It
+requires current official Cloudflare CIDRs in `edge_source_cidrs` before apply,
+so ports 80/443 never accept arbitrary direct Internet traffic. The database
+has a public IPv4 solely for outbound bootstrap/image egress; its firewall has
+no public inbound rule, including no direct SSH.
 
 The web image is promotion-safe across environments: `SITE_URL` is resolved
 server-side at runtime and CMS live-preview derives `cms.<current-domain>` in

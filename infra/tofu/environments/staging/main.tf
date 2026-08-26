@@ -14,6 +14,8 @@ module "v1" {
   subnet_ip_range      = var.subnet_ip_range
   app_private_ip       = var.app_private_ip
   database_private_ip  = var.database_private_ip
+  edge_source_cidrs    = var.edge_source_cidrs
+  app_primary_ip_delete_protection = false
 }
 
 variable "location" { type = string }
@@ -25,3 +27,4 @@ variable "network_ip_range" { type = string }
 variable "subnet_ip_range" { type = string }
 variable "app_private_ip" { type = string }
 variable "database_private_ip" { type = string }
+variable "edge_source_cidrs" { type = set(string) }

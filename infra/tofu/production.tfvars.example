@@ -7,3 +7,5 @@ network_ip_range     = "10.49.0.0/16"
 subnet_ip_range      = "10.49.1.0/24"
 app_private_ip       = "10.49.1.10"
 database_private_ip  = "10.49.1.20"
+# Copy the current official Cloudflare IP ranges here before plan/apply.
+edge_source_cidrs    = ["REPLACE_WITH_CURRENT_CLOUDFLARE_CIDR"]
