@@ -39,6 +39,7 @@ describe("GET /openapi.json", () => {
       "/health",
       "/leads",
       "/leads/{leadId}/bookings",
+      "/leads/{leadId}/whatsapp-handoffs",
       "/privacy-requests",
       "/ready",
       "/version",

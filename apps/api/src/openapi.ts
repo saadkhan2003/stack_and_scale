@@ -64,5 +64,8 @@ export const openApiDocument = {
     "/leads/{leadId}/bookings": {
       post: { summary: "Confirm a demo slot or request an alternate time", responses: { "201": { description: "Booking recorded" }, "400": { description: "Booking validation failed" }, "409": { description: "Slot already booked" } } },
     },
+    "/leads/{leadId}/whatsapp-handoffs": {
+      post: { summary: "Record an attributed WhatsApp handoff", responses: { "204": { description: "Handoff recorded" } } },
+    },
   },
 } as const;

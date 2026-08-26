@@ -66,4 +66,9 @@ export class LeadService {
     const startsAt = returnedStart instanceof Date ? returnedStart.toISOString() : typeof returnedStart === "string" ? returnedStart : input.startsAt;
     return { id: bookingId, status: "confirmed", ...(startsAt ? { startsAt } : {}) };
   }
+
+  public async recordWhatsappHandoff(leadId: string, correlationId: string): Promise<void> {
+    await this.database.query("INSERT INTO platform.lead_activities (id, lead_id, type, metadata) VALUES ($1, $2, 'whatsapp.handoff', '{}'::jsonb)", [`activity_${randomUUID()}`, leadId]);
+    await this.database.query("INSERT INTO platform.outbox_events (id, event_type, correlation_id, payload) VALUES ($1, 'crm.whatsapp.handoff', $2, jsonb_build_object('leadId', $3::text))", [`event_${randomUUID()}`, correlationId, leadId]);
+  }
 }

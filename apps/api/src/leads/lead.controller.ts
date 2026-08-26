@@ -23,6 +23,12 @@ export class LeadController {
     const alternateRequest = typeof body.alternateRequest === "string" && body.alternateRequest.trim().length > 0 ? body.alternateRequest.trim().slice(0, 500) : undefined;
     try { return await this.leads.book(leadId, { ...(startsAt ? { startsAt } : {}), timezone: body.timezone, ...(alternateRequest ? { alternateRequest } : {}), correlationId: correlationId ?? leadId }); } catch (error) { if (isUniqueViolation(error)) throw new ConflictException("That demo time is no longer available."); throw new InternalServerErrorException("Booking could not be recorded."); }
   }
+
+  @Post(":leadId/whatsapp-handoffs")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async recordWhatsappHandoff(@Param("leadId") leadId: string, @Headers("x-correlation-id") correlationId: string | undefined) {
+    await this.leads.recordWhatsappHandoff(leadId, correlationId ?? leadId);
+  }
 }
 
 function isTimezone(value: string): boolean { try { new Intl.DateTimeFormat("en", { timeZone: value }); return true; } catch { return false; } }
