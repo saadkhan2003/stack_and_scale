@@ -6,6 +6,8 @@ export type PublicEntry = Readonly<{
   title: string;
   summary: string;
   label: string;
+  publishedAt?: string;
+  readingMinutes?: number;
 }>;
 
 const demoContent: Record<string, readonly PublicEntry[]> = {
@@ -41,12 +43,18 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
 };
 
 function asPublicEntry(document: CmsDocument, collection: string): PublicEntry {
+  const body = document["body"];
+  const bodyText = body === undefined ? "" : JSON.stringify(body);
+  const readingMinutes = collection === "resources" && bodyText.length > 0 ? Math.max(1, Math.ceil(bodyText.split(/\s+/).length / 220)) : undefined;
+  const publishedAt = typeof document["publishedAt"] === "string" ? document["publishedAt"] : undefined;
   return {
     id: String(document.id),
     slug: document.slug ?? String(document.id),
     title: document.title ?? document.tagline ?? "Untitled entry",
     summary: document.summary ?? document.seo?.metaDescription ?? "More details are coming soon.",
-    label: collection.slice(0, -1),
+    label: typeof document["type"] === "string" ? document["type"] : collection.slice(0, -1),
+    ...(publishedAt ? { publishedAt } : {}),
+    ...(readingMinutes ? { readingMinutes } : {}),
   };
 }
 

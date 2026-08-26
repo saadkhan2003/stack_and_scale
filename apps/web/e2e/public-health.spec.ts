@@ -48,3 +48,16 @@ test("mobile navigation and not-found state remain usable", async ({ page }) => 
   await page.goto("/page-that-does-not-exist");
   await expect(page.getByRole("heading", { name: "That page is not here." })).toBeVisible();
 });
+
+test("command search and consent controls are keyboard-accessible", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /search ctrl k/i }).click();
+  const dialog = page.getByRole("dialog", { name: "Public site search" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("searchbox").fill("retail");
+  await expect(dialog.getByText("Retail operations", { exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Decline" }).click();
+  await expect(page.getByRole("complementary", { name: "Analytics preference" })).toBeHidden();
+});

@@ -1,6 +1,9 @@
 import { homepageModel } from "../src/homepage-content";
+import { metadataForPath } from "../src/seo";
 import { SiteFooter } from "../src/site-footer";
 import { SiteHeader } from "../src/site-header";
+
+export const metadata = metadataForPath("/", "Software for real operations", "Purposeful products, services and delivery partnership for clearer operations.");
 
 export default function HomePage() {
   return (

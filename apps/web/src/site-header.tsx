@@ -1,10 +1,13 @@
 import { primaryNavigation } from "./navigation";
+import { getPublicSearchIndex } from "./public-search";
+import { SearchDialog } from "./search-dialog";
 
 type SiteHeaderProps = {
   currentPath?: string;
 };
 
-export function SiteHeader({ currentPath }: SiteHeaderProps) {
+export async function SiteHeader({ currentPath }: SiteHeaderProps) {
+  const searchEntries = await getPublicSearchIndex();
   return (
     <header className="site-header">
       <a className="brand" href="/" aria-label="Stack & Scale home">
@@ -38,6 +41,7 @@ export function SiteHeader({ currentPath }: SiteHeaderProps) {
           ))}
         </nav>
       </details>
+      <SearchDialog entries={searchEntries} />
       <a className="header-cta" href="/#contact">
         Book a demo <span aria-hidden="true">↗</span>
       </a>

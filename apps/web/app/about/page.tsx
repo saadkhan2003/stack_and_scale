@@ -1,3 +1,5 @@
 import { SiteFooter } from "../../src/site-footer";
 import { SiteHeader } from "../../src/site-header";
+import { metadataForPath } from "../../src/seo";
+export const metadata = metadataForPath("/about", "About", "How Stack & Scale turns operational problems into dependable systems.");
 export default function AboutPage() { return <main className="site-shell"><SiteHeader currentPath="/about" /><section className="page-hero"><p className="eyebrow">About Stack &amp; Scale</p><h1>Software should reduce uncertainty, not add to it.</h1><p>We partner with ambitious teams to turn messy operational problems into dependable systems.</p></section><section className="narrative"><h2>Clear thinking, close to the work.</h2><p>Our approach brings product strategy, interface design and engineering into one accountable delivery practice. We make room for the constraints that matter: people, time, existing tools and the decisions that keep operations moving.</p><a className="button button-primary" href="/contact">Start a conversation <span aria-hidden="true">→</span></a></section><SiteFooter /></main>; }
