@@ -21,9 +21,16 @@ Run from the repository root on 2026-08-26:
 - `pnpm --filter @stack-and-scale/web test` — PASS (12 tests)
 - `pnpm --filter @stack-and-scale/web build` — PASS
 - `pnpm --filter @stack-and-scale/web test:e2e` — PASS (4 Chromium journeys)
+- Redirect-target validation — PASS (relative, HTTPS and linked CMS-page
+  targets accepted; HTTP, JavaScript and incomplete targets rejected)
 
 The production server was also checked for canonical `/products`, `robots.txt`
 and `sitemap.xml` output.
+
+CMS redirects are resolved by the Next 16 proxy with an 800ms CMS timeout and
+fall through to the requested route if the CMS is unavailable. The initial
+Pakistan/international intent map is recorded in `docs/seo/INTENT-MAP.md`; it
+explicitly forbids doorway and unverified location content.
 
 ## External release work still required
 
