@@ -1,0 +1,57 @@
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+{$PUBLIC_DOMAIN} {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+	encode zstd gzip
+	request_body {
+		max_size 2MB
+	}
+	reverse_proxy web:3000
+}
+
+cms.{$PUBLIC_DOMAIN} {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	encode zstd gzip
+	request_body {
+		max_size 32MB
+	}
+	reverse_proxy cms:3200
+}
+
+api.{$PUBLIC_DOMAIN} {
+	header {
+		Cache-Control "no-store"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	request_body {
+		max_size 2MB
+	}
+	reverse_proxy api:3100
+}
+
+identity.{$PUBLIC_DOMAIN} {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	reverse_proxy keycloak:8080
+}

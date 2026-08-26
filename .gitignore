@@ -21,3 +21,9 @@ test-results/
 *.agekey
 secrets/
 !.keep
+infra/tofu/**/.terraform/
+infra/tofu/**/*.tfstate
+infra/tofu/**/*.tfstate.*
+infra/tofu/**/backend.hcl
+infra/tofu/*.tfvars
+!infra/tofu/*.tfvars.example

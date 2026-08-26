@@ -1,0 +1,18 @@
+FROM node:24.18.0-bookworm-slim AS build
+WORKDIR /workspace
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/cms/package.json apps/cms/package.json
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm --filter @stack-and-scale/cms build
+
+FROM node:24.18.0-bookworm-slim AS runtime
+WORKDIR /workspace
+ENV NODE_ENV=production
+RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
+COPY --from=build --chown=app:app /workspace /workspace
+USER app
+EXPOSE 3200
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD node -e "fetch('http://127.0.0.1:3200/admin').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "node_modules/next/dist/bin/next", "start", "-H", "0.0.0.0", "-p", "3200"]

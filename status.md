@@ -6,7 +6,7 @@ This is the cold-start handoff. Read it before changing implementation.
 
 ## Current position
 
-Phases 00–09 are implemented locally. Their production and external release
+Phases 00–10 are implemented locally. Their production and external release
 gates are intentionally not represented as complete.
 
 Latest Phase 09 commits:
@@ -16,7 +16,7 @@ Latest Phase 09 commits:
 - `e1558be` — browser coverage for the lead/demo form
 - `31c60c2` — explicit Playwright test runner dependency
 
-## Phase audit: 00–09
+## Phase audit: 00–10
 
 | Phase | Status | Still remaining |
 | --- | --- | --- |
@@ -30,6 +30,7 @@ Latest Phase 09 commits:
 | 07 | Local complete | Production legal/privacy wording, real data practices, processors, retention details and real production-performance verification remain launch blockers. |
 | 08 | Local complete | Configure production URL, Search Console ownership, sitemap submission, index monitoring, analytics processor/retention and approved legal wording. |
 | 09 | Local complete | Configure production CRM organization/memberships, demo slots, transactional email and DNS; then verify live staff OIDC access and real email delivery. |
+| 10 | Local implementation complete | Apply reviewed IaC with independently stored state, configure domain/Cloudflare and protected CI secrets, bootstrap private database, verify the ephemeral staging recreation/destroy, private-database denial, deployment/rollback, browser edge behavior, capacity and independent-backup restoration. |
 
 ## Phase 09: implemented and locally verified
 
@@ -79,6 +80,8 @@ requires a configured Identity/Keycloak membership in `CRM_ORGANIZATION_ID`.
 - `docs/evidence/phase-07/VERIFICATION.md`
 - `docs/evidence/phase-08/VERIFICATION.md`
 - `docs/operations/transactional-email.md`
+- `docs/evidence/phase-10/VERIFICATION.md`
+- `docs/operations/PHASE-10-DELIVERY.md`
 
 ## Workspace notes
 
@@ -90,6 +93,6 @@ requires a configured Identity/Keycloak membership in `CRM_ORGANIZATION_ID`.
 
 ## Next recommended work
 
-Proceed with Phase 10 (infrastructure, environments and delivery), then Phase
-11 (security/observability/recovery). Complete the production gates above
+Proceed with Phase 11 (security, observability and recovery). Complete the
+Phase 10 production gates above
 before Phase 12 launch hardening.

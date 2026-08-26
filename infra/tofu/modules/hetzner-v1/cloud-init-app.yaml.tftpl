@@ -1,0 +1,22 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - ca-certificates
+  - curl
+  - docker.io
+  - docker-compose-plugin
+users:
+  - default
+  - name: deployer
+    groups: [sudo, docker]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+%{ for key in ssh_public_keys ~}
+      - ${key}
+%{ endfor ~}
+runcmd:
+  - mkdir -p /opt/stack-and-scale/deployments
+  - chown -R deployer:deployer /opt/stack-and-scale
+  - systemctl enable --now docker

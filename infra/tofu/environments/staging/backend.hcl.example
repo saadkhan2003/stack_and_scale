@@ -1,0 +1,9 @@
+# State storage needs independent credentials and a distinct key per environment.
+bucket                      = "REPLACE_WITH_PROTECTED_STATE_BUCKET"
+key                         = "stack-and-scale/staging/tofu.tfstate"
+region                      = "REPLACE_WITH_BACKUP_REGION"
+endpoint                    = "https://REPLACE_WITH_S3_ENDPOINT"
+skip_credentials_validation = true
+skip_region_validation      = true
+skip_metadata_api_check     = true
+use_path_style              = true

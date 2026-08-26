@@ -1,0 +1,31 @@
+name: stack-and-scale-database
+
+services:
+  postgres:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    env_file: ../.env.database.production
+    environment:
+      POSTGRES_DB: stack_and_scale
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    # This host port is bound only to the server's Hetzner private address.
+    # There is deliberately no 0.0.0.0 mapping.
+    ports: ["${PRIVATE_DATABASE_BIND_ADDRESS:?set PRIVATE_DATABASE_BIND_ADDRESS}:5432:5432"]
+    command: ["postgres", "-c", "listen_addresses=${PRIVATE_DATABASE_BIND_ADDRESS:?set PRIVATE_DATABASE_BIND_ADDRESS}"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "3.00", memory: 5G }
+
+volumes:
+  postgres-data: {}

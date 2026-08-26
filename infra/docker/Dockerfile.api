@@ -1,0 +1,21 @@
+FROM node:24.18.0-bookworm-slim AS build
+WORKDIR /workspace
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json apps/api/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/database/package.json packages/database/package.json
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/api build
+
+FROM node:24.18.0-bookworm-slim AS runtime
+WORKDIR /workspace
+ENV NODE_ENV=production
+RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
+COPY --from=build --chown=app:app /workspace /workspace
+USER app
+EXPOSE 3100
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD node -e "fetch('http://127.0.0.1:3100/ready').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "apps/api/dist/src/main.js"]
