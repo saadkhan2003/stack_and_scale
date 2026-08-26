@@ -35,6 +35,12 @@ export class LeadService {
       ), activity AS (
         INSERT INTO platform.lead_activities (id, lead_id, type, metadata)
         SELECT $10, id, 'lead.created', jsonb_build_object('intakeType', $6) FROM inserted_lead
+      ), opportunity AS (
+        INSERT INTO platform.opportunities (id, lead_id, pipeline_template_id, title)
+        SELECT $14, id,
+          CASE $6 WHEN 'demo' THEN 'pipeline-product-demo' WHEN 'project' THEN 'pipeline-custom-project' WHEN 'whatsapp' THEN 'pipeline-whatsapp' ELSE 'pipeline-general-contact' END,
+          $3 || ' opportunity'
+        FROM inserted_lead
       ), audit AS (
         INSERT INTO platform.audit_events (id, actor_id, action, correlation_id, metadata)
         SELECT $11, 'public-lead-intake', 'crm.lead.created', $12, jsonb_build_object('leadId', id, 'intakeType', $6) FROM inserted_lead
@@ -42,7 +48,7 @@ export class LeadService {
       INSERT INTO platform.outbox_events (id, event_type, correlation_id, payload)
       SELECT $13, 'crm.lead.created', $12, jsonb_build_object('leadId', id, 'intakeType', $6) FROM inserted_lead
       RETURNING payload->>'leadId' AS id`,
-      [leadId, input.email, input.name, input.phone ?? null, input.message ?? null, input.intakeType, input.attribution.source ?? "public-web", input.idempotencyKey, JSON.stringify(input.attribution), activityId, auditId, input.correlationId, eventId],
+      [leadId, input.email, input.name, input.phone ?? null, input.message ?? null, input.intakeType, input.attribution.source ?? "public-web", input.idempotencyKey, JSON.stringify(input.attribution), activityId, auditId, input.correlationId, eventId, `opportunity_${leadId}`],
     );
     const createdId = result.rows[0]?.["id"];
     if (typeof createdId === "string") return { id: createdId, status: "created", intakeType: input.intakeType };

@@ -39,6 +39,13 @@ describe("CRM staff workflow", () => {
     expect((await fastify.inject({ method: "GET", url: "/api/v1/crm/leads", headers: { "x-actor-id": memberId } })).statusCode).toBe(403);
   });
 
+  it("accepts a valid signed-in staff session without a development header", async () => {
+    const sessionId = `session-crm-${randomUUID()}`;
+    await pool.query("INSERT INTO identity.sessions (id, user_id, status, mfa_satisfied, expires_at) VALUES ($1, $2, 'active', true, now() + interval '1 hour')", [sessionId, managerId]);
+    const response = await fastify.inject({ method: "GET", url: "/api/v1/crm/leads", headers: { cookie: `ss_session=${sessionId}` } });
+    expect(response.statusCode).toBe(200);
+  });
+
   it("lets a manager assign, progress, note, and complete a follow-up", async () => {
     const headers = { "x-actor-id": managerId, "content-type": "application/json" };
     const update = await fastify.inject({ method: "PATCH", url: `/api/v1/crm/leads/${leadId}`, headers, payload: { ownerId: managerId, stage: "qualified", probability: 40 } });
@@ -55,5 +62,6 @@ describe("CRM staff workflow", () => {
     expect(detail.statusCode).toBe(200);
     expect(detail.json<{ data: { notes: unknown[]; tasks: { completed_at: string | null }[] } }>().data.notes).toHaveLength(1);
     expect(detail.json<{ data: { tasks: { completed_at: string | null }[] } }>().data.tasks[0]?.completed_at).toBeTruthy();
+    expect(detail.json<{ data: { opportunities: { pipeline: string; stage: string }[] } }>().data.opportunities).toEqual([expect.objectContaining({ pipeline: "General contact", stage: "qualified" })]);
   });
 });

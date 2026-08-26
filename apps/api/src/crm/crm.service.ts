@@ -30,13 +30,14 @@ export class CrmService {
     );
     const row = lead.rows[0] as LeadRow | undefined;
     if (!row) throw new NotFoundException("Lead not found.");
-    const [activities, notes, tasks, bookings] = await Promise.all([
+    const [activities, notes, tasks, bookings, opportunities] = await Promise.all([
       this.database.query("SELECT id, actor_id, type, metadata, created_at FROM platform.lead_activities WHERE lead_id = $1 ORDER BY created_at DESC", [leadId]),
       this.database.query("SELECT id, author_id, body, created_at FROM platform.lead_notes WHERE lead_id = $1 ORDER BY created_at DESC", [leadId]),
       this.database.query("SELECT id, assignee_id, title, due_at, completed_at, created_at FROM platform.lead_tasks WHERE lead_id = $1 ORDER BY created_at DESC", [leadId]),
       this.database.query("SELECT id, starts_at, timezone, status, alternate_request, created_at FROM platform.demo_bookings WHERE lead_id = $1 ORDER BY created_at DESC", [leadId]),
+      this.database.query("SELECT o.id, o.title, o.stage, o.owner_id, o.probability, o.estimated_value, o.next_action_at, o.lost_reason, p.name AS pipeline FROM platform.opportunities o JOIN platform.crm_pipeline_templates p ON p.id = o.pipeline_template_id WHERE o.lead_id = $1", [leadId]),
     ]);
-    return { data: { ...toLead(row), activities: activities.rows, notes: notes.rows, tasks: tasks.rows, bookings: bookings.rows } };
+    return { data: { ...toLead(row), activities: activities.rows, notes: notes.rows, tasks: tasks.rows, bookings: bookings.rows, opportunities: opportunities.rows } };
   }
 
   public async updateLead(leadId: string, input: { stage?: string; ownerId?: string | null; probability?: number; estimatedValue?: number | null; nextActionAt?: string | null; lostReason?: string | null }, actorId: string, organizationId: string): Promise<{ data: unknown }> {
@@ -58,6 +59,21 @@ export class CrmService {
     );
     const row = result.rows[0] as LeadRow | undefined;
     if (!row) throw new NotFoundException("Lead not found.");
+    await this.database.query(
+      `INSERT INTO platform.opportunities (id, lead_id, pipeline_template_id, title)
+       VALUES ($1, $2,
+         CASE $3 WHEN 'demo' THEN 'pipeline-product-demo' WHEN 'project' THEN 'pipeline-custom-project' WHEN 'whatsapp' THEN 'pipeline-whatsapp' ELSE 'pipeline-general-contact' END,
+         COALESCE($4, 'Lead') || ' opportunity')
+       ON CONFLICT (lead_id) DO NOTHING`,
+      [`opportunity_${leadId}`, leadId, row["intake_type"], row["name"]],
+    );
+    await this.database.query(
+      `UPDATE platform.opportunities
+          SET stage = $2, owner_id = $3, probability = $4, estimated_value = $5,
+              next_action_at = $6, lost_reason = $7, updated_at = now()
+        WHERE lead_id = $1`,
+      [leadId, row["stage"], row["owner_id"], row["probability"], row["estimated_value"], row["next_action_at"], row["lost_reason"]],
+    );
     await this.recordActivity(leadId, actorId, "lead.updated", {});
     return { data: toLead(row) };
   }
