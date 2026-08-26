@@ -15,6 +15,7 @@ export type LeadIntake = Readonly<{
 }>;
 
 export type LeadReceipt = Readonly<{ id: string; status: "created" | "existing"; intakeType: LeadIntake["intakeType"] }>;
+export type BookingReceipt = Readonly<{ id: string; status: "confirmed" | "alternate_requested"; startsAt?: string }>;
 
 @Injectable()
 export class LeadService {
@@ -49,5 +50,20 @@ export class LeadService {
     const row = existing.rows[0];
     if (row === undefined) throw new Error("lead intake could not be persisted");
     return { id: String(row["id"]), status: "existing", intakeType: String(row["intake_type"]) as LeadIntake["intakeType"] };
+  }
+
+  public async book(leadId: string, input: Readonly<{ startsAt?: string; timezone: string; alternateRequest?: string; correlationId: string }>): Promise<BookingReceipt> {
+    const bookingId = `booking_${randomUUID()}`;
+    if (input.alternateRequest) {
+      await this.database.query("INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone, status, alternate_request) VALUES ($1, $2, now(), $3, 'alternate_requested', $4)", [bookingId, leadId, input.timezone, input.alternateRequest]);
+      return { id: bookingId, status: "alternate_requested" };
+    }
+    if (!input.startsAt) throw new Error("A start time or alternate request is required.");
+    const result = await this.database.query("INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone) VALUES ($1, $2, $3::timestamptz, $4) RETURNING starts_at", [bookingId, leadId, input.startsAt, input.timezone]);
+    await this.database.query("INSERT INTO platform.lead_activities (id, lead_id, type, metadata) VALUES ($1, $2, 'booking.confirmed', jsonb_build_object('bookingId', $3::text))", [`activity_${randomUUID()}`, leadId, bookingId]);
+    await this.database.query("INSERT INTO platform.outbox_events (id, event_type, correlation_id, payload) VALUES ($1, 'crm.booking.confirmed', $2, jsonb_build_object('bookingId', $3::text, 'leadId', $4::text))", [`event_${randomUUID()}`, input.correlationId, bookingId, leadId]);
+    const returnedStart = result.rows[0]?.["starts_at"];
+    const startsAt = returnedStart instanceof Date ? returnedStart.toISOString() : typeof returnedStart === "string" ? returnedStart : input.startsAt;
+    return { id: bookingId, status: "confirmed", ...(startsAt ? { startsAt } : {}) };
   }
 }

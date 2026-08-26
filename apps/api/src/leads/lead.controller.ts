@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Headers, HttpCode, HttpStatus, Inject, Post } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Headers, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, Post } from "@nestjs/common";
 
 import { LeadService, type LeadIntake } from "./lead.service.js";
 
@@ -14,7 +14,19 @@ export class LeadController {
     const intake = parseLead(body, idempotencyKey, correlationId);
     return this.leads.create(intake);
   }
+
+  @Post(":leadId/bookings")
+  @HttpCode(HttpStatus.CREATED)
+  async book(@Param("leadId") leadId: string, @Body() body: Readonly<{ startsAt?: unknown; timezone?: unknown; alternateRequest?: unknown }>, @Headers("x-correlation-id") correlationId: string | undefined) {
+    if (typeof body.timezone !== "string" || !isTimezone(body.timezone)) throw new BadRequestException("Choose a valid timezone.");
+    const startsAt = typeof body.startsAt === "string" && !Number.isNaN(Date.parse(body.startsAt)) ? body.startsAt : undefined;
+    const alternateRequest = typeof body.alternateRequest === "string" && body.alternateRequest.trim().length > 0 ? body.alternateRequest.trim().slice(0, 500) : undefined;
+    try { return await this.leads.book(leadId, { ...(startsAt ? { startsAt } : {}), timezone: body.timezone, ...(alternateRequest ? { alternateRequest } : {}), correlationId: correlationId ?? leadId }); } catch (error) { if (isUniqueViolation(error)) throw new ConflictException("That demo time is no longer available."); throw new InternalServerErrorException("Booking could not be recorded."); }
+  }
 }
+
+function isTimezone(value: string): boolean { try { new Intl.DateTimeFormat("en", { timeZone: value }); return true; } catch { return false; } }
+function isUniqueViolation(error: unknown): boolean { return error !== null && typeof error === "object" && "code" in error && error.code === "23505"; }
 
 function parseLead(body: LeadBody, idempotencyKey: string | undefined, correlationId: string | undefined): LeadIntake {
   if (body.honeypot !== undefined && body.honeypot !== "") throw new BadRequestException("Unable to submit this request.");
