@@ -37,6 +37,7 @@ describe("GET /openapi.json", () => {
     });
     expect(Object.keys(body.paths).sort()).toEqual([
       "/health",
+      "/leads",
       "/privacy-requests",
       "/ready",
       "/version",

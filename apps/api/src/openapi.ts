@@ -51,5 +51,15 @@ export const openApiDocument = {
         },
       },
     },
+    "/leads": {
+      post: {
+        summary: "Create or replay a consented public lead",
+        responses: {
+          "201": { description: "Lead receipt returned" },
+          "400": { description: "Lead validation failed" },
+          "429": { description: "Lead rate limit exceeded" },
+        },
+      },
+    },
   },
 } as const;

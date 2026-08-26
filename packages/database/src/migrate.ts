@@ -44,7 +44,7 @@ export async function runMigrations(
       );
       await client.query(sql);
       await client.query(
-        "INSERT INTO platform.schema_migrations (name) VALUES ($1)",
+        "INSERT INTO platform.schema_migrations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING",
         [migrationName],
       );
       appliedNow.push(migrationName);

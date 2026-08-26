@@ -9,13 +9,13 @@ import { IdentityController } from "./identity/identity.controller.js";
 import { InvitationModule } from "./identity/invitations/invitation.module.js";
 import { SessionModule } from "./identity/sessions/session.module.js";
 import { TenantAccessService } from "./identity/tenant-access.service.js";
-import { PlatformDatabaseService } from "./platform-database.service.js";
+import { LeadModule } from "./leads/lead.module.js";
+import { PlatformDatabaseModule } from "./platform-database.module.js";
 
 @Module({
-  imports: [AuthModule, SessionModule, InvitationModule],
+  imports: [AuthModule, SessionModule, InvitationModule, PlatformDatabaseModule, LeadModule],
   controllers: [AppController, IdentityController],
   providers: [
-    PlatformDatabaseService,
     TenantAccessService,
     {
       provide: APP_INTERCEPTOR,
