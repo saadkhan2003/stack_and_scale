@@ -13,9 +13,10 @@ import { LeadModule } from "./leads/lead.module.js";
 import { PlatformDatabaseModule } from "./platform-database.module.js";
 import { RateLimitInterceptor } from "./common/http/rate-limit.interceptor.js";
 import { RateLimitModule } from "./common/http/rate-limit.module.js";
+import { CrmModule } from "./crm/crm.module.js";
 
 @Module({
-  imports: [AuthModule, SessionModule, InvitationModule, PlatformDatabaseModule, LeadModule, RateLimitModule],
+  imports: [AuthModule, SessionModule, InvitationModule, PlatformDatabaseModule, LeadModule, CrmModule, RateLimitModule],
   controllers: [AppController, IdentityController],
   providers: [
     TenantAccessService,

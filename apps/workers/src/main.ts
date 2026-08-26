@@ -1,5 +1,16 @@
-import { runNoopJob } from "./noop-job.js";
+import { createPostgresPoolFromEnv, PostgresOutboxRepository } from "@stack-and-scale/database";
 
-const version = process.env["WORKER_VERSION"] ?? "0.0.0";
+import { runOutboxDeliveryCycle } from "./outbox-worker.js";
+import { createEmailAdapter, deliverLeadEmail } from "./transactional-email.js";
 
-console.info(runNoopJob(version));
+const pool = createPostgresPoolFromEnv();
+const repository = new PostgresOutboxRepository(pool);
+
+try {
+  const result = await runOutboxDeliveryCycle(repository, (event) =>
+    deliverLeadEmail(event, pool, createEmailAdapter(), process.env["CRM_NOTIFICATION_EMAIL"]),
+  );
+  console.info(JSON.stringify(result));
+} finally {
+  await pool.end();
+}

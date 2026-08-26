@@ -36,8 +36,14 @@ describe("GET /openapi.json", () => {
       version: "0.0.0",
     });
     expect(Object.keys(body.paths).sort()).toEqual([
+      "/api/v1/crm/leads",
+      "/api/v1/crm/leads/{leadId}",
+      "/api/v1/crm/leads/{leadId}/notes",
+      "/api/v1/crm/leads/{leadId}/tasks",
+      "/api/v1/crm/leads/{leadId}/tasks/{taskId}/complete",
       "/health",
       "/leads",
+      "/leads/demo-slots",
       "/leads/{leadId}/bookings",
       "/leads/{leadId}/whatsapp-handoffs",
       "/privacy-requests",

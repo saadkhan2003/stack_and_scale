@@ -18,6 +18,8 @@ const PERMISSIONS: readonly Permission[] = [
   "member:manage",
   "role:assign",
   "audit:read",
+  "crm:read",
+  "crm:manage",
 ];
 
 function membership(role: StaffRole): MembershipSnapshot {

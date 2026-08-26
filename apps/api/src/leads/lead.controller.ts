@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ConflictException, Controller, Headers, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, Post } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Get, Headers, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, Post } from "@nestjs/common";
 
 import { LeadService, type LeadIntake } from "./lead.service.js";
 
@@ -7,6 +7,9 @@ type LeadBody = Readonly<{ email?: unknown; name?: unknown; phone?: unknown; mes
 @Controller("leads")
 export class LeadController {
   public constructor(@Inject(LeadService) private readonly leads: LeadService) {}
+
+  @Get("demo-slots")
+  async listDemoSlots() { return this.leads.listAvailableSlots(); }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

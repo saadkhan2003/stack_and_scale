@@ -7,7 +7,9 @@ export type Permission =
   | "member:invite"
   | "member:manage"
   | "role:assign"
-  | "audit:read";
+  | "audit:read"
+  | "crm:read"
+  | "crm:manage";
 
 const staffRoles = new Set<StaffRole>(["owner", "admin", "manager", "member"]);
 
@@ -31,6 +33,8 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "member:manage",
       "role:assign",
       "audit:read",
+      "crm:read",
+      "crm:manage",
     ],
   },
   admin: {
@@ -42,11 +46,13 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "member:manage",
       "role:assign",
       "audit:read",
+      "crm:read",
+      "crm:manage",
     ],
   },
   manager: {
     assignableBy: ["owner", "admin"],
-    permissions: ["org:read", "member:read", "member:invite"],
+    permissions: ["org:read", "member:read", "member:invite", "crm:read", "crm:manage"],
   },
   member: {
     assignableBy: ["owner", "admin"],

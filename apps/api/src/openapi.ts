@@ -61,11 +61,30 @@ export const openApiDocument = {
         },
       },
     },
+    "/leads/demo-slots": {
+      get: { summary: "List configured, currently available demo slots", responses: { "200": { description: "Available demo slots" } } },
+    },
     "/leads/{leadId}/bookings": {
       post: { summary: "Confirm a demo slot or request an alternate time", responses: { "201": { description: "Booking recorded" }, "400": { description: "Booking validation failed" }, "409": { description: "Slot already booked" } } },
     },
     "/leads/{leadId}/whatsapp-handoffs": {
       post: { summary: "Record an attributed WhatsApp handoff", responses: { "204": { description: "Handoff recorded" } } },
+    },
+    "/api/v1/crm/leads": {
+      get: { summary: "List CRM leads for authorized staff", responses: { "200": { description: "Lead inbox" }, "401": { description: "Authentication required" }, "403": { description: "CRM permission denied" } } },
+    },
+    "/api/v1/crm/leads/{leadId}": {
+      get: { summary: "Read a CRM lead timeline", responses: { "200": { description: "Lead detail" } } },
+      patch: { summary: "Update CRM ownership or pipeline fields", responses: { "200": { description: "Lead updated" } } },
+    },
+    "/api/v1/crm/leads/{leadId}/notes": {
+      post: { summary: "Add a staff note to a CRM lead", responses: { "201": { description: "Note created" } } },
+    },
+    "/api/v1/crm/leads/{leadId}/tasks": {
+      post: { summary: "Create a CRM follow-up task", responses: { "201": { description: "Task created" } } },
+    },
+    "/api/v1/crm/leads/{leadId}/tasks/{taskId}/complete": {
+      patch: { summary: "Complete a CRM follow-up task", responses: { "200": { description: "Task completed" } } },
     },
   },
 } as const;

@@ -46,11 +46,13 @@ describe("POST /leads", () => {
     const lead = await fastify.inject({ method: "POST", url: "/leads", headers, payload: { email: "phase9-booking@example.test", name: "Booking Lead", intakeType: "demo", consent: true } });
     const leadId = lead.json<{ id: string }>().id;
     const slot = new Date(Date.now() + 3_600_000 + Math.floor(Math.random() * 1_000_000)).toISOString();
+    process.env["DEMO_AVAILABLE_SLOTS"] = slot;
     const first = await fastify.inject({ method: "POST", url: `/leads/${leadId}/bookings`, headers: { "content-type": "application/json" }, payload: { startsAt: slot, timezone: "Asia/Karachi" } });
     const conflict = await fastify.inject({ method: "POST", url: `/leads/${leadId}/bookings`, headers: { "content-type": "application/json" }, payload: { startsAt: slot, timezone: "Asia/Karachi" } });
     const alternate = await fastify.inject({ method: "POST", url: `/leads/${leadId}/bookings`, headers: { "content-type": "application/json" }, payload: { timezone: "Asia/Karachi", alternateRequest: "Weekday afternoon works better." } });
     expect(first.statusCode).toBe(201);
     expect(conflict.statusCode).toBe(409);
     expect(alternate.json()).toMatchObject({ status: "alternate_requested" });
+    delete process.env["DEMO_AVAILABLE_SLOTS"];
   });
 });
