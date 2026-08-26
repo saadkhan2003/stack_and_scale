@@ -30,7 +30,7 @@ Latest Phase 09 commits:
 | 07 | Local complete | Production legal/privacy wording, real data practices, processors, retention details and real production-performance verification remain launch blockers. |
 | 08 | Local complete | Configure production URL, Search Console ownership, sitemap submission, index monitoring, analytics processor/retention and approved legal wording. |
 | 09 | Local complete | Configure production CRM organization/memberships, demo slots, transactional email and DNS; then verify live staff OIDC access and real email delivery. |
-| 10 | Local implementation complete | Apply reviewed IaC with independently stored state, configure domain/Cloudflare and protected CI secrets, bootstrap private database, verify the ephemeral staging recreation/destroy, private-database denial, deployment/rollback, browser edge behavior, capacity and independent-backup restoration. |
+| 10 | Local implementation complete | Apply the one-server IaC with independently stored state, configure domain/Cloudflare and protected CI secrets, verify the internal database has no public port, then rehearse deployment/rollback, browser edge behavior, capacity and independent-backup restoration. |
 
 ## Phase 09: implemented and locally verified
 

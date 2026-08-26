@@ -6,7 +6,7 @@ The USD 50/month ceiling is binding. No provider is purchased in Phase 00. Each 
 
 | Capability | Initial direction | Decision status | Owner phase | Gate before activation |
 |---|---|---|---|---|
-| Compute/database | Hetzner application + private database nodes | Baseline approved; exact server/location validated in 10B | 10 | Capacity ledger, threat model, bill under $50 |
+| Compute/database | One Hetzner CX33 application node with internal PostgreSQL | Cost-first baseline; exact server/location validated in 10B | 10 | Capacity ledger, threat model, independent backups, bill under $50 |
 | Edge/DNS/CDN | Cloudflare Free | Baseline approved | 10B | Origin controls, privacy/cookie configuration, no Pro upgrade |
 | CMS | Payload CMS self-hosted | Approved | 06 | Compatible supported versions, backup and access plan |
 | Database | PostgreSQL self-hosted | Approved | 04, 10 | Migration, backup/PITR and restore evidence |

@@ -8,9 +8,8 @@ Planning allocation only. No infrastructure has been provisioned; these caps are
 
 | Component | Budget target | Capacity responsibility |
 |---|---:|---|
-| Application node (16 GB planned maximum) | $18.50/month | Public web, CMS, API, workers, identity and lightweight V1 operations only |
-| Private database node (8 GB planned maximum) | $10.50/month | PostgreSQL only; no public port |
-| Automated node backups | $5.80/month | Convenience recovery only; not the sole protected copy |
+| One Hetzner CX33 application node (8 GB) | About $10/month before IPv4/VAT | Public web, CMS, API, workers, identity and PostgreSQL on one host |
+| Automated node backups | 20% of server price | Convenience recovery only; not the sole protected copy |
 | Geographic backup target | $4.00/month | Encrypted independent recovery copy |
 | IPv4/domain/object-storage/staging reserve | $3.60/month | Controlled caps; staging is ephemeral |
 | Taxes/exchange/contingency | $4.50/month | Planned total $46.90, leaving $3.10 hard buffer |
@@ -19,10 +18,10 @@ Planning allocation only. No infrastructure has been provisioned; these caps are
 
 | Service | Phase enabled | CPU/memory/disk/IO baseline | Retention/limit | Safe headroom | Degradation control | Scale trigger and next cost |
 |---|---|---|---|---|---|---|
-| Public web/CMS/API | V1 | App node cap: 4.0 GiB RAM, 3 vCPU steady-state planning budget, 30 GB local writable data | Public assets use object storage/cached delivery; no unbounded local uploads | 4.0 GiB RAM and 5 vCPU remain for all other approved services before OS/cache reserve | Cache public content; disable nonessential previews/jobs | Sustained 70% of assigned RAM/CPU or latency budget breach; price next topology before change |
-| Workers/Valkey-compatible queue | V1 | App node cap: 1.0 GiB RAM, 1 vCPU, 5 GB disk | Queue payloads short-lived; dead-letter retention capped at 7 days | Included in app-node remaining capacity | Pause noncritical jobs; retain critical lead/email jobs | Queue lag/retention exceeds cap; add capacity only with cost approval |
-| PostgreSQL | V1 | Database node cap: 5.0 GiB RAM, 3 vCPU, 45 GB data/WAL planning allocation | Daily backup; WAL/PITR policy finalized in 10B | 3.0 GiB RAM, 1 vCPU and 35 GB disk planning headroom | Throttle reports/jobs; reject runaway queries | Sustained 70% allocation, disk 70% or I/O/query breach |
-| Identity | V1 | App node cap: 1.0 GiB RAM, 1 vCPU, 5 GB disk | Session/audit retention configured by policy | Included in remaining app capacity | Defer federation/optional admin features | Exceeds cap or affects primary web/API |
+| Public web/CMS/API | V1 | Combined cap: 2.3 GiB RAM, 2.25 vCPU, 30 GB local writable data | Public assets use object storage/cached delivery; no unbounded local uploads | Retain at least 2 GiB for PostgreSQL, identity and host cache | Cache public content; disable previews first | Sustained 70% host RAM/CPU or latency budget breach |
+| Workers/queue | V1 | 256 MiB RAM, 0.35 vCPU, 5 GB disk | Queue payloads short-lived; dead-letter retention capped at 7 days | Stop noncritical jobs first | Pause noncritical jobs; retain lead/email jobs | Queue lag/retention exceeds cap |
+| PostgreSQL | V1 | 2.0 GiB RAM, 1.5 vCPU, 35 GB data/WAL planning allocation | Daily backup; WAL/PITR policy finalized in 10B | Host memory/disk alarms protect all services | Throttle reports/jobs; reject runaway queries | Sustained 70% allocation, disk 70% or I/O/query breach |
+| Identity | V1 | 768 MiB RAM, 0.75 vCPU, 5 GB disk | Session/audit retention configured by policy | Included in one-host budget | Defer federation/optional admin features | Exceeds cap or affects primary web/API |
 | Analytics | V1 | App node cap: 0.35 GiB RAM, 0.5 vCPU, 5 GB disk | Aggregated/event retention capped at 30 days initially | Included in remaining app capacity | Disable analytics collection before core workloads degrade | Storage or latency cap breach |
 | Monitoring/status | V1 | App node cap: 1.0 GiB RAM, 1 vCPU, 10 GB disk | Metrics 14 days; logs 7 days; traces sampled/disabled unless measured safe | Remaining app-node capacity and OS/cache reserve are reviewed in 10B | Reduce tracing, then logs/metrics; preserve audit/security evidence | Any core-service impact; use independent public status path |
 | Staff operations | 13 | Not authorized yet | Defined by Phase 13 plan | TBD | Disable optional widgets/indexing | Phase 13 measured trigger/cost |

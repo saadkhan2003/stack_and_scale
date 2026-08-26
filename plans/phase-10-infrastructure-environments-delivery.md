@@ -16,12 +16,10 @@ Create reproducible Hetzner infrastructure, isolated environments, container del
 
 ```mermaid
 flowchart TB
-    CF["Cloudflare Free: DNS, CDN, TLS, edge controls"] --> APP["Hetzner application node: 8 GB"]
-    APP --> WEB["Web, CMS, API, workers, lightweight platform services"]
-    APP --> NET["Hetzner private network"]
-    NET --> DB["Hetzner PostgreSQL node: 8 GB, no public database port"]
+    CF["Cloudflare Free: DNS, CDN, TLS, edge controls"] --> APP["One Hetzner CX33 host: 8 GB"]
+    APP --> WEB["Web, CMS, API, workers, identity"]
+    APP --> DB["Internal Docker PostgreSQL: no host port"]
     APP --> BACKUP["Encrypted off-server backup target"]
-    DB --> BACKUP
 ```
 
 ## Work packages
@@ -34,7 +32,7 @@ flowchart TB
 
 ### 10B.1 Infrastructure as code
 
-- OpenTofu modules for project, network, firewall, nodes, IPs and backup-related configuration.
+- OpenTofu modules for the one host, firewall, stable IP and backup-related configuration.
 - Remote state strategy that does not expose secrets.
 - Plan review and drift procedure.
 
@@ -80,7 +78,7 @@ flowchart TB
 - Provider spending alerts.
 - No always-on staging node.
 - No paid Cloudflare tier.
-- No public database IPv4 unless justified.
+- No public database host port.
 
 ## Verification
 

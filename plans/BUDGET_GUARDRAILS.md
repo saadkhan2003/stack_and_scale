@@ -8,10 +8,9 @@
 
 | Item | Target monthly cost | Rule |
 |---|---:|---|
-| Hetzner application node | $18.50 maximum planned | One 16 GB shared cloud node; hosts only approved lightweight V1 services |
-| Hetzner database node | $10.50 maximum planned | One 8 GB node on a private network; no public database exposure |
-| Hetzner automated backups | $5.80 maximum planned | Budgeted at 20% of both nodes; convenience recovery only |
-| Primary IPv4 | $0.60 maximum planned | Application edge only; database remains private |
+| Hetzner CX33 single host | About $10 plus IPv4/VAT | 8 GB; hosts web, CMS, API, workers, identity and internal PostgreSQL |
+| Hetzner automated backups | 20% of server price | Convenience recovery only |
+| Primary IPv4 | $0.60 maximum planned | One public edge IP only |
 | Geographically separate backup storage | $4.00 maximum planned | Required outside the primary location/failure domain; must be restore-tested |
 | Domain and minimal object-storage reserve | $1.50 maximum planned | Annual domain normalized monthly; no paid storage scale-up without approval |
 | Ephemeral staging reserve | $1.50 maximum planned | Created only for release validation, then deleted |
@@ -22,7 +21,7 @@
 | Monitoring/status | $0 | Self-hosted plus free external uptime checks |
 | Taxes, exchange spread and unallocated contingency | $4.50 maximum planned | Covers invoice variation; no paid-service overage is assumed |
 
-**Planned maximum total:** USD 46.90/month. **Hard unallocated buffer:** USD 3.10/month. The Phase 10B purchase gate must re-check live official prices, taxes and exchange costs; if the projected total exceeds USD 50, reduce/cap staging or optional storage first, then stop for user approval rather than silently exceed the ceiling.
+**Planned maximum total:** below USD 30/month before live tax/exchange confirmation. The Phase 10B purchase gate must re-check live official prices, taxes and exchange costs; if the projected total exceeds USD 50, reduce/cap staging or optional storage first, then stop for user approval rather than silently exceed the ceiling.
 
 ## Hard rules
 

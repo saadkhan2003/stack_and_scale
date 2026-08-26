@@ -14,8 +14,9 @@
 
 ## Local results
 
-- Production and database Compose files, plus Caddy configuration, parse with
-  non-secret placeholder configuration.
+- The single-host production Compose file, including its internal-only
+  PostgreSQL service, and Caddy configuration parse with non-secret placeholder
+  configuration.
 - Script syntax and refusal paths pass without cloud credentials.
 - Staging destruction and drift helpers have explicit confirmation/exit paths;
   their provider execution is intentionally pending protected state and token.
@@ -37,7 +38,7 @@
   target with independent credentials.
 - Reviewable OpenTofu plan and drift procedure.
 - Recreated ephemeral staging environment, destroyed after validation.
-- Public-database reachability denial, deployment/migration/rollback rehearsal,
+- Public-database host-port denial, deployment/migration/rollback rehearsal,
   private-cache test and capacity measurement.
 - Named secret custodians, access/rotation/break-glass/lost-key evidence.
 

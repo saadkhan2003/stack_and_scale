@@ -35,7 +35,7 @@ services:
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "1.00", memory: 768M }
+        limits: { cpus: "0.75", memory: 512M }
 
   api:
     image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}/api:${IMAGE_TAG:?set IMAGE_TAG}
@@ -46,16 +46,15 @@ services:
       NODE_ENV: production
       API_PORT: 3100
       API_HOST: 0.0.0.0
-    # Database access is over the private Hetzner network, not a misleading
-    # single-host Docker network. The host firewall permits only the app node.
-    networks: [edge, application, egress]
+    # The database network is internal to this one-host Compose deployment.
+    networks: [edge, application, database, egress]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "1.00", memory: 1024M }
+        limits: { cpus: "0.75", memory: 768M }
 
   workers:
     image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}/workers:${IMAGE_TAG:?set IMAGE_TAG}
@@ -66,14 +65,14 @@ services:
     environment:
       NODE_ENV: production
       WORKER_POLL_MS: 5000
-    networks: [application, egress]
+    networks: [application, database, egress]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "0.50", memory: 512M }
+        limits: { cpus: "0.35", memory: 256M }
 
   cms:
     image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}/cms:${IMAGE_TAG:?set IMAGE_TAG}
@@ -83,14 +82,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3200
-    networks: [edge, application, egress]
+    networks: [edge, application, database, egress]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "1.00", memory: 1024M }
+        limits: { cpus: "0.75", memory: 1024M }
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
@@ -101,7 +100,7 @@ services:
     env_file: ../.env.production
     environment:
       KC_DB: postgres
-      KC_DB_URL_HOST: ${PRIVATE_DATABASE_HOST:?set PRIVATE_DATABASE_HOST}
+      KC_DB_URL_HOST: postgres
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: ${POSTGRES_USER:?set POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
@@ -110,7 +109,7 @@ services:
       KC_HEALTH_ENABLED: "true"
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME: identity.${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}
-    networks: [edge, application]
+    networks: [edge, application, database]
     volumes:
       - ./keycloak/realm-stack-and-scale.production.json.tmpl:/opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl:ro
     healthcheck:
@@ -122,13 +121,39 @@ services:
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "1.00", memory: 1024M }
+        limits: { cpus: "0.75", memory: 768M }
+
+  postgres:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    stop_grace_period: 60s
+    env_file: ../.env.production
+    environment:
+      POSTGRES_DB: stack_and_scale
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks: [database]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "1.50", memory: 2048M }
 
 networks:
   edge: {}
   application: { internal: true }
+  database: { internal: true }
   egress: {}
 
 volumes:
   caddy-data: {}
   caddy-config: {}
+  postgres-data: {}

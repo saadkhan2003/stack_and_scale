@@ -7,7 +7,7 @@
 | Local | Synthetic/local-only values | Developer controlled | Never accesses production systems. |
 | Test/preview | Sanitized fixtures and scoped values | Preview: at most 72 hours | Reviewed change only; no production data. |
 | Staging | Sanitized production-like fixtures and separate state | Ephemeral release window | Same immutable image that may be promoted. |
-| Production | Production-only encrypted values and private database | Controlled | Protected approval, migration gate, health and business smoke test. |
+| Production | Production-only encrypted values and one-host internal database | Controlled | Protected approval, migration gate, health and business smoke test. |
 
 ## Delivery rule
 
@@ -24,10 +24,11 @@ backward-compatible. Migrations roll forward; do not manually edit schemas.
 
 ## IaC and state
 
-`infra/tofu` creates the Hetzner private network, app/database firewalls and
-separate app/database nodes. The database firewall has no public PostgreSQL
-rule. Cloud-init creates the non-root `deployer` account and Docker runtime on
-both nodes, so deployment does not depend on undocumented manual server setup.
+`infra/tofu` creates one Hetzner application node, its stable public IP and an
+edge-restricted firewall. Cloud-init creates the non-root `deployer` account
+and Docker runtime, so deployment does not depend on undocumented manual
+server setup. PostgreSQL is an internal-only Compose service: it has no host
+port and cannot be reached from the Internet.
 State must use the independent S3-compatible backend described by
 `backend.hcl.example`; state credentials must not be stored in Hetzner or the
 application environment.
@@ -43,28 +44,23 @@ reviewed before any apply. Staging is explicitly disposable: after its
 evidence is exported, use `CONFIRM_STAGING_DESTROY=staging
 scripts/tofu-destroy-staging.sh`. Never use the destroy helper for production.
 
-After the infrastructure apply, the secret custodian creates untracked
-`.env.database.production` and `.env.production` files from the examples.
-Bootstrap the private database node with `scripts/bootstrap-database.sh`, then
-run the delivery workflow. Only `infra/` is synchronized; secret files never
-move through CI. The database bootstrap transfers its own secret file only
-over the secret custodian's encrypted SSH session; it must be run from that
-custodian's managed workstation, not a shared developer environment. Database
-SSH is private-only and the bootstrap script uses the app node as its bastion.
+After the infrastructure apply, the secret custodian creates an untracked
+`.env.production` file from the example. The delivery workflow brings up the
+internal PostgreSQL service, waits for its health check, migrates it and then
+starts the remaining services. Only `infra/` is synchronized; secret files
+never move through CI.
 
 ## Edge, secrets and backups
 
 Caddy terminates TLS and is the sole public origin service. The application,
-CMS, API and identity routes share Caddy; the database is reachable only over
-the Hetzner private network and its host firewall. Production values live in an
+CMS, API and identity routes share Caddy; PostgreSQL shares only the internal
+Docker database network and publishes no host port. Production values live in an
 untracked `.env.production` based on `.env.production.example`; never bake
 them into images.
 
 The IaC reserves a stable, delete-protected production app IPv4 for DNS. It
 requires current official Cloudflare CIDRs in `edge_source_cidrs` before apply,
-so ports 80/443 never accept arbitrary direct Internet traffic. The database
-has a public IPv4 solely for outbound bootstrap/image egress; its firewall has
-no public inbound rule, including no direct SSH.
+so ports 80/443 never accept arbitrary direct Internet traffic.
 
 The web image is promotion-safe across environments: `SITE_URL` is resolved
 server-side at runtime and CMS live-preview derives `cms.<current-domain>` in
@@ -96,6 +92,10 @@ Before production apply, select and document an independently credentialed,
 geographically separate encrypted backup target. Verify that primary Hetzner
 credentials cannot delete it. Follow `docs/operations/RESTORE-ORDER.md` and
 `docs/decisions/ADR-BACKUP-FAILURE-DOMAIN.md`.
+
+This one-server design is a cost-first launch topology, not high availability:
+a host outage stops web, CMS, identity and PostgreSQL together. The independent
+encrypted backup and restore rehearsal are therefore non-negotiable.
 
 ## Capacity and spend gates
 

@@ -39,8 +39,10 @@ rollback_on_failure() {
 }
 trap rollback_on_failure ERR
 ssh "${remote}" "${compose} pull"
+ssh "${remote}" "${compose} up -d postgres"
+ssh "${remote}" "for attempt in \$(seq 1 20); do ${compose} exec -T postgres pg_isready -U \"\$POSTGRES_USER\" -d stack_and_scale && break; test \$attempt -eq 20 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} run --rm api node packages/database/dist/src/migrate.js"
-ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak"
+ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak postgres"
 ssh "${remote}" "for attempt in \$(seq 1 12); do ${compose} exec -T api node -e \"fetch('http://127.0.0.1:3100/ready').then(r => process.exit(r.ok ? 0 : 1))\" && break; test \$attempt -eq 12 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1))\""
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/api/demo-slots').then(r => process.exit(r.ok ? 0 : 1))\""

@@ -1,11 +1,6 @@
 location             = "fsn1"
-app_server_type      = "cpx31"
-database_server_type = "cpx31"
+app_server_type      = "cx33"
 ssh_keys             = ["REPLACE_WITH_HCLOUD_SSH_KEY_NAME"]
 allowed_ssh_cidrs    = ["REPLACE_WITH_OPERATOR_CIDR"]
-network_ip_range     = "10.49.0.0/16"
-subnet_ip_range      = "10.49.1.0/24"
-app_private_ip       = "10.49.1.10"
-database_private_ip  = "10.49.1.20"
 # Copy the current official Cloudflare IP ranges here before plan/apply.
 edge_source_cidrs    = ["REPLACE_WITH_CURRENT_CLOUDFLARE_CIDR"]
