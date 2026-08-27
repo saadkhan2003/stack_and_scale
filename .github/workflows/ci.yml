@@ -52,6 +52,8 @@ jobs:
       # exports in a clean checkout.
       - name: Build internal lint dependencies
         run: pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build
+      - name: Initialize the isolated test database
+        run: pnpm --filter @stack-and-scale/database migrate
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
