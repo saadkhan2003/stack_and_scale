@@ -13,6 +13,26 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: stack_and_scale
+      POSTGRES_USER: stack_and_scale
+      POSTGRES_PASSWORD: local-development-only
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: stack_and_scale
+          POSTGRES_USER: stack_and_scale
+          POSTGRES_PASSWORD: local-development-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stack_and_scale -d stack_and_scale"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - uses: actions/checkout@v4
 
