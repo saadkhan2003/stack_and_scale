@@ -53,6 +53,24 @@ internal PostgreSQL service, waits for its health check, migrates it and then
 starts the remaining services. Only `infra/` is synchronized; secret files
 never move through CI.
 
+For the current OVH production host, create the initial environment directly
+on the host after the repository deployment files have arrived:
+
+```bash
+cd /opt/stack-and-scale
+ACME_EMAIL='your-admin-notification-inbox' \
+CRM_NOTIFICATION_EMAIL='your-admin-notification-inbox' \
+bash scripts/bootstrap-production-secrets.sh
+```
+
+The script generates the PostgreSQL, Payload and Keycloak administrator
+secrets locally, writes `/opt/stack-and-scale/.env.production` with mode 0600,
+and never prints the values. It creates a temporary local Keycloak credential
+record under `/opt/stack-and-scale/secrets/`; save that record in a password
+manager and remove it after confirming the Keycloak administrator login. Do
+not put these values in GitHub Actions secrets: the deployment workflow only
+needs host access and package-registry read access.
+
 ## Edge, secrets and backups
 
 Caddy terminates TLS and is the sole public origin service. The application,
