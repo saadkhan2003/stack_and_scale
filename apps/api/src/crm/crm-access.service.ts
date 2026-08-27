@@ -20,16 +20,27 @@ export class CrmAccessService {
     private readonly tenantAccess: TenantAccessService,
   ) {}
 
-  public async require(request: FastifyRequest, permission: "crm:read" | "crm:manage"): Promise<{ actorId: string; organizationId: string }> {
+  public async require(
+    request: FastifyRequest,
+    permission: "crm:read" | "crm:manage",
+  ): Promise<{ actorId: string; organizationId: string }> {
     const organizationId = process.env["CRM_ORGANIZATION_ID"]?.trim();
     if (!organizationId) {
-      throw new ServiceUnavailableException("CRM staff access has not been configured.");
+      throw new ServiceUnavailableException(
+        "CRM staff access has not been configured.",
+      );
     }
     const actorId = await this.actors.fromRequest(request);
     const correlationId = (request as CorrelatedRequest).correlationId ?? "";
-    const decision = await this.tenantAccess.resolve(actorId, organizationId, permission, correlationId);
+    const decision = await this.tenantAccess.resolve(
+      actorId,
+      organizationId,
+      permission,
+      correlationId,
+    );
     if (!decision.allowed) {
-      if (decision.reason === "unauthenticated") throw new UnauthorizedException("Authentication is required.");
+      if (decision.reason === "unauthenticated")
+        throw new UnauthorizedException("Authentication is required.");
       throw new ForbiddenException("You do not have access to CRM leads.");
     }
     return { actorId: decision.tenantContext.actorId, organizationId };

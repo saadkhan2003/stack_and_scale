@@ -18,7 +18,9 @@ test("visitor sees the branded public platform and clear next actions", async ({
   ).toBeVisible();
 });
 
-test("core public route families and product filtering work in Chromium", async ({ page }) => {
+test("core public route families and product filtering work in Chromium", async ({
+  page,
+}) => {
   for (const [path, heading] of [
     ["/products", "Products that make the work visible."],
     ["/services", "Good systems start with useful decisions."],
@@ -35,40 +37,62 @@ test("core public route families and product filtering work in Chromium", async 
   await page.goto("/products");
   const search = page.getByRole("searchbox", { name: "Find a product" });
   await search.fill("retail");
-  await expect(page.getByRole("heading", { name: "Retail operations" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Retail operations" }),
+  ).toBeVisible();
   await search.fill("no matching product");
   await expect(page.getByText("No product matches that search.")).toBeVisible();
 });
 
-test("mobile navigation and not-found state remain usable", async ({ page }) => {
+test("mobile navigation and not-found state remain usable", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.getByText("Menu", { exact: true }).click();
-  await expect(page.getByRole("navigation", { name: "Compact navigation" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Compact navigation" }),
+  ).toBeVisible();
   await page.goto("/page-that-does-not-exist");
-  await expect(page.getByRole("heading", { name: "That page is not here." })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "That page is not here." }),
+  ).toBeVisible();
 });
 
-test("command search and consent controls are keyboard-accessible", async ({ page }) => {
+test("command search and consent controls are keyboard-accessible", async ({
+  page,
+}) => {
   await page.goto("/");
   await page.getByRole("button", { name: /search ctrl k/i }).click();
   const dialog = page.getByRole("dialog", { name: "Public site search" });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("searchbox").fill("retail");
-  await expect(dialog.getByText("Retail operations", { exact: true })).toBeVisible();
+  await expect(
+    dialog.getByText("Retail operations", { exact: true }),
+  ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await page.getByRole("button", { name: "Decline" }).click();
-  await expect(page.getByRole("complementary", { name: "Analytics preference" })).toBeHidden();
+  await expect(
+    page.getByRole("complementary", { name: "Analytics preference" }),
+  ).toBeHidden();
 });
 
-test("lead form exposes consent and progressive demo booking controls", async ({ page }) => {
+test("lead form exposes consent and progressive demo booking controls", async ({
+  page,
+}) => {
   await page.goto("/contact");
   await expect(page.getByLabel("Name")).toBeVisible();
   await expect(page.getByLabel("Email")).toBeVisible();
-  await expect(page.getByRole("checkbox", { name: /i agree that stack/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Privacy details" })).toBeVisible();
+  await expect(
+    page.getByRole("checkbox", { name: /i agree that stack/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Privacy details" }),
+  ).toBeVisible();
   await page.getByLabel("How can we help?").selectOption("demo");
-  await expect(page.getByRole("group", { name: /book a product demo/i })).toBeVisible();
+  await expect(
+    page.getByRole("group", { name: /book a product demo/i }),
+  ).toBeVisible();
   await expect(page.getByLabel("Alternative time or notes")).toBeVisible();
 });

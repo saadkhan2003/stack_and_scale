@@ -21,8 +21,10 @@ export const pages: CollectionConfig = {
         { label: "Desktop", name: "desktop", width: "100%", height: "100%" },
       ],
       url: ({ data }) => {
-        if (typeof data.slug !== "string" || data.slug.length === 0) return null;
-        const publicUrl = process.env["WEB_PUBLIC_URL"] ?? "http://127.0.0.1:3100";
+        if (typeof data.slug !== "string" || data.slug.length === 0)
+          return null;
+        const publicUrl =
+          process.env["WEB_PUBLIC_URL"] ?? "http://127.0.0.1:3100";
         return `${publicUrl}/${data.slug}`;
       },
     },

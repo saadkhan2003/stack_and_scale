@@ -3,11 +3,15 @@ import type { CmsDocument } from "./cms-content";
 type UnknownRecord = Record<string, unknown>;
 
 function record(value: unknown): UnknownRecord | null {
-  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as UnknownRecord : null;
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as UnknownRecord)
+    : null;
 }
 
 function entries(value: unknown): readonly UnknownRecord[] {
-  return Array.isArray(value) ? value.map(record).filter((item): item is UnknownRecord => item !== null) : [];
+  return Array.isArray(value)
+    ? value.map(record).filter((item): item is UnknownRecord => item !== null)
+    : [];
 }
 
 function text(value: unknown): string {
@@ -36,11 +40,24 @@ export function pageFaqs(document: CmsDocument): readonly FaqEntry[] {
 }
 
 function relatedDocuments(value: unknown): readonly CmsDocument[] {
-  return entries(value).filter((item): item is CmsDocument => typeof item.id === "string" || typeof item.id === "number");
+  return entries(value).filter(
+    (item): item is CmsDocument =>
+      typeof item.id === "string" || typeof item.id === "number",
+  );
 }
 
-export function CmsDetailSections({ document }: Readonly<{ document: CmsDocument }>) {
-  const richSections = ["overview", "description", "summary", "challenge", "approach", "outcome", "body"]
+export function CmsDetailSections({
+  document,
+}: Readonly<{ document: CmsDocument }>) {
+  const richSections = [
+    "overview",
+    "description",
+    "summary",
+    "challenge",
+    "approach",
+    "outcome",
+    "body",
+  ]
     .map((key) => ({ key, value: text(document[key]) }))
     .filter((section) => section.value.length > 0);
   const features = entries(document.features);
@@ -48,34 +65,203 @@ export function CmsDetailSections({ document }: Readonly<{ document: CmsDocument
   const metrics = entries(document.metrics ?? document.stats);
   const screenshots = entries(document.interfaceShowcase)
     .map((item) => record(item.screenshot))
-    .filter((image): image is UnknownRecord => image !== null && typeof image.url === "string");
+    .filter(
+      (image): image is UnknownRecord =>
+        image !== null && typeof image.url === "string",
+    );
   const related = [
-    { label: "Products", path: "/products", documents: relatedDocuments(document.relatedProducts) },
-    { label: "Services", path: "/services", documents: relatedDocuments(document.relatedServices ?? document.servicesDelivered) },
-    { label: "Industries", path: "/industries", documents: relatedDocuments(document.relatedIndustries) },
+    {
+      label: "Products",
+      path: "/products",
+      documents: relatedDocuments(document.relatedProducts),
+    },
+    {
+      label: "Services",
+      path: "/services",
+      documents: relatedDocuments(
+        document.relatedServices ?? document.servicesDelivered,
+      ),
+    },
+    {
+      label: "Industries",
+      path: "/industries",
+      documents: relatedDocuments(document.relatedIndustries),
+    },
   ].filter((group) => group.documents.length > 0);
 
-  return <div className="cms-detail-sections">
-    {richSections.map((section) => <p key={section.key}>{section.value}</p>)}
-    {features.length > 0 ? <section><h2>What it includes</h2><ul>{features.map((feature, index) => <li key={`${stringValue(feature, "title") ?? "feature"}-${index}`}><strong>{stringValue(feature, "title")}</strong>{stringValue(feature, "description") ? ` — ${stringValue(feature, "description")}` : ""}</li>)}</ul></section> : null}
-    {deliverables.length > 0 ? <section><h2>Deliverables</h2><ul>{deliverables.map((item, index) => <li key={`${stringValue(item, "deliverable") ?? "deliverable"}-${index}`}>{stringValue(item, "deliverable")}</li>)}</ul></section> : null}
-    {metrics.length > 0 ? <section className="metric-list" aria-label="Published metrics">{metrics.map((item, index) => <div key={`${stringValue(item, "label") ?? "metric"}-${index}`}><strong>{stringValue(item, "value")}</strong><span>{stringValue(item, "label")}</span></div>)}</section> : null}
-    {screenshots.length > 0 ? <section><h2>Inside the interface</h2><div className="interface-gallery">{screenshots.map((image, index) => <img alt={stringValue(image, "alt") ?? "Product interface screenshot"} key={`${stringValue(image, "url")}-${index}`} src={stringValue(image, "url") ?? ""} />)}</div></section> : null}
-    {related.map((group) => <section key={group.label}><h2>Related {group.label.toLowerCase()}</h2><div className="related-links">{group.documents.map((relatedDocument) => <a href={`${group.path}/${relatedDocument.slug ?? relatedDocument.id}`} key={String(relatedDocument.id)}>{relatedDocument.title ?? relatedDocument.slug ?? "View related content"} <span aria-hidden="true">→</span></a>)}</div></section>)}
-  </div>;
+  return (
+    <div className="cms-detail-sections">
+      {richSections.map((section) => (
+        <p key={section.key}>{section.value}</p>
+      ))}
+      {features.length > 0 ? (
+        <section>
+          <h2>What it includes</h2>
+          <ul>
+            {features.map((feature, index) => (
+              <li
+                key={`${stringValue(feature, "title") ?? "feature"}-${index}`}
+              >
+                <strong>{stringValue(feature, "title")}</strong>
+                {stringValue(feature, "description")
+                  ? ` — ${stringValue(feature, "description")}`
+                  : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {deliverables.length > 0 ? (
+        <section>
+          <h2>Deliverables</h2>
+          <ul>
+            {deliverables.map((item, index) => (
+              <li
+                key={`${stringValue(item, "deliverable") ?? "deliverable"}-${index}`}
+              >
+                {stringValue(item, "deliverable")}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {metrics.length > 0 ? (
+        <section className="metric-list" aria-label="Published metrics">
+          {metrics.map((item, index) => (
+            <div key={`${stringValue(item, "label") ?? "metric"}-${index}`}>
+              <strong>{stringValue(item, "value")}</strong>
+              <span>{stringValue(item, "label")}</span>
+            </div>
+          ))}
+        </section>
+      ) : null}
+      {screenshots.length > 0 ? (
+        <section>
+          <h2>Inside the interface</h2>
+          <div className="interface-gallery">
+            {screenshots.map((image, index) => (
+              <img
+                alt={
+                  stringValue(image, "alt") ?? "Product interface screenshot"
+                }
+                key={`${stringValue(image, "url")}-${index}`}
+                src={stringValue(image, "url") ?? ""}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      {related.map((group) => (
+        <section key={group.label}>
+          <h2>Related {group.label.toLowerCase()}</h2>
+          <div className="related-links">
+            {group.documents.map((relatedDocument) => (
+              <a
+                href={`${group.path}/${relatedDocument.slug ?? relatedDocument.id}`}
+                key={String(relatedDocument.id)}
+              >
+                {relatedDocument.title ??
+                  relatedDocument.slug ??
+                  "View related content"}{" "}
+                <span aria-hidden="true">→</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
 }
 
-export function CmsPageBlocks({ document }: Readonly<{ document: CmsDocument }>) {
+export function CmsPageBlocks({
+  document,
+}: Readonly<{ document: CmsDocument }>) {
   const blocks = entries(document.layout);
   if (blocks.length === 0) return null;
-  return <div className="cms-blocks">{blocks.map((block, index) => {
-    const type = stringValue(block, "blockType");
-    if (type === "hero") return <section className="cms-hero" key={index}><p className="eyebrow">{stringValue(block, "eyebrow")}</p><h2>{stringValue(block, "heading")}</h2><p>{stringValue(block, "subheading")}</p></section>;
-    if (type === "featureGroup") return <section className="cms-feature-group" key={index}><h2>{stringValue(block, "heading")}</h2><div>{entries(block.items).map((item, itemIndex) => <article key={itemIndex}><h3>{stringValue(item, "title")}</h3><p>{stringValue(item, "description")}</p></article>)}</div></section>;
-    if (type === "process") return <section className="cms-process" key={index}><h2>{stringValue(block, "heading")}</h2><ol>{entries(block.steps).map((step, stepIndex) => <li key={stepIndex}><strong>{stringValue(step, "title")}</strong><p>{stringValue(step, "description")}</p></li>)}</ol></section>;
-    if (type === "cta") return <section className="cms-cta" key={index}><h2>{stringValue(block, "heading")}</h2><p>{stringValue(block, "body")}</p><a className="button button-primary" href={stringValue(block, "buttonUrl") ?? "/contact"}>{stringValue(block, "buttonLabel") ?? "Contact us"}</a></section>;
-    if (type === "faqBlock") { const faqs = [...entries(block.faqs), ...entries(block.items)].flatMap((item) => { const question = stringValue(item, "question"); const answer = stringValue(item, "answer"); return question && answer ? [{ question, answer }] : []; }); return faqs.length > 0 ? <section className="cms-faq" key={index}><h2>{stringValue(block, "heading") ?? "Frequently asked questions"}</h2>{faqs.map((faq) => <details key={faq.question}><summary>{faq.question}</summary><p>{faq.answer}</p></details>)}</section> : null; }
-    if (type === "richText") return <section className="cms-rich-text" key={index}><p>{text(block.content)}</p></section>;
-    return null;
-  })}</div>;
+  return (
+    <div className="cms-blocks">
+      {blocks.map((block, index) => {
+        const type = stringValue(block, "blockType");
+        if (type === "hero")
+          return (
+            <section className="cms-hero" key={index}>
+              <p className="eyebrow">{stringValue(block, "eyebrow")}</p>
+              <h2>{stringValue(block, "heading")}</h2>
+              <p>{stringValue(block, "subheading")}</p>
+            </section>
+          );
+        if (type === "featureGroup")
+          return (
+            <section className="cms-feature-group" key={index}>
+              <h2>{stringValue(block, "heading")}</h2>
+              <div>
+                {entries(block.items).map((item, itemIndex) => (
+                  <article key={itemIndex}>
+                    <h3>{stringValue(item, "title")}</h3>
+                    <p>{stringValue(item, "description")}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          );
+        if (type === "process")
+          return (
+            <section className="cms-process" key={index}>
+              <h2>{stringValue(block, "heading")}</h2>
+              <ol>
+                {entries(block.steps).map((step, stepIndex) => (
+                  <li key={stepIndex}>
+                    <strong>{stringValue(step, "title")}</strong>
+                    <p>{stringValue(step, "description")}</p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          );
+        if (type === "cta")
+          return (
+            <section className="cms-cta" key={index}>
+              <h2>{stringValue(block, "heading")}</h2>
+              <p>{stringValue(block, "body")}</p>
+              <a
+                className="button button-primary"
+                href={stringValue(block, "buttonUrl") ?? "/contact"}
+              >
+                {stringValue(block, "buttonLabel") ?? "Contact us"}
+              </a>
+            </section>
+          );
+        if (type === "faqBlock") {
+          const faqs = [
+            ...entries(block.faqs),
+            ...entries(block.items),
+          ].flatMap((item) => {
+            const question = stringValue(item, "question");
+            const answer = stringValue(item, "answer");
+            return question && answer ? [{ question, answer }] : [];
+          });
+          return faqs.length > 0 ? (
+            <section className="cms-faq" key={index}>
+              <h2>
+                {stringValue(block, "heading") ?? "Frequently asked questions"}
+              </h2>
+              {faqs.map((faq) => (
+                <details key={faq.question}>
+                  <summary>{faq.question}</summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </section>
+          ) : null;
+        }
+        if (type === "richText")
+          return (
+            <section className="cms-rich-text" key={index}>
+              <p>{text(block.content)}</p>
+            </section>
+          );
+        return null;
+      })}
+    </div>
+  );
 }

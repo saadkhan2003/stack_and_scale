@@ -18,7 +18,9 @@ function track(name: string, data: Record<string, string>) {
 }
 
 declare global {
-  interface Window { umami?: { track?: (name: string, data: Record<string, string>) => void } }
+  interface Window {
+    umami?: { track?: (name: string, data: Record<string, string>) => void };
+  }
 }
 
 export function AnalyticsController() {
@@ -26,16 +28,48 @@ export function AnalyticsController() {
   useEffect(() => {
     setConsent(readConsent());
     const onClick = (event: MouseEvent) => {
-      const target = event.target instanceof Element ? event.target.closest("a") : null;
+      const target =
+        event.target instanceof Element ? event.target.closest("a") : null;
       if (!target) return;
       const href = target.getAttribute("href") ?? "";
-      const category = href.startsWith("mailto:") ? "email_handoff" : href.includes("contact") ? "contact_interest" : href.includes("products") ? "product_interest" : href.includes("resources") ? "resource_interest" : "navigation";
+      const category = href.startsWith("mailto:")
+        ? "email_handoff"
+        : href.includes("contact")
+          ? "contact_interest"
+          : href.includes("products")
+            ? "product_interest"
+            : href.includes("resources")
+              ? "resource_interest"
+              : "navigation";
       track("cta_click", { category, destination: href.slice(0, 160) });
     };
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, []);
-  const decide = (decision: Exclude<Consent, null>) => { window.localStorage.setItem(consentKey, decision); setConsent(decision); };
+  const decide = (decision: Exclude<Consent, null>) => {
+    window.localStorage.setItem(consentKey, decision);
+    setConsent(decision);
+  };
   if (consent !== null) return null;
-  return <aside aria-label="Analytics preference" className="consent-banner"><p>We use optional, privacy-safe measurement only if you allow it. No form content is tracked.</p><div><button onClick={() => decide("denied")} type="button">Decline</button><button className="button button-primary" onClick={() => decide("granted")} type="button">Allow analytics</button></div><a href="/cookies">Cookie details</a></aside>;
+  return (
+    <aside aria-label="Analytics preference" className="consent-banner">
+      <p>
+        We use optional, privacy-safe measurement only if you allow it. No form
+        content is tracked.
+      </p>
+      <div>
+        <button onClick={() => decide("denied")} type="button">
+          Decline
+        </button>
+        <button
+          className="button button-primary"
+          onClick={() => decide("granted")}
+          type="button"
+        >
+          Allow analytics
+        </button>
+      </div>
+      <a href="/cookies">Cookie details</a>
+    </aside>
+  );
 }

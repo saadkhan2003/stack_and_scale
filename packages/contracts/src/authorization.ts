@@ -52,7 +52,13 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
   },
   manager: {
     assignableBy: ["owner", "admin"],
-    permissions: ["org:read", "member:read", "member:invite", "crm:read", "crm:manage"],
+    permissions: [
+      "org:read",
+      "member:read",
+      "member:invite",
+      "crm:read",
+      "crm:manage",
+    ],
   },
   member: {
     assignableBy: ["owner", "admin"],

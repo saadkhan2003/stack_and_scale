@@ -6,5 +6,9 @@ import { CrmAccessService } from "./crm-access.service.js";
 import { CrmController } from "./crm.controller.js";
 import { CrmService } from "./crm.service.js";
 
-@Module({ imports: [AuthModule, PlatformDatabaseModule], controllers: [CrmController], providers: [TenantAccessService, CrmAccessService, CrmService] })
+@Module({
+  imports: [AuthModule, PlatformDatabaseModule],
+  controllers: [CrmController],
+  providers: [TenantAccessService, CrmAccessService, CrmService],
+})
 export class CrmModule {}

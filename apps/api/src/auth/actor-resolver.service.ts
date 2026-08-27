@@ -42,7 +42,9 @@ export class ActorResolverService {
       return result.valid ? result.actorId : undefined;
     }
 
-    const sessionId = parseCookies(firstHeader(request, "cookie"))[SESSION_COOKIE];
+    const sessionId = parseCookies(firstHeader(request, "cookie"))[
+      SESSION_COOKIE
+    ];
     if (sessionId !== undefined) {
       const result = await this.database.query(
         `SELECT user_id FROM identity.sessions

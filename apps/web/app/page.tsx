@@ -3,7 +3,11 @@ import { metadataForPath } from "../src/seo";
 import { SiteFooter } from "../src/site-footer";
 import { SiteHeader } from "../src/site-header";
 
-export const metadata = metadataForPath("/", "Software for real operations", "Purposeful products, services and delivery partnership for clearer operations.");
+export const metadata = metadataForPath(
+  "/",
+  "Software for real operations",
+  "Purposeful products, services and delivery partnership for clearer operations.",
+);
 
 export default function HomePage() {
   return (
@@ -108,10 +112,18 @@ export default function HomePage() {
           <h2 id="explore-heading">Start where the work is most urgent.</h2>
         </div>
         <div className="feature-links">
-          <a href="/products">Products <span aria-hidden="true">→</span></a>
-          <a href="/services">Services <span aria-hidden="true">→</span></a>
-          <a href="/industries">Industries <span aria-hidden="true">→</span></a>
-          <a href="/work">Our work <span aria-hidden="true">→</span></a>
+          <a href="/products">
+            Products <span aria-hidden="true">→</span>
+          </a>
+          <a href="/services">
+            Services <span aria-hidden="true">→</span>
+          </a>
+          <a href="/industries">
+            Industries <span aria-hidden="true">→</span>
+          </a>
+          <a href="/work">
+            Our work <span aria-hidden="true">→</span>
+          </a>
         </div>
       </section>
 

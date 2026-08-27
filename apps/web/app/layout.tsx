@@ -7,8 +7,12 @@ import { JsonLd } from "../src/json-ld";
 import { siteUrl } from "../src/seo";
 
 export const metadata: Metadata = {
-  title: { default: "Stack & Scale | Software for real operations", template: "%s | Stack & Scale" },
-  description: "Purposeful products, services and delivery partnership for clearer operations.",
+  title: {
+    default: "Stack & Scale | Software for real operations",
+    template: "%s | Stack & Scale",
+  },
+  description:
+    "Purposeful products, services and delivery partnership for clearer operations.",
   metadataBase: siteUrl,
   robots: { index: true, follow: true },
 };
@@ -18,7 +22,18 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body><JsonLd data={{ "@context": "https://schema.org", "@type": "Organization", name: "Stack & Scale", url: siteUrl.toString() }} />{children}<AnalyticsController /></body>
+      <body>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Stack & Scale",
+            url: siteUrl.toString(),
+          }}
+        />
+        {children}
+        <AnalyticsController />
+      </body>
     </html>
   );
 }
