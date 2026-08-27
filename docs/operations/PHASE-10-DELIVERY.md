@@ -54,7 +54,10 @@ starts the remaining services. Only `infra/` is synchronized; secret files
 never move through CI.
 
 For the current OVH production host, create the initial environment directly
-on the host after the repository deployment files have arrived:
+on the host after manually running the protected **Bootstrap production host
+files** GitHub Actions workflow. That workflow copies only `infra/` and the
+two server scripts; it does not build images or start any application service.
+Then open an SSH terminal to the VPS and run:
 
 ```bash
 cd /opt/stack-and-scale

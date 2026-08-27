@@ -1,0 +1,39 @@
+name: Bootstrap production host files
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync-deployment-files:
+    name: Sync deployment files without starting services
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure deploy access
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ env.DEPLOY_SSH_PRIVATE_KEY }}
+      - name: Pin deployment host key
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+          chmod 0600 ~/.ssh/known_hosts
+      - name: Synchronize deployment files only
+        run: |
+          remote="$DEPLOY_USER@$DEPLOY_HOST"
+          ssh "$remote" 'install -d -m 0750 /opt/stack-and-scale/infra /opt/stack-and-scale/scripts /opt/stack-and-scale/secrets /opt/stack-and-scale/deployments'
+          rsync -az --delete infra/ "$remote:/opt/stack-and-scale/infra/"
+          rsync -az scripts/bootstrap-production-secrets.sh scripts/backup-production.sh "$remote:/opt/stack-and-scale/scripts/"
+          ssh "$remote" 'chmod 0750 /opt/stack-and-scale/scripts/bootstrap-production-secrets.sh /opt/stack-and-scale/scripts/backup-production.sh'
+      - name: Confirm no application services were started
+        run: ssh "$DEPLOY_USER@$DEPLOY_HOST" 'test ! -f /opt/stack-and-scale/.env.production && echo "Deployment files synced; no production environment exists yet."'
