@@ -11,8 +11,9 @@ is in [status.md](./status.md).
 
 > **Current state:** Phases 00–10 are implemented and verified locally where
 > possible. Phase 11 has a verified local telemetry, monitoring, backup and
-> recovery foundation. Production infrastructure has **not** been provisioned
-> yet. Do not treat the repository as a live production deployment.
+> recovery foundation. An OVH VPS production host is baseline-hardened, but the
+> application, DNS, backups and launch verification are not deployed. Do not
+> treat the repository as a live production deployment.
 
 ## What is included
 
@@ -39,7 +40,7 @@ Visitor
   │
 Cloudflare Free (DNS / CDN / edge controls)
   │
-Caddy on one Hetzner CX33 server
+Caddy on one OVHcloud VPS-2 server
   ├── Next.js public web + staff CRM
   ├── NestJS API
   ├── Payload CMS
@@ -70,7 +71,7 @@ and can be restored when capacity or reliability requires it:
 | Delivery   | Docker, OpenTofu, GitHub Actions | Reproducible infrastructure and promotion         |
 
 Keycloak, PostgreSQL, Docker, Caddy and OpenTofu are open source. They do not
-require software licences; the production costs are the Hetzner server, domain,
+require software licences; the production costs are the OVHcloud server, domain,
 backups and any paid email volume.
 
 ## Prerequisites
@@ -165,7 +166,7 @@ infra/
   compose.production.yaml      One-host production Compose topology
   caddy/                       Edge routing and headers
   docker/                      Service Dockerfiles
-  tofu/                        Hetzner infrastructure modules and environments
+  tofu/                        Hetzner reference infrastructure modules and environments
 docs/                           Product, security, operations and evidence
 plans/                          Phase plans and budget guardrails
 scripts/                        Local development, migration and delivery tools
@@ -175,8 +176,8 @@ scripts/                        Local development, migration and delivery tools
 
 Phase 10 provides the local delivery implementation, including:
 
-- A one-host Hetzner OpenTofu configuration with stable public IP and
-  Cloudflare-restricted origin firewall.
+- A one-host Hetzner OpenTofu reference configuration. Production currently
+  uses the documented OVH VPS host decision instead.
 - Internal-only PostgreSQL Docker networking and persistent volume boundaries.
 - Non-root multi-stage container images, health checks, resource limits and
   graceful shutdown behavior.
@@ -188,9 +189,9 @@ Phase 10 provides the local delivery implementation, including:
 The following must be completed by the infrastructure owner before production:
 
 1. Buy/configure a domain and Cloudflare Free zone.
-2. Create the Hetzner account, SSH key and provider token; apply the
-   infrastructure in `fsn1` (Falkenstein) through OpenTofu.
-3. Create protected remote OpenTofu state outside Hetzner.
+2. Use the documented OVH host bootstrap and Cloudflare edge configuration.
+   The existing Hetzner OpenTofu module is not the OVH production path.
+3. Create protected remote state before any future OpenTofu provider apply.
 4. Configure a geographically separate encrypted backup target with independent
    credentials.
 5. Configure protected CI/deployment secrets and a registry read token.

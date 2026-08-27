@@ -6,9 +6,11 @@ This is the cold-start handoff. Read it before changing implementation.
 
 ## Current position
 
-Phases 00–10 are implemented locally. Phase 11 local implementation is
-complete and the Phase 12 launch trace is now documented. Production and
-external release gates are intentionally not represented as complete.
+Phases 00–10 are implemented locally. An OVH VPS-2 production host was
+provisioned and baseline-hardened on 2026-08-27; it has no application or
+public traffic yet. Phase 11 local implementation is complete and the Phase 12
+launch trace is documented. Production and external release gates are
+intentionally not represented as complete.
 
 Latest Phase 09 commits:
 
@@ -19,21 +21,21 @@ Latest Phase 09 commits:
 
 ## Phase audit: 00–10
 
-| Phase | Status                             | Still remaining                                                                                                                                                                                                                                                         |
-| ----- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 00    | Complete                           | Nothing in Phase 00. Documentation gate passed.                                                                                                                                                                                                                         |
-| 01    | Mostly complete                    | Re-run clean-clone/bootstrap and CI verification after dependency-link repair; no dedicated Phase 01 verification record is present.                                                                                                                                    |
-| 02    | Locally complete                   | Source SVG/transparent icon brand assets and visual-regression snapshots when final content stabilizes.                                                                                                                                                                 |
-| 03    | Complete as architecture/contracts | Runtime enforcement of all threat-model controls belongs to later infrastructure/security phases.                                                                                                                                                                       |
-| 04    | Local complete                     | Production backups, secrets, monitoring, incident and recovery drills remain for Phases 10–11.                                                                                                                                                                          |
-| 05    | Near-complete/local                | Real Keycloak live E2E is opt-in; recovery email delivery is verified locally, but final password-reset submission was intentionally not browser-completed. Production IdP configuration and backup drills remain.                                                      |
-| 06    | Local complete                     | CMS is verified locally. Production CMS deployment, secrets and operational ownership remain later work.                                                                                                                                                                |
-| 07    | Local complete                     | Production legal/privacy wording, real data practices, processors, retention details and real production-performance verification remain launch blockers.                                                                                                               |
-| 08    | Local complete                     | Configure production URL, Search Console ownership, sitemap submission, index monitoring, analytics processor/retention and approved legal wording.                                                                                                                     |
-| 09    | Local complete                     | Configure production CRM organization/memberships, demo slots, transactional email and DNS; then verify live staff OIDC access and real email delivery.                                                                                                                 |
-| 10    | Local implementation complete      | Apply the one-server IaC with independently stored state, configure domain/Cloudflare and protected CI secrets, verify the internal database has no public port, then rehearse deployment/rollback, browser edge behavior, capacity and independent-backup restoration. |
-| 11    | Local implementation complete      | See `docs/evidence/phase-11/VERIFICATION.md`. Live alert routing, external uptime/status, independently protected backup storage, named owners and full restore exercises remain launch-blocking external gates.                                                        |
-| 12    | Local launch trace complete        | Production journey, performance, legal, privacy, monitoring, rollback and restore evidence remains blocked by external setup. Use `docs/evidence/phase-12/LAUNCH-TRACE.md` as the execution record.                                                                     |
+| Phase | Status                             | Still remaining                                                                                                                                                                                                                                                                          |
+| ----- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 00    | Complete                           | Nothing in Phase 00. Documentation gate passed.                                                                                                                                                                                                                                          |
+| 01    | Mostly complete                    | Re-run clean-clone/bootstrap and CI verification after dependency-link repair; no dedicated Phase 01 verification record is present.                                                                                                                                                     |
+| 02    | Locally complete                   | Source SVG/transparent icon brand assets and visual-regression snapshots when final content stabilizes.                                                                                                                                                                                  |
+| 03    | Complete as architecture/contracts | Runtime enforcement of all threat-model controls belongs to later infrastructure/security phases.                                                                                                                                                                                        |
+| 04    | Local complete                     | Production backups, secrets, monitoring, incident and recovery drills remain for Phases 10–11.                                                                                                                                                                                           |
+| 05    | Near-complete/local                | Real Keycloak live E2E is opt-in; recovery email delivery is verified locally, but final password-reset submission was intentionally not browser-completed. Production IdP configuration and backup drills remain.                                                                       |
+| 06    | Local complete                     | CMS is verified locally. Production CMS deployment, secrets and operational ownership remain later work.                                                                                                                                                                                 |
+| 07    | Local complete                     | Production legal/privacy wording, real data practices, processors, retention details and real production-performance verification remain launch blockers.                                                                                                                                |
+| 08    | Local complete                     | Configure production URL, Search Console ownership, sitemap submission, index monitoring, analytics processor/retention and approved legal wording.                                                                                                                                      |
+| 09    | Local complete                     | Configure production CRM organization/memberships, demo slots, transactional email and DNS; then verify live staff OIDC access and real email delivery.                                                                                                                                  |
+| 10    | OVH host provisioned; app pending  | Host SSH/Docker/UFW baseline is complete. Configure Cloudflare origin controls and protected CI secrets, deploy the application, verify the internal database has no public port, then rehearse deployment/rollback, browser edge behavior, capacity and independent-backup restoration. |
+| 11    | Local implementation complete      | See `docs/evidence/phase-11/VERIFICATION.md`. Live alert routing, external uptime/status, independently protected backup storage, named owners and full restore exercises remain launch-blocking external gates.                                                                         |
+| 12    | Local launch trace complete        | Production journey, performance, legal, privacy, monitoring, rollback and restore evidence remains blocked by external setup. Use `docs/evidence/phase-12/LAUNCH-TRACE.md` as the execution record.                                                                                      |
 
 ## Phase 09: implemented and locally verified
 
@@ -89,6 +91,8 @@ requires a configured Identity/Keycloak membership in `CRM_ORGANIZATION_ID`.
 - `docs/operations/PHASE-10-DELIVERY.md`
 - `docs/decisions/ADR-PHASE-10-SINGLE-SERVER-TOPOLOGY.md` — current
   cost-first one-server decision and the exact two-server restoration guide.
+- `docs/decisions/ADR-PHASE-10-OVH-VPS-PRODUCTION-HOST.md` — actual
+  OVHcloud production-host decision and migration/rollback guidance.
 
 ## Workspace notes
 

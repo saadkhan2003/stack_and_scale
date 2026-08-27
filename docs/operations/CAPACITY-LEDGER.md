@@ -2,17 +2,19 @@
 
 ## Status
 
-Planning allocation only. No infrastructure has been provisioned; these caps are an architecture estimate to be measured and revised in Phase 10B before V1 launch and after every capacity-affecting phase.
+The OVH production host has been provisioned, but these caps remain planning
+allocations until measured under a representative release workload. Revise them
+in Phase 10B before V1 launch and after every capacity-affecting phase.
 
 ## Initial cost envelope
 
-| Component                                  |                   Budget target | Capacity responsibility                                            |
-| ------------------------------------------ | ------------------------------: | ------------------------------------------------------------------ |
-| One Hetzner CX33 application node (8 GB)   | About $10/month before IPv4/VAT | Public web, CMS, API, workers, identity and PostgreSQL on one host |
-| Automated node backups                     |             20% of server price | Convenience recovery only; not the sole protected copy             |
-| Geographic backup target                   |                     $4.00/month | Encrypted independent recovery copy                                |
-| IPv4/domain/object-storage/staging reserve |                     $3.60/month | Controlled caps; staging is ephemeral                              |
-| Taxes/exchange/contingency                 |                     $4.50/month | Planned total $46.90, leaving $3.10 hard buffer                    |
+| Component                                  |           Budget target | Capacity responsibility                                            |
+| ------------------------------------------ | ----------------------: | ------------------------------------------------------------------ |
+| One OVHcloud VPS-2 application node (8 GB) | USD 10/month before tax | Public web, CMS, API, workers, identity and PostgreSQL on one host |
+| Included daily node backup                 |                Included | Convenience recovery only; not the sole protected copy             |
+| Geographic backup target                   |             $4.00/month | Encrypted independent recovery copy                                |
+| IPv4/domain/object-storage/staging reserve |             $3.60/month | Controlled caps; staging is ephemeral                              |
+| Taxes/exchange/contingency                 |             $4.50/month | Planned total $46.90, leaving $3.10 hard buffer                    |
 
 ## Service budget table
 

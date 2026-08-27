@@ -2,12 +2,12 @@
 
 ## Environment contract
 
-| Environment | Data and secrets | Lifetime | Promotion rule |
-| --- | --- | --- | --- |
-| Local | Synthetic/local-only values | Developer controlled | Never accesses production systems. |
-| Test/preview | Sanitized fixtures and scoped values | Preview: at most 72 hours | Reviewed change only; no production data. |
-| Staging | Sanitized production-like fixtures and separate state | Ephemeral release window | Same immutable image that may be promoted. |
-| Production | Production-only encrypted values and one-host internal database | Controlled | Protected approval, migration gate, health and business smoke test. |
+| Environment  | Data and secrets                                                | Lifetime                  | Promotion rule                                                      |
+| ------------ | --------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------- |
+| Local        | Synthetic/local-only values                                     | Developer controlled      | Never accesses production systems.                                  |
+| Test/preview | Sanitized fixtures and scoped values                            | Preview: at most 72 hours | Reviewed change only; no production data.                           |
+| Staging      | Sanitized production-like fixtures and separate state           | Ephemeral release window  | Same immutable image that may be promoted.                          |
+| Production   | Production-only encrypted values and one-host internal database | Controlled                | Protected approval, migration gate, health and business smoke test. |
 
 ## Delivery rule
 
@@ -24,14 +24,17 @@ backward-compatible. Migrations roll forward; do not manually edit schemas.
 
 ## IaC and state
 
-`infra/tofu` creates one Hetzner application node, its stable public IP and an
-edge-restricted firewall. Cloud-init creates the non-root `deployer` account
-and Docker runtime, so deployment does not depend on undocumented manual
-server setup. PostgreSQL is an internal-only Compose service: it has no host
-port and cannot be reached from the Internet.
-State must use the independent S3-compatible backend described by
-`backend.hcl.example`; state credentials must not be stored in Hetzner or the
-application environment.
+Production uses the owner-provisioned OVHcloud VPS-2 recorded in
+`ADR-PHASE-10-OVH-VPS-PRODUCTION-HOST.md`. Its `ubuntu` administrator is
+SSH-key-only; Docker, Fail2ban and UFW are installed on the host. PostgreSQL
+is an internal-only Compose service: it has no host port and cannot be reached
+from the Internet.
+
+`infra/tofu` remains a Hetzner-specific reference/staging module and **must
+not** be applied to the OVH production host. If OpenTofu state is used for a
+future provider integration, it must use the independent S3-compatible backend
+described by `backend.hcl.example`; state credentials must not be stored with
+the application environment.
 
 Run `scripts/tofu-plan.sh staging` first. `scripts/tofu-apply.sh` requires a
 reviewed plan plus `CONFIRM_INFRA_APPLY=<environment>`. A provider account,
@@ -58,14 +61,16 @@ Docker database network and publishes no host port. Production values live in an
 untracked `.env.production` based on `.env.production.example`; never bake
 them into images.
 
-The IaC reserves a stable, delete-protected production app IPv4 for DNS. It
-requires current official Cloudflare CIDRs in `edge_source_cidrs` before apply,
-so ports 80/443 never accept arbitrary direct Internet traffic.
+Before public traffic, configure the OVH host firewall so SSH remains
+key-only/administratively restricted and ports 80/443 accept only current
+official Cloudflare source CIDRs. Record a direct-origin denial test. The
+existing UFW baseline intentionally exposes only SSH until this edge rule is
+implemented and tested.
 
 The web image is promotion-safe across environments: `SITE_URL` is resolved
 server-side at runtime and CMS live-preview derives `cms.<current-domain>` in
 the browser. The WhatsApp business number is public, is intentionally supplied
-as a protected GitHub *variable* at image build time, and must never be an API
+as a protected GitHub _variable_ at image build time, and must never be an API
 secret.
 
 The production Keycloak realm is imported once from
@@ -88,9 +93,10 @@ Actions artifact retention to 14 days and set provider budget alerts at 50%,
 75%, 90% and 100% of USD 50. Staging is created only for a release rehearsal
 and destroyed immediately afterward; Cloudflare remains on its Free plan.
 
-Before production apply, select and document an independently credentialed,
-geographically separate encrypted backup target. Verify that primary Hetzner
-credentials cannot delete it. Follow `docs/operations/RESTORE-ORDER.md` and
+Before production deployment, select and document an independently
+credentialed, geographically separate encrypted backup target. Verify that
+primary OVH-host credentials cannot delete it. Follow
+`docs/operations/RESTORE-ORDER.md` and
 `docs/decisions/ADR-BACKUP-FAILURE-DOMAIN.md`.
 
 This one-server design is a cost-first launch topology, not high availability:
