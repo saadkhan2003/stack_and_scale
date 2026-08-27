@@ -9,9 +9,10 @@ services:
       - "443:443"
     environment:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}
-      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../secrets/cloudflare-origin.crt:/etc/caddy/origin.crt:ro
+      - ../secrets/cloudflare-origin.key:/etc/caddy/origin.key:ro
       - caddy-data:/data
       - caddy-config:/config
     networks: [edge]
@@ -96,7 +97,11 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
     command:
-      ["/bin/sh", "-c", "sed \"s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g\" /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl > /opt/keycloak/data/import/realm-stack-and-scale.json && exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded --hostname-strict=true"]
+      [
+        "/bin/sh",
+        "-c",
+        'sed "s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g" /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl > /opt/keycloak/data/import/realm-stack-and-scale.json && exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded --hostname-strict=true',
+      ]
     env_file: ../.env.production
     environment:
       KC_DB: postgres
@@ -113,7 +118,11 @@ services:
     volumes:
       - ./keycloak/realm-stack-and-scale.production.json.tmpl:/opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl:ro
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; grep -q '200 OK' <&3"]
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\\r\\nhost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3; grep -q '200 OK' <&3",
+        ]
       interval: 15s
       timeout: 5s
       retries: 20

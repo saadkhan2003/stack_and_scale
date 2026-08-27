@@ -1,9 +1,15 @@
 {
-	email {$ACME_EMAIL}
 	admin off
 }
 
+(cloudflare_origin_tls) {
+	# The origin permits Cloudflare only, so public ACME HTTP challenges cannot
+	# reach it. A Cloudflare Origin Certificate works with Full (strict) mode.
+	tls /etc/caddy/origin.crt /etc/caddy/origin.key
+}
+
 {$PUBLIC_DOMAIN} {
+	import cloudflare_origin_tls
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
@@ -20,6 +26,7 @@
 }
 
 cms.{$PUBLIC_DOMAIN} {
+	import cloudflare_origin_tls
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
@@ -35,6 +42,7 @@ cms.{$PUBLIC_DOMAIN} {
 }
 
 api.{$PUBLIC_DOMAIN} {
+	import cloudflare_origin_tls
 	header {
 		Cache-Control "no-store"
 		X-Content-Type-Options "nosniff"
@@ -50,6 +58,7 @@ api.{$PUBLIC_DOMAIN} {
 }
 
 identity.{$PUBLIC_DOMAIN} {
+	import cloudflare_origin_tls
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"

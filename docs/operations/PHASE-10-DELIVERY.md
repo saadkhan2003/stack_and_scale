@@ -89,6 +89,25 @@ official Cloudflare source CIDRs. Record a direct-origin denial test. The
 existing UFW baseline intentionally exposes only SSH until this edge rule is
 implemented and tested.
 
+### Cloudflare Origin Certificate
+
+Because the OVH firewall intentionally permits ports 80 and 443 only from
+Cloudflare CIDRs, public ACME/Let's Encrypt HTTP validation must not be used at
+the origin. Before the first application promotion, create a Cloudflare Origin
+Certificate for `stackandscale.org` and `*.stackandscale.org` in **Cloudflare
+→ SSL/TLS → Origin Server**. Save the displayed certificate and private key on
+the VPS as:
+
+```text
+/opt/stack-and-scale/secrets/cloudflare-origin.crt
+/opt/stack-and-scale/secrets/cloudflare-origin.key
+```
+
+Set both modes to `0600`, and set Cloudflare SSL/TLS encryption mode to **Full
+(strict)**. Caddy uses these local files for the website, API, CMS and identity
+origin hosts. Never commit either file or put the private key in GitHub
+Actions.
+
 The web image is promotion-safe across environments: `SITE_URL` is resolved
 server-side at runtime and CMS live-preview derives `cms.<current-domain>` in
 the browser. The WhatsApp business number is public, is intentionally supplied

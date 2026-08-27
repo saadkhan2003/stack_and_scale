@@ -24,6 +24,10 @@ if [[ "${observability_enabled}" != "0" && "${observability_enabled}" != "1" ]];
   echo "Refusing deployment: ENABLE_OBSERVABILITY must be 0 or 1." >&2
   exit 2
 fi
+ssh "${remote}" "test -s ${remote_root}/secrets/cloudflare-origin.crt && test -s ${remote_root}/secrets/cloudflare-origin.key" || {
+  echo "Refusing deployment: Cloudflare Origin Certificate files are missing from ${remote_root}/secrets/." >&2
+  exit 2
+}
 
 # Synchronize only deployment configuration. Target-host secret files are never
 # copied from CI or a developer machine.
