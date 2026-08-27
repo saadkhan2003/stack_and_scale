@@ -57,7 +57,7 @@ browser evidence, result and follow-up in this file or a dated linked record.
 ### Backup, recovery and security operations
 
 - [ ] Create a geographically separate Restic repository under credentials or
-      account separation from Hetzner; confirm primary-host credentials cannot
+      account separation from OVHcloud; confirm primary-host credentials cannot
       delete it.
 - [ ] Install and run the backup system timer. Verify encryption, retention,
       sampled integrity check and the `backup_last_success` metric.

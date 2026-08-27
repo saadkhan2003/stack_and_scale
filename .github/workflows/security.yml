@@ -29,7 +29,12 @@ jobs:
           output: trivy-filesystem.sarif
           severity: CRITICAL,HIGH
           exit-code: "0"
-      - name: Upload security findings
-        uses: github/codeql-action/upload-sarif@v4
+      # Private repositories without GitHub Advanced Security cannot accept
+      # SARIF results through the Code Scanning API. Keep the scan itself
+      # mandatory and retain its report as a workflow artifact instead.
+      - name: Retain security findings
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: trivy-filesystem.sarif
+          name: trivy-filesystem-sarif
+          path: trivy-filesystem.sarif
+          if-no-files-found: error
