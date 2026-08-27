@@ -34,7 +34,18 @@ payload_secret="$(secret)"
 preview_secret="$(secret)"
 keycloak_admin_password="$(secret)"
 
-install -d -m 0750 "${app_root}" "${app_root}/secrets"
+if [[ ! -d "${app_root}" ]]; then
+  install -d -m 0750 "${app_root}"
+fi
+
+if [[ ! -w "${app_root}" ]]; then
+  echo "Refusing setup: ${app_root} must be writable by the deployment user." >&2
+  exit 2
+fi
+
+if [[ ! -d "${app_root}/secrets" ]]; then
+  install -d -m 0750 "${app_root}/secrets"
+fi
 umask 077
 cat >"${env_file}" <<EOF
 # Generated locally by scripts/bootstrap-production-secrets.sh on $(date -u +%Y-%m-%dT%H:%M:%SZ).
