@@ -59,7 +59,10 @@ trap rollback_on_failure ERR
 ssh "${remote}" "${compose} pull"
 ssh "${remote}" "${compose} up -d postgres"
 ssh "${remote}" "for attempt in \$(seq 1 20); do ${compose} exec -T postgres pg_isready -U \"\$POSTGRES_USER\" -d stack_and_scale && break; test \$attempt -eq 20 && exit 1; sleep 3; done"
-ssh "${remote}" "${compose} run --rm api node packages/database/dist/src/migrate.js"
+# tsconfig.build.json emits the database package source directly into dist/.
+# Keep this in sync with packages/database/tsconfig.build.json; using dist/src
+# would make a first production release stop after PostgreSQL is healthy.
+ssh "${remote}" "${compose} run --rm api node packages/database/dist/migrate.js"
 ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak postgres"
 if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "${compose} up -d prometheus loki promtail grafana node-exporter cadvisor"
