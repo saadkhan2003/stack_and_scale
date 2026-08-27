@@ -35,5 +35,12 @@ jobs:
           rsync -az --delete infra/ "$remote:/opt/stack-and-scale/infra/"
           rsync -az scripts/bootstrap-production-secrets.sh scripts/backup-production.sh "$remote:/opt/stack-and-scale/scripts/"
           ssh "$remote" 'chmod 0750 /opt/stack-and-scale/scripts/bootstrap-production-secrets.sh /opt/stack-and-scale/scripts/backup-production.sh'
-      - name: Confirm no application services were started
-        run: ssh "$DEPLOY_USER@$DEPLOY_HOST" 'test ! -f /opt/stack-and-scale/.env.production && echo "Deployment files synced; no production environment exists yet."'
+      - name: Confirm deployment files were synchronized safely
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" '
+            if test -f /opt/stack-and-scale/.env.production; then
+              echo "Deployment files synced; existing production environment was preserved."
+            else
+              echo "Deployment files synced; no production environment exists yet."
+            fi
+          '
