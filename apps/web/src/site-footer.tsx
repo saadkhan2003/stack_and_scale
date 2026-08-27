@@ -12,6 +12,8 @@ export function SiteFooter() {
         <a href="/resources">Resources</a>
         <a href="/about">About</a>
         <a href="/privacy">Privacy</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/terms">Terms</a>
       </nav>
       <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>
     </footer>

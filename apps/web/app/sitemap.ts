@@ -17,6 +17,7 @@ const staticPaths = [
   "/contact",
   "/privacy",
   "/cookies",
+  "/terms",
 ];
 const collectionPaths = {
   products: "/products",
