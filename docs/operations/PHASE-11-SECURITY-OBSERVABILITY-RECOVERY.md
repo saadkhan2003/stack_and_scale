@@ -5,8 +5,7 @@
 This runbook activates the Phase 11 local implementation. It does not claim a
 live production deployment, a configured backup provider, an alert recipient,
 or a successful restore drill. Those must be recorded as evidence after the
-owner creates the Hetzner, Cloudflare, domain, backup and notification
-accounts.
+owner completes the OVH, Cloudflare, domain, backup and notification setup.
 
 Telemetry must contain correlation IDs, route templates, status codes and
 timing only. Never log request bodies, form content, cookies, authorization
@@ -24,7 +23,7 @@ Before enabling it on the server:
 
 1. Generate a 32-byte-or-longer metrics token and a separate Grafana admin
    password. Store each in the protected server files below with `0600`
-   permission, owned by `deployer`.
+   permission, owned by `ubuntu`.
 2. Create `/opt/stack-and-scale/secrets/metrics-bearer-token` and
    `/opt/stack-and-scale/secrets/grafana-admin-password`.
 3. Change the two Compose secret `file:` paths to these protected paths if the
@@ -32,7 +31,7 @@ Before enabling it on the server:
 4. Start with:
 
    ```bash
-   IMAGE_TAG=COMMIT_SHA IMAGE_REGISTRY=ghcr.io/OWNER/stack-and-scale \
+   IMAGE_TAG=COMMIT_SHA IMAGE_REGISTRY=ghcr.io/OWNER/LOWERCASE_REPOSITORY \
      docker compose --env-file /opt/stack-and-scale/.env.production \
      -f /opt/stack-and-scale/infra/compose.production.yaml \
      -f /opt/stack-and-scale/infra/compose.observability.yaml up -d
@@ -45,7 +44,7 @@ Before enabling it on the server:
 5. Tunnel Grafana rather than expose it:
 
    ```bash
-   ssh -L 3001:127.0.0.1:3001 deployer@SERVER_IP
+   ssh -L 3001:127.0.0.1:3001 ubuntu@SERVER_IP
    ```
 
    If Grafana is internal-only, use Docker's internal service access through an
@@ -54,7 +53,7 @@ Before enabling it on the server:
 
 The current allocation is a maximum of 1.25 GiB RAM and 1.15 vCPU across the
 monitoring containers. Measure it under representative traffic before treating
-it as safe on the CX33; reduce traces first, then log retention, then metrics
+it as safe on the OVH VPS-2; reduce traces first, then log retention, then metrics
 retention if core services are affected.
 
 ## Alerts
@@ -86,7 +85,7 @@ content or personal data as metric labels.
 captures deployment/IaC/monitoring artifacts, encrypts them with Restic and
 prunes to 14 daily, 8 weekly and 12 monthly recovery points. Its Restic
 repository and password file must use a provider/account or credentials
-independent from Hetzner. Provider server backups are useful convenience copies,
+independent from OVH. Provider server backups are useful convenience copies,
 not a substitute.
 
 Install the timer only after `backup.env` has independently protected
@@ -124,7 +123,7 @@ file. Do not overwrite the live database during a drill.
 - Patch the host and base images monthly, and urgently for actively exploited
   critical vulnerabilities; use immutable image promotion and rollback.
 - Review staff memberships, privileged roles, SSH keys, deploy keys and
-  Cloudflare/Hetzner access every quarter and on staff departure.
+  Cloudflare/OVH access every quarter and on staff departure.
 - Rotate application, backup, identity, webhook and recovery secrets under
   [the secrets ADR](../decisions/ADR-SECRETS-MANAGEMENT.md). Preserve access,
   approval and rotation evidence without preserving secret values.
@@ -145,7 +144,7 @@ file. Do not overwrite the live database during a drill.
 
 Deploy `infra/status/` to an independently hosted Cloudflare Pages project or
 another separate provider at `status.DOMAIN`. It must not be served by the
-Hetzner application origin. Keep a separate Cloudflare administrator/recovery
+OVH application origin. Keep a separate Cloudflare administrator/recovery
 path and test it during a simulated primary-host outage.
 
 Status template:
