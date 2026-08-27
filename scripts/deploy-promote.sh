@@ -70,7 +70,12 @@ fi
 ssh "${remote}" "for attempt in \$(seq 1 12); do ${compose} exec -T api node -e \"fetch('http://127.0.0.1:3100/ready').then(r => process.exit(r.ok ? 0 : 1))\" && break; test \$attempt -eq 12 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1))\""
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/api/demo-slots').then(r => process.exit(r.ok ? 0 : 1))\""
-ssh "${remote}" "docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-keycloak-1 | grep -qx healthy"
+# Keycloak and Payload can take longer than the API to warm up on a modest
+# single-host VPS. Wait for their Docker health checks instead of accepting a
+# deployment while the CMS or identity provider is still restarting.
+ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-cms-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
+ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-keycloak-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
+ssh "${remote}" "docker inspect --format '{{.State.Running}}' stack-and-scale-production-caddy-1 | grep -qx true"
 schema_version="$(ssh "${remote}" "${compose} exec -T api node -e \"const fs=require('fs'); const files=fs.readdirSync('packages/database/migrations').filter(f=>/^[0-9]+.*\\.sql$/.test(f)).sort(); process.stdout.write(files.at(-1) || 'unknown')\"" || true)"
 ssh "${remote}" "mkdir -p ${remote_root}/deployments && printf '%s\\n' '{\"environment\":\"${environment}\",\"imageTag\":\"${image_tag}\",\"schemaVersion\":\"${schema_version:-unknown}\"}' | tee ${remote_root}/deployments/${image_tag}.json > ${remote_root}/deployments/current.json"
 trap - ERR

@@ -14,7 +14,7 @@ COPY . .
 RUN pnpm --filter @stack-and-scale/web build
 
 FROM node:24.18.0-bookworm-slim AS runtime
-WORKDIR /workspace
+WORKDIR /workspace/apps/web
 ENV NODE_ENV=production
 RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
 COPY --from=build --chown=app:app /workspace /workspace

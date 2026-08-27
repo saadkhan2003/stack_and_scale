@@ -18,7 +18,10 @@ services:
     networks: [edge]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
-    cap_add: [NET_BIND_SERVICE]
+    # The private Origin Certificate is intentionally mode 0600 on the host.
+    # Caddy runs with no general privileges; this read-only capability is needed
+    # solely to read that bind-mounted certificate and private key.
+    cap_add: [NET_BIND_SERVICE, DAC_READ_SEARCH]
 
   web:
     image: ${IMAGE_REGISTRY:?set IMAGE_REGISTRY}/web:${IMAGE_TAG:?set IMAGE_TAG}
@@ -99,13 +102,16 @@ services:
     # The image's default entrypoint is kc.sh. Replace it with a shell so the
     # realm template is rendered before Keycloak starts.
     entrypoint: ["/bin/sh", "-c"]
-    command: >-
-      mkdir -p /opt/keycloak/data/import &&
-      sed "s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g"
-      /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl
-      > /opt/keycloak/data/import/realm-stack-and-scale.json &&
-      exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded
-      --hostname-strict=true
+    # Compose otherwise splits a scalar command into words after entrypoint.
+    # Keep this one shell program as the sole CMD argument for `sh -c`.
+    command:
+      - >-
+        mkdir -p /opt/keycloak/data/import &&
+        sed "s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g"
+        /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl
+        > /opt/keycloak/data/import/realm-stack-and-scale.json &&
+        exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded
+        --hostname-strict=true
     env_file: ../.env.production
     environment:
       KC_DB: postgres
