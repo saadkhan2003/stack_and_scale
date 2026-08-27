@@ -96,12 +96,16 @@ services:
     image: quay.io/keycloak/keycloak:26.0
     restart: unless-stopped
     stop_grace_period: 30s
-    command:
-      [
-        "/bin/sh",
-        "-c",
-        'sed "s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g" /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl > /opt/keycloak/data/import/realm-stack-and-scale.json && exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded --hostname-strict=true',
-      ]
+    # The image's default entrypoint is kc.sh. Replace it with a shell so the
+    # realm template is rendered before Keycloak starts.
+    entrypoint: ["/bin/sh", "-c"]
+    command: >-
+      mkdir -p /opt/keycloak/data/import &&
+      sed "s|__PUBLIC_DOMAIN__|$${PUBLIC_DOMAIN}|g"
+      /opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl
+      > /opt/keycloak/data/import/realm-stack-and-scale.json &&
+      exec /opt/keycloak/bin/kc.sh start --import-realm --proxy-headers=xforwarded
+      --hostname-strict=true
     env_file: ../.env.production
     environment:
       KC_DB: postgres
