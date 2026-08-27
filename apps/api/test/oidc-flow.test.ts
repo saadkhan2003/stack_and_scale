@@ -11,6 +11,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
   createPostgresPoolFromEnv,
+  runMigrations,
   type DatabasePool,
 } from "@stack-and-scale/database";
 
@@ -70,6 +71,7 @@ describe("oidc browser flow", () => {
 
   beforeAll(async () => {
     key = makeKey("flow-key-1");
+    await runMigrations();
 
     const validator = new TokenValidator({
       issuers: [ISSUER],
