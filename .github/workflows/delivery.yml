@@ -110,4 +110,4 @@ jobs:
       - name: Promote only with configured protected-environment secrets
         env:
           CONFIRM_PRODUCTION_DEPLOY: ${{ github.sha }}
-        run: scripts/deploy-promote.sh "${{ inputs.environment }}" "${{ github.sha }}"
+        run: bash scripts/deploy-promote.sh "${{ inputs.environment }}" "${{ github.sha }}"
