@@ -122,6 +122,9 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_BOOTSTRAP_ADMIN_USERNAME:?set KEYCLOAK_BOOTSTRAP_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD:?set KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: "true"
+      # Caddy terminates Cloudflare Origin TLS at the edge; Keycloak receives
+      # only the private HTTP hop on the Docker network.
+      KC_HTTP_ENABLED: "true"
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME: identity.${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}
     networks: [edge, application, database]
