@@ -63,6 +63,7 @@ Then open an SSH terminal to the VPS and run:
 cd /opt/stack-and-scale
 ACME_EMAIL='your-admin-notification-inbox' \
 CRM_NOTIFICATION_EMAIL='your-admin-notification-inbox' \
+IMAGE_REGISTRY='ghcr.io/your-github-user/your-lowercase-repository' \
 bash scripts/bootstrap-production-secrets.sh
 ```
 

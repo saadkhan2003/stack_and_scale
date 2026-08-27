@@ -11,6 +11,7 @@ readonly credentials_file="${app_root}/secrets/initial-keycloak-admin.txt"
 readonly public_domain="${PUBLIC_DOMAIN:-stackandscale.org}"
 readonly acme_email="${ACME_EMAIL:?set ACME_EMAIL to the administrator notification address}"
 readonly notification_email="${CRM_NOTIFICATION_EMAIL:?set CRM_NOTIFICATION_EMAIL to the administrator notification address}"
+readonly image_registry="${IMAGE_REGISTRY:?set IMAGE_REGISTRY to the lowercase GHCR application path}"
 
 if [[ -e "${env_file}" ]]; then
   echo "Refusing to overwrite existing ${env_file}. Rotate values through the documented procedure instead." >&2
@@ -59,8 +60,8 @@ ACME_EMAIL=${acme_email}
 WEB_PUBLIC_URL=https://${public_domain}
 CMS_PUBLIC_URL=https://cms.${public_domain}
 API_PUBLIC_URL=https://api.${public_domain}
-# The deployment workflow supplies IMAGE_REGISTRY and IMAGE_TAG at runtime.
-IMAGE_REGISTRY=
+# The deployment workflow supplies IMAGE_TAG at runtime.
+IMAGE_REGISTRY=${image_registry}
 CRM_NOTIFICATION_EMAIL=${notification_email}
 
 # Configure these later when the corresponding operational provider is ready.
