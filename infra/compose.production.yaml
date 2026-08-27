@@ -150,8 +150,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
+    # The official image starts as root solely to prepare its data/runtime
+    # directories, then drops to the postgres user. Its private Docker network
+    # and the absence of host-published database ports remain enforced.
     deploy:
       resources:
         limits: { cpus: "1.50", memory: 2048M }
