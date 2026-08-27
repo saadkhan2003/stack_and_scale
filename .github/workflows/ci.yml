@@ -27,6 +27,11 @@ jobs:
           pnpm --version
 
       - run: pnpm install --frozen-lockfile
+      # The workers import the public contracts/database packages. Build their
+      # declaration files before type-aware ESLint resolves those package
+      # exports in a clean checkout.
+      - name: Build internal lint dependencies
+        run: pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
