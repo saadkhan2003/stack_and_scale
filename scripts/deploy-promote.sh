@@ -63,6 +63,10 @@ ssh "${remote}" "for attempt in \$(seq 1 20); do ${compose} exec -T postgres pg_
 # Keep this in sync with packages/database/tsconfig.build.json; using dist/src
 # would make a first production release stop after PostgreSQL is healthy.
 ssh "${remote}" "${compose} run --rm api node packages/database/dist/migrate.js"
+# Payload owns its CMS schema independently from the application database
+# migrations. Run it before starting the CMS so a brand-new production volume
+# cannot enter a restart loop while querying collections that do not exist yet.
+ssh "${remote}" "${compose} run --rm cms node_modules/.bin/payload migrate"
 ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak postgres"
 if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "${compose} up -d prometheus loki promtail grafana node-exporter cadvisor"
