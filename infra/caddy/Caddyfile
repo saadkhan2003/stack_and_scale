@@ -43,6 +43,9 @@ api.{$PUBLIC_DOMAIN} {
 	request_body {
 		max_size 2MB
 	}
+	handle /metrics* {
+		respond "Not found" 404
+	}
 	reverse_proxy api:3100
 }
 

@@ -1,0 +1,52 @@
+groups:
+  - name: stack-and-scale-platform
+    rules:
+      - alert: ApiUnavailable
+        expr: up{job="api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          owner: platform-on-call
+        annotations:
+          summary: API metrics target is unreachable.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: ApiServerErrors
+        expr: increase(stack_and_scale_api_failures_total[10m]) > 5
+        for: 5m
+        labels:
+          severity: high
+          owner: platform-on-call
+        annotations:
+          summary: API produced more than five 5xx responses in ten minutes.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: HostDiskNearlyFull
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) < 0.20
+        for: 15m
+        labels:
+          severity: high
+          owner: platform-on-call
+        annotations:
+          summary: Host filesystem has less than 20% free capacity.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: HostMemoryPressure
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.15
+        for: 10m
+        labels:
+          severity: high
+          owner: platform-on-call
+        annotations:
+          summary: Host memory availability is below 15%.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: BackupMissed
+        expr: time() - stack_and_scale_backup_last_success_unixtime > 93600
+        for: 15m
+        labels:
+          severity: critical
+          owner: platform-on-call
+        annotations:
+          summary: No verified encrypted backup has completed in 26 hours.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#backup-and-restore

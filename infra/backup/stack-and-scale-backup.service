@@ -1,0 +1,13 @@
+[Unit]
+Description=Stack & Scale encrypted production backup
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deployer
+Group=deployer
+EnvironmentFile=/etc/stack-and-scale/backup.env
+ExecStart=/opt/stack-and-scale/scripts/backup-production.sh
+Nice=10
+IOSchedulingClass=best-effort

@@ -6,6 +6,7 @@ packages:
   - curl
   - docker.io
   - docker-compose-plugin
+  - restic
 users:
   - default
   - name: deployer
@@ -17,6 +18,7 @@ users:
       - ${key}
 %{ endfor ~}
 runcmd:
-  - mkdir -p /opt/stack-and-scale/deployments
+  - mkdir -p /opt/stack-and-scale/deployments /opt/stack-and-scale/scripts /opt/stack-and-scale/secrets /var/lib/stack-and-scale/monitoring
   - chown -R deployer:deployer /opt/stack-and-scale
+  - chown -R deployer:deployer /var/lib/stack-and-scale
   - systemctl enable --now docker

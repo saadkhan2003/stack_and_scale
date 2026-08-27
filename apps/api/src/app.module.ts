@@ -14,12 +14,23 @@ import { PlatformDatabaseModule } from "./platform-database.module.js";
 import { RateLimitInterceptor } from "./common/http/rate-limit.interceptor.js";
 import { RateLimitModule } from "./common/http/rate-limit.module.js";
 import { CrmModule } from "./crm/crm.module.js";
+import { MetricsInterceptor } from "./observability/metrics.interceptor.js";
+import { MetricsService } from "./observability/metrics.service.js";
 
 @Module({
-  imports: [AuthModule, SessionModule, InvitationModule, PlatformDatabaseModule, LeadModule, CrmModule, RateLimitModule],
+  imports: [
+    AuthModule,
+    SessionModule,
+    InvitationModule,
+    PlatformDatabaseModule,
+    LeadModule,
+    CrmModule,
+    RateLimitModule,
+  ],
   controllers: [AppController, IdentityController],
   providers: [
     TenantAccessService,
+    MetricsService,
     {
       provide: APP_INTERCEPTOR,
       useClass: CorrelationIdInterceptor,
@@ -27,6 +38,10 @@ import { CrmModule } from "./crm/crm.module.js";
     {
       provide: APP_INTERCEPTOR,
       useExisting: RateLimitInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
     {
       provide: APP_FILTER,

@@ -3,10 +3,13 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Inject,
   Post,
+  ServiceUnavailableException,
+  UnauthorizedException,
   Res,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
@@ -18,12 +21,15 @@ import type { CreatePrivacyRequestRecordInput } from "@stack-and-scale/database"
 
 import { openApiDocument } from "./openapi.js";
 import { PlatformDatabaseService } from "./platform-database.service.js";
+import { MetricsService } from "./observability/metrics.service.js";
 
 @Controller()
 export class AppController {
   public constructor(
     @Inject(PlatformDatabaseService)
     private readonly database: PlatformDatabaseService,
+    @Inject(MetricsService)
+    private readonly metrics: MetricsService,
   ) {}
 
   @Get("health")
@@ -44,6 +50,24 @@ export class AppController {
   @Get("openapi.json")
   openApi(): typeof openApiDocument {
     return openApiDocument;
+  }
+
+  @Get("metrics")
+  metricsEndpoint(
+    @Headers("authorization") authorization: string | undefined,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ): string {
+    const token = this.metrics.configuredBearerToken();
+    if (token === undefined) {
+      throw new ServiceUnavailableException(
+        "Metrics exporter is not configured.",
+      );
+    }
+    if (authorization !== `Bearer ${token}`) {
+      throw new UnauthorizedException("Metrics authorization is required.");
+    }
+    reply.header("content-type", "text/plain; version=0.0.4; charset=utf-8");
+    return this.metrics.renderPrometheus();
   }
 
   @Get("ready")

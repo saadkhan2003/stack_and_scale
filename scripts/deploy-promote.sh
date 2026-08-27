@@ -19,11 +19,25 @@ fi
 
 remote="${DEPLOY_USER}@${DEPLOY_HOST}"
 remote_root="/opt/stack-and-scale"
+observability_enabled="${ENABLE_OBSERVABILITY:-0}"
+if [[ "${observability_enabled}" != "0" && "${observability_enabled}" != "1" ]]; then
+  echo "Refusing deployment: ENABLE_OBSERVABILITY must be 0 or 1." >&2
+  exit 2
+fi
 
 # Synchronize only deployment configuration. Target-host secret files are never
 # copied from CI or a developer machine.
 rsync -az --delete infra/ "${remote}:${remote_root}/infra/"
+rsync -az scripts/backup-production.sh "${remote}:${remote_root}/scripts/backup-production.sh"
+ssh "${remote}" "chmod 0750 ${remote_root}/scripts/backup-production.sh"
 compose="IMAGE_TAG=${image_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production -f ${remote_root}/infra/compose.production.yaml"
+if [[ "${observability_enabled}" == "1" ]]; then
+  ssh "${remote}" "test -s ${remote_root}/secrets/metrics-bearer-token && test -s ${remote_root}/secrets/grafana-admin-password" || {
+    echo "Refusing observability deployment: protected metrics and Grafana secret files are missing." >&2
+    exit 2
+  }
+  compose+=" -f ${remote_root}/infra/compose.observability.yaml"
+fi
 printf '%s' "${REGISTRY_READ_TOKEN}" | ssh "${remote}" "docker login $(printf '%q' "${IMAGE_REGISTRY%%/*}") --username $(printf '%q' "${REGISTRY_READ_USER}") --password-stdin"
 
 previous_tag="$(ssh "${remote}" "test -f ${remote_root}/deployments/current.json && sed -n 's/.*\"imageTag\":\"\([a-f0-9]*\)\".*/\1/p' ${remote_root}/deployments/current.json" || true)"
@@ -43,6 +57,9 @@ ssh "${remote}" "${compose} up -d postgres"
 ssh "${remote}" "for attempt in \$(seq 1 20); do ${compose} exec -T postgres pg_isready -U \"\$POSTGRES_USER\" -d stack_and_scale && break; test \$attempt -eq 20 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} run --rm api node packages/database/dist/src/migrate.js"
 ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak postgres"
+if [[ "${observability_enabled}" == "1" ]]; then
+  ssh "${remote}" "${compose} up -d prometheus loki promtail grafana node-exporter cadvisor"
+fi
 ssh "${remote}" "for attempt in \$(seq 1 12); do ${compose} exec -T api node -e \"fetch('http://127.0.0.1:3100/ready').then(r => process.exit(r.ok ? 0 : 1))\" && break; test \$attempt -eq 12 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1))\""
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/api/demo-slots').then(r => process.exit(r.ok ? 0 : 1))\""

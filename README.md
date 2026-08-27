@@ -10,8 +10,9 @@ deployment foundation. Product decisions and implementation authority are in
 is in [status.md](./status.md).
 
 > **Current state:** Phases 00–10 are implemented and verified locally where
-> possible. Production infrastructure has **not** been provisioned yet. Do not
-> treat the repository as a live production deployment.
+> possible. Phase 11 has a verified local telemetry, monitoring, backup and
+> recovery foundation. Production infrastructure has **not** been provisioned
+> yet. Do not treat the repository as a live production deployment.
 
 ## What is included
 
@@ -26,6 +27,8 @@ is in [status.md](./status.md).
 - Transactional email outbox with local Mailpit capture and a production
   Resend adapter.
 - Docker, Caddy, OpenTofu and GitHub Actions delivery artifacts for Phase 10.
+- Internal metrics/logging, monitoring configuration, encrypted-backup tooling
+  and security/incident operations artifacts for Phase 11.
 
 ## Architecture
 
@@ -55,16 +58,16 @@ and can be restored when capacity or reliability requires it:
 
 ## Technology
 
-| Area | Choice | Purpose |
-| --- | --- | --- |
-| Public web | Next.js / React | Public site, forms and staff UI |
-| API | NestJS + Fastify | Business APIs, CRM and intent processing |
-| CMS | Payload CMS | Editorial content and publishing workflow |
-| Database | PostgreSQL | Leads, CRM, CMS, audit and outbox data |
-| Identity | Keycloak | Login, roles, sessions, recovery and verification |
-| Workers | Node.js | Durable transactional-email delivery |
-| Edge | Caddy + Cloudflare Free | TLS, request routing and security headers |
-| Delivery | Docker, OpenTofu, GitHub Actions | Reproducible infrastructure and promotion |
+| Area       | Choice                           | Purpose                                           |
+| ---------- | -------------------------------- | ------------------------------------------------- |
+| Public web | Next.js / React                  | Public site, forms and staff UI                   |
+| API        | NestJS + Fastify                 | Business APIs, CRM and intent processing          |
+| CMS        | Payload CMS                      | Editorial content and publishing workflow         |
+| Database   | PostgreSQL                       | Leads, CRM, CMS, audit and outbox data            |
+| Identity   | Keycloak                         | Login, roles, sessions, recovery and verification |
+| Workers    | Node.js                          | Durable transactional-email delivery              |
+| Edge       | Caddy + Cloudflare Free          | TLS, request routing and security headers         |
+| Delivery   | Docker, OpenTofu, GitHub Actions | Reproducible infrastructure and promotion         |
 
 Keycloak, PostgreSQL, Docker, Caddy and OpenTofu are open source. They do not
 require software licences; the production costs are the Hetzner server, domain,
@@ -100,14 +103,14 @@ migrations, then starts the API and web application.
 
 ### Local URLs
 
-| Service | URL |
-| --- | --- |
-| Public web | http://localhost:3000 |
-| Contact form | http://localhost:3000/contact |
-| API health | http://127.0.0.1:3100/health |
-| API readiness | http://127.0.0.1:3100/ready |
-| Keycloak | http://localhost:8084 |
-| Mailpit inbox | http://localhost:8025 |
+| Service       | URL                           |
+| ------------- | ----------------------------- |
+| Public web    | http://localhost:3000         |
+| Contact form  | http://localhost:3000/contact |
+| API health    | http://127.0.0.1:3100/health  |
+| API readiness | http://127.0.0.1:3100/ready   |
+| Keycloak      | http://localhost:8084         |
+| Mailpit inbox | http://localhost:8025         |
 
 The Keycloak development credentials are intentionally local-only. Never copy
 them to staging or production.
@@ -198,6 +201,11 @@ The following must be completed by the infrastructure owner before production:
 Read [Phase 10 delivery operations](./docs/operations/PHASE-10-DELIVERY.md)
 and [Phase 10 verification evidence](./docs/evidence/phase-10/VERIFICATION.md)
 before attempting a deployment.
+
+Read [Phase 11 security, observability and recovery operations](./docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md)
+before enabling monitoring or backups. Its live alert routing, independent
+backup repository, external uptime check, separate status hosting and restore
+drill remain launch gates.
 
 ## Security and data handling
 
