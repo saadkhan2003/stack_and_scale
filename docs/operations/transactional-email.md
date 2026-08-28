@@ -8,7 +8,14 @@ With `NODE_ENV` other than `production`, outbound messages are captured as JSON 
 
 ## Production
 
-The built-in adapter uses Resend's free tier. Configure `RESEND_API_KEY`, `TRANSACTIONAL_EMAIL_FROM`, and `CRM_NOTIFICATION_EMAIL`; run the worker on its normal schedule. The sender domain must be verified with the provider. Publish the provider-supplied SPF and DKIM records, then add a DMARC record such as `v=DMARC1; p=none; rua=mailto:dmarc@your-domain` before gradually enforcing the policy after monitoring reports. Do not put secrets in source control.
+The built-in adapter uses Resend's free tier. Configure `RESEND_API_KEY`,
+`TRANSACTIONAL_EMAIL_FROM`, and `CRM_NOTIFICATION_EMAIL`; run the worker on
+its normal schedule. The sender domain must be verified with the provider.
+Publish the provider-supplied SPF and DKIM records, then add a DMARC record
+such as `v=DMARC1; p=none; rua=mailto:dmarc@your-domain` before gradually
+enforcing the policy after monitoring reports. Do not put secrets in source
+control. Follow [the production Resend and Keycloak runbook](RESEND-AND-KEYCLOAK-EMAIL.md)
+for the exact safe setup, including the separate Keycloak SMTP path.
 
 No booking, CRM, or lead-record operation depends on successful email delivery.
 
