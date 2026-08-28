@@ -72,17 +72,17 @@ Sign in at `https://identity.stackandscale.org/admin/` with the stored
 Keycloak administrator account. Select the **stack-and-scale** realm, then
 open **Realm settings → Email**. Use:
 
-| Field | Value |
-| --- | --- |
-| Host | `smtp.resend.com` |
-| Port | `465` |
-| Encryption | Enable SSL/TLS |
-| Authentication | On |
-| Authentication type | Password |
-| Username | `resend` |
-| Password | The same Resend API key, entered only in the Keycloak console |
-| From | The verified sender address used above |
-| From display name | `Stack & Scale` |
+| Field               | Value                                                         |
+| ------------------- | ------------------------------------------------------------- |
+| Host                | `smtp.resend.com`                                             |
+| Port                | `465`                                                         |
+| Encryption          | Enable SSL/TLS                                                |
+| Authentication      | On                                                            |
+| Authentication type | Password                                                      |
+| Username            | `resend`                                                      |
+| Password            | The same Resend API key, entered only in the Keycloak console |
+| From                | The verified sender address used above                        |
+| From display name   | `Stack & Scale`                                               |
 
 Save, then use Keycloak's **Test connection** / **Test authentication** actions
 if the console exposes them. Do not enable self-registration merely to test
