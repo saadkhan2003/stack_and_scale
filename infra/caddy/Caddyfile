@@ -17,6 +17,7 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		-Server
+		-X-Powered-By
 	}
 	encode zstd gzip
 	request_body {
@@ -33,6 +34,7 @@ cms.{$PUBLIC_DOMAIN} {
 		X-Frame-Options "SAMEORIGIN"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
+		-X-Powered-By
 	}
 	encode zstd gzip
 	request_body {
@@ -47,6 +49,7 @@ api.{$PUBLIC_DOMAIN} {
 		Cache-Control "no-store"
 		X-Content-Type-Options "nosniff"
 		-Server
+		-X-Powered-By
 	}
 	request_body {
 		max_size 2MB
@@ -64,6 +67,7 @@ identity.{$PUBLIC_DOMAIN} {
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
+		-X-Powered-By
 	}
 	reverse_proxy keycloak:8080
 }
