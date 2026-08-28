@@ -107,6 +107,36 @@ jobs:
           file: infra/docker/Dockerfile.workers
           push: true
           tags: ghcr.io/${{ github.repository }}/workers:${{ github.sha }}
+      # Promotion must stop if a just-built immutable image has a known
+      # critical or high vulnerability. Docker is authenticated to GHCR above.
+      - name: Scan API image for critical and high vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+      - name: Scan web image for critical and high vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+      - name: Scan CMS image for critical and high vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ github.repository }}/cms:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+      - name: Scan workers image for critical and high vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ github.repository }}/workers:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: "1"
       - name: Promote only with configured protected-environment secrets
         env:
           CONFIRM_PRODUCTION_DEPLOY: ${{ github.sha }}

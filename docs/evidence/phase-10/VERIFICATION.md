@@ -35,14 +35,36 @@
   browser client blocks direct JSON `/api/*` navigation, so this last check is
   recorded from the server request rather than a browser rendering.
 
+## Owner-recorded production progress — 28 August 2026
+
+The following production evidence was recorded from the OVH terminal,
+Cloudflare dashboard and headed browser after this document's initial local
+review. It proves a live first deployment, but it does not replace the
+remaining recovery, monitoring and staged-release gates below.
+
+- OVH VPS-2 is active on Ubuntu 26.04 with Docker Engine and Docker Compose.
+- Cloudflare is active for `stackandscale.org`; the apex, `www`, `api`, `cms`
+  and `identity` records are proxied to the OVH origin. UFW allows HTTP/HTTPS
+  only from Cloudflare CIDRs and retains SSH access for the operator.
+- The server has protected Cloudflare Origin Certificate files and a generated
+  `/opt/stack-and-scale/.env.production`; no secret values are recorded here.
+- PostgreSQL, API, web, CMS, workers, Caddy and Keycloak were started on the
+  host. PostgreSQL, API, CMS and Keycloak reported healthy; Keycloak uses its
+  internal HTTP listener behind Caddy's TLS termination.
+- Public endpoint checks returned HTTP 200 for the home page, CMS admin login,
+  API readiness and Keycloak discovery. A headed browser opened the public
+  home page and CMS login page without browser-console errors.
+
+The currently live images predate the following committed deployment hardening
+and contact-content fix: `10e40f9`, `b64023d` and `c91d916`. They must be
+built and promoted through the immutable delivery workflow after CI passes.
+
 ## External evidence required before marking production complete
 
-- Lowercase GitHub repository name, pushed deployment workflows, and an
-  authenticated protected-workflow bootstrap run to the OVH VPS.
-- Cloudflare Origin Certificate installed on the VPS, Cloudflare SSL/TLS set to
-  Full (strict), and proof the certificate serves all four proxied hostnames.
-- Server-local production secret generation, protected `.env.production`, and
-  the first immutable-image promotion to the OVH VPS.
+- A successful immutable-image promotion of the current `main` commit to the
+  OVH VPS, including the workflow's migration, CMS and Keycloak health gates.
+- Confirm Cloudflare SSL/TLS is set to Full (strict), and retain certificate
+  evidence for all four proxied application hostnames.
 - Protected independent encrypted backup target with independent credentials
   and a full restore rehearsal.
 - A separate disposable staging environment and OpenTofu state/plan are
@@ -56,5 +78,5 @@ substitute for the required independently credentialed, geographically separate
 encrypted backup and tested restoration evidence.
 
 The OVH VPS, Namecheap domain and Cloudflare zone were created by the owner.
-No application container, production database, server-local application secret,
-independent backup target or live deployment evidence exists yet.
+An independently credentialed backup target, its automation and restore
+evidence still do not exist.

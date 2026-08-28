@@ -23,7 +23,8 @@ Before enabling it on the server:
 
 1. Generate a 32-byte-or-longer metrics token and a separate Grafana admin
    password. Store each in the protected server files below with `0600`
-   permission, owned by `ubuntu`.
+   permission, owned by `root`. The Compose services read them through Docker
+   secrets; do not place either value in `.env.production`.
 2. Create `/opt/stack-and-scale/secrets/metrics-bearer-token` and
    `/opt/stack-and-scale/secrets/grafana-admin-password`.
 3. Change the two Compose secret `file:` paths to these protected paths if the
@@ -96,15 +97,19 @@ sudo install -m 0644 infra/backup/stack-and-scale-backup.service /etc/systemd/sy
 sudo install -m 0644 infra/backup/stack-and-scale-backup.timer /etc/systemd/system/
 sudo install -d -m 0700 /etc/stack-and-scale
 sudoedit /etc/stack-and-scale/backup.env
+sudo chmod 0600 /etc/stack-and-scale/backup.env
 sudo systemctl daemon-reload
 sudo systemctl enable --now stack-and-scale-backup.timer
 sudo systemctl start stack-and-scale-backup.service
 ```
 
 `/etc/stack-and-scale/backup.env` contains only protected references such as
-`RESTIC_REPOSITORY` and `RESTIC_PASSWORD_FILE`; it is never committed. The job
-writes a Prometheus timestamp only after Restic backup and sampled integrity
-check succeed.
+`RESTIC_REPOSITORY` and `RESTIC_PASSWORD_FILE`; it is never committed. The
+systemd unit intentionally runs as root so it works on the OVH host (which has
+an `ubuntu` operator account rather than a `deployer` account), can access the
+Docker daemon, and can safely write the host-level metric. The job writes a
+Prometheus timestamp only after Restic backup and sampled integrity check
+succeed.
 
 Restore only into an isolated environment. Follow the complete order in
 [RESTORE-ORDER.md](./RESTORE-ORDER.md), including identity, configuration,
@@ -116,10 +121,12 @@ file. Do not overwrite the live database during a drill.
 ## Security operations
 
 - The `Security scanning` GitHub workflow scans dependencies, infrastructure and
-  configuration on pull requests, `main` pushes and weekly. It publishes
-  critical/high findings to GitHub code scanning. Add image scans to the
-  immutable-image build job before production promotion; triage critical
-  findings before release and high findings within the patch cadence.
+  configuration on pull requests, `main` pushes and weekly. It retains the
+  critical/high SARIF report as a workflow artifact, which works on a private
+  repository without GitHub Advanced Security. The immutable delivery workflow
+  also blocks production promotion when any of the four built container images
+  contains a known critical or high vulnerability. Triage critical findings
+  before release and high findings within the patch cadence.
 - Patch the host and base images monthly, and urgently for actively exploited
   critical vulnerabilities; use immutable image promotion and rollback.
 - Review staff memberships, privileged roles, SSH keys, deploy keys and

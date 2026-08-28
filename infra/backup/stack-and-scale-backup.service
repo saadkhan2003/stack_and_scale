@@ -5,8 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=deployer
-Group=deployer
+# Run as the system service account. The OVH host has an `ubuntu` operator,
+# not a `deployer` account; root also permits reliable Docker access and writes
+# the host-level backup-success metric without weakening file permissions.
 EnvironmentFile=/etc/stack-and-scale/backup.env
 ExecStart=/opt/stack-and-scale/scripts/backup-production.sh
 Nice=10
