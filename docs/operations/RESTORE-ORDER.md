@@ -19,5 +19,4 @@ Restore service safely without recreating an insecure or inconsistent environmen
 
 ## Backup coverage rule
 
-Coverage includes database, point-in-time logs where adopted, identity data, CMS/configuration, media/files, IaC state, monitoring/status configuration and protected key-recovery material. The protected backup target must be geographically separate from the primary Hetzner location and use independent credentials or account separation.
-
+Coverage includes database, point-in-time logs where adopted, identity data, CMS/configuration, media/files, IaC state, monitoring/status configuration and protected key-recovery material. The protected backup target must be geographically separate from the primary OVHcloud London (UK) location and use independent credentials or account separation.
