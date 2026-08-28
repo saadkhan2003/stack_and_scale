@@ -23,6 +23,12 @@ RUN groupadd --gid 10001 app \
     && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v1.22.22 \
     && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm
 COPY --from=build --chown=app:app /production-app /workspace
+# `pnpm deploy --legacy` preserves workspace-package symlinks. Keep the
+# compiled packages at those targets so Node can resolve the API's runtime
+# imports without shipping their source or development dependencies.
+COPY --from=build --chown=app:app /workspace/packages/contracts/package.json /workspace/packages/contracts/package.json
+COPY --from=build --chown=app:app /workspace/packages/contracts/dist /workspace/packages/contracts/dist
+COPY --from=build --chown=app:app /workspace/packages/database/package.json /workspace/packages/database/package.json
 # The promotion step runs database migrations from the API image. Keep only the
 # compiled migration runner and SQL files alongside the deployed app closure.
 COPY --from=build --chown=app:app /workspace/packages/database/dist /workspace/packages/database/dist
