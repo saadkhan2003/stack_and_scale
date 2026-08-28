@@ -21,6 +21,36 @@ groups:
           summary: API produced more than five 5xx responses in ten minutes.
           runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
 
+      - alert: OutboxDeadLetter
+        expr: stack_and_scale_outbox_events{status="dead_letter"} > 0
+        for: 5m
+        labels:
+          severity: high
+          owner: platform-on-call
+        annotations:
+          summary: A durable delivery event is in the dead-letter queue.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: BookingCollisionBurst
+        expr: increase(stack_and_scale_api_requests_total{route="/leads/:leadId/bookings",status="409"}[10m]) > 5
+        for: 5m
+        labels:
+          severity: medium
+          owner: platform-on-call
+        annotations:
+          summary: Demo booking collisions exceeded the normal threshold.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
+      - alert: RepeatedAccessDenial
+        expr: sum(increase(stack_and_scale_api_requests_total{status=~"401|403"}[10m])) > 20
+        for: 5m
+        labels:
+          severity: high
+          owner: platform-on-call
+        annotations:
+          summary: Authentication or authorization denials exceeded the threshold.
+          runbook: docs/operations/PHASE-11-SECURITY-OBSERVABILITY-RECOVERY.md#alerts
+
       - alert: HostDiskNearlyFull
         expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) < 0.20
         for: 15m

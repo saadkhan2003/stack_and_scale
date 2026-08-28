@@ -76,9 +76,11 @@ alert policy is not operationally complete.
 
 Required business alert checks before launch: lead intake failure, email
 delivery/dead-letter failure, booking collision/job failure, backup miss,
-repeated authentication failure and repeated authorization denial. Add those as
-application metrics as their processing paths are instrumented; do not use form
-content or personal data as metric labels.
+repeated authentication failure and repeated authorization denial. The API now
+exports only route/status counters plus durable outbox-status gauges; the alert
+rules cover API 5xx, dead-letter events, repeated booking collisions and
+repeated `401`/`403` denials. Do not use form content or personal data as metric
+labels.
 
 ## Backup and restore
 

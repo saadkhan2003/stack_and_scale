@@ -48,5 +48,8 @@ describe("metrics endpoint", () => {
     expect(response.headers["content-type"]).toContain("text/plain");
     expect(response.body).toContain("stack_and_scale_api_requests_total");
     expect(response.body).toContain('route="/health"');
+    expect(response.body).toContain(
+      'stack_and_scale_outbox_events{status="dead_letter"}',
+    );
   });
 });

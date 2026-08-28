@@ -53,10 +53,10 @@ export class AppController {
   }
 
   @Get("metrics")
-  metricsEndpoint(
+  async metricsEndpoint(
     @Headers("authorization") authorization: string | undefined,
     @Res({ passthrough: true }) reply: FastifyReply,
-  ): string {
+  ): Promise<string> {
     const token = this.metrics.configuredBearerToken();
     if (token === undefined) {
       throw new ServiceUnavailableException(
@@ -67,7 +67,9 @@ export class AppController {
       throw new UnauthorizedException("Metrics authorization is required.");
     }
     reply.header("content-type", "text/plain; version=0.0.4; charset=utf-8");
-    return this.metrics.renderPrometheus();
+    return this.metrics.renderPrometheus({
+      outboxStatusCounts: await this.outboxStatusCounts(),
+    });
   }
 
   @Get("ready")
@@ -118,6 +120,27 @@ export class AppController {
       }
 
       throw error;
+    }
+  }
+
+  private async outboxStatusCounts(): Promise<Record<string, number>> {
+    try {
+      const result = await this.database.query(
+        "SELECT status, count(*)::integer AS count FROM platform.outbox_events GROUP BY status",
+      );
+      return Object.fromEntries(
+        result.rows.flatMap((row) => {
+          const status = row["status"];
+          const count = row["count"];
+          if (typeof status !== "string" || typeof count !== "number")
+            return [];
+          return [[status, count]];
+        }),
+      );
+    } catch {
+      // Monitoring should still report API liveness during an early migration
+      // failure or database outage; readiness exposes that dependency state.
+      return {};
     }
   }
 }

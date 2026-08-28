@@ -18,7 +18,9 @@ describe("MetricsService", () => {
       durationMs: 4,
     });
 
-    const output = metrics.renderPrometheus();
+    const output = metrics.renderPrometheus({
+      outboxStatusCounts: { dead_letter: 2, pending: 3 },
+    });
 
     expect(output).toContain(
       'method="POST",route="/api/v1/leads",status="201"',
@@ -27,6 +29,12 @@ describe("MetricsService", () => {
     expect(output).not.toContain("person@example.com");
     expect(output).toContain(
       'stack_and_scale_api_failures_total{method="GET",route="unknown"} 1',
+    );
+    expect(output).toContain(
+      'stack_and_scale_outbox_events{status="pending"} 3',
+    );
+    expect(output).toContain(
+      'stack_and_scale_outbox_events{status="dead_letter"} 2',
     );
   });
 });

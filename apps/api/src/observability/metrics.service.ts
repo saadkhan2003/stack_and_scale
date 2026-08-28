@@ -10,6 +10,17 @@ type RequestMetric = Readonly<{
 
 type Counter = Map<string, number>;
 
+export type MetricsSnapshot = Readonly<{
+  outboxStatusCounts?: Readonly<Record<string, number>>;
+}>;
+
+const outboxStatuses = [
+  "pending",
+  "processing",
+  "delivered",
+  "dead_letter",
+] as const;
+
 function labelValue(value: string): string {
   return value
     .replace(/\\\\/gu, "\\\\\\\\")
@@ -51,7 +62,7 @@ export class MetricsService {
     }
   }
 
-  renderPrometheus(): string {
+  renderPrometheus(snapshot: MetricsSnapshot = {}): string {
     const lines = [
       "# HELP stack_and_scale_api_requests_total Completed HTTP requests by route and status.",
       "# TYPE stack_and_scale_api_requests_total counter",
@@ -87,6 +98,17 @@ export class MetricsService {
       "# TYPE stack_and_scale_api_process_resident_memory_bytes gauge",
       `stack_and_scale_api_process_resident_memory_bytes ${process.memoryUsage().rss}`,
     );
+
+    lines.push(
+      "# HELP stack_and_scale_outbox_events Current durable outbox events by delivery status.",
+      "# TYPE stack_and_scale_outbox_events gauge",
+    );
+    for (const status of outboxStatuses) {
+      const count = snapshot.outboxStatusCounts?.[status] ?? 0;
+      lines.push(
+        `stack_and_scale_outbox_events${labels({ status })} ${Math.max(0, count)}`,
+      );
+    }
 
     return `${lines.join("\n")}\n`;
   }
