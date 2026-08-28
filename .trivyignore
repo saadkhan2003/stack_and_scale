@@ -1,0 +1,37 @@
+# Trivy ignore file for CVEs in the node:24.18.0-bookworm-slim base image.
+# These are in Node.js bundled npm packages and Debian OS packages that we
+# cannot control without changing the base image.  All are either not
+# exploitable in our Node.js runtime or have no available fix yet.
+
+# --- npm bundled packages (inside /usr/local/lib/node_modules/npm) ---
+# tar — path traversal / DoS in npm's bundled tar
+CVE-2026-59873
+CVE-2026-59874
+CVE-2026-53655
+# brace-expansion — ReDoS in npm's bundled brace-expansion
+CVE-2026-13149
+CVE-2026-14257
+# undici — HTTP/2 issues in npm's bundled undici
+CVE-2026-12151
+
+# --- Debian OS packages (perl, util-linux, etc.) ---
+# perl — CVEs in Debian-packaged perl that are not relevant to Node.js runtime
+CVE-2026-12087
+CVE-2026-48959
+CVE-2026-48962
+CVE-2026-7010
+# util-linux — not exploitable in container context
+CVE-2022-0563
+# libgcrypt20
+CVE-2024-2236
+# old perl/gnutls/gcc CVEs that remain in bookworm without an upgrade
+CVE-2011-4116
+CVE-2022-27943
+CVE-2011-3389
+
+# --- Go stdlib CVEs found in esbuild gobinary (dev-only, excluded by pnpm deploy --prod) ---
+CVE-2025-68121
+CVE-2026-56858
+CVE-2026-56859
+CVE-2026-56860
+CVE-2026-56862

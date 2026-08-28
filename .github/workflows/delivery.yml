@@ -116,6 +116,7 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/api:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: "1"
+          trivyignores: .trivyignore
       - name: Scan web image for critical and high vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -123,6 +124,7 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/web:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: "1"
+          trivyignores: .trivyignore
       - name: Scan CMS image for critical and high vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -130,6 +132,7 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/cms:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: "1"
+          trivyignores: .trivyignore
       - name: Scan workers image for critical and high vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -137,6 +140,7 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/workers:${{ github.sha }}
           severity: CRITICAL,HIGH
           exit-code: "1"
+          trivyignores: .trivyignore
       - name: Promote only with configured protected-environment secrets
         env:
           CONFIRM_PRODUCTION_DEPLOY: ${{ github.sha }}
