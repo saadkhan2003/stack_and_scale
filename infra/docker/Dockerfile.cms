@@ -9,15 +9,6 @@ COPY . .
 RUN pnpm --filter @stack-and-scale/cms build
 # Ship only the CMS app and its production dependency closure.
 RUN pnpm --filter @stack-and-scale/cms --prod deploy --legacy /production-app
-# `pnpm deploy --legacy` retains package-manager layout metadata.  It can carry
-# esbuild's precompiled Go binaries across from the build stage even though
-# `next start` and Payload never execute them at runtime.  Remove those
-# build-only binaries so they do not enlarge the image or trigger findings for
-# an unused Go runtime.
-RUN find /production-app -type f \( \
-      -path '*/node_modules/@esbuild/linux-*/bin/esbuild' \
-      -o -path '*/node_modules/esbuild/bin/esbuild' \
-    \) -delete
 
 FROM node:24.18.0-bookworm-slim AS runtime
 WORKDIR /workspace

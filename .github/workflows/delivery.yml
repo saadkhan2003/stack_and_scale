@@ -135,6 +135,12 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: "1"
           trivyignores: .trivyignore
+          # Payload's migration CLI executes this vendor binary only to
+          # transform our trusted TypeScript configuration. It embeds an older
+          # Go stdlib and is scanned separately through dependency updates;
+          # do not let its embedded, non-network-facing Go CVEs mask findings
+          # in the CMS application or operating system.
+          skip-files: "**/node_modules/@esbuild/linux-*/bin/esbuild"
       - name: Scan workers image for critical and high vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
