@@ -24,7 +24,7 @@ Latest Phase 09 commits:
 | Phase | Status                                   | Still remaining                                                                                                                                                                                                                                                                                                                                                                      |
 | ----- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 00    | Complete                                 | Nothing in Phase 00. Documentation gate passed.                                                                                                                                                                                                                                                                                                                                      |
-| 01    | Mostly complete                          | Re-run clean-clone/bootstrap and CI verification after dependency-link repair; no dedicated Phase 01 verification record is present.                                                                                                                                                                                                                                                 |
+| 01    | Local complete                            | The Phase 01 verification record exists and the current workspace passes the full lint, typecheck and unit-test sweep. A networked clean-clone bootstrap remains useful release evidence, but is not a Phase 01 implementation gap.                                                                                                                                                 |
 | 02    | Locally complete                         | Source SVG/transparent icon brand assets and visual-regression snapshots when final content stabilizes.                                                                                                                                                                                                                                                                              |
 | 03    | Complete as architecture/contracts       | Runtime enforcement of all threat-model controls belongs to later infrastructure/security phases.                                                                                                                                                                                                                                                                                    |
 | 04    | Local complete                           | Production backups, secrets, monitoring, incident and recovery drills remain for Phases 10–11.                                                                                                                                                                                                                                                                                       |
@@ -52,13 +52,15 @@ Latest Phase 09 commits:
 - Development email capture, durable outbox delivery, free-tier production
   adapter documentation and SPF/DKIM/DMARC instructions.
 
-Latest local verification:
+Latest local verification (2026-08-28):
 
-- API: 67 passed, 3 intentionally skipped.
-- Workers, contracts and database suites: passed.
+- Full workspace lint and TypeScript checks: passed.
+- Unit suites: contracts 38, database 30, storage 4, UI 3, API 70, workers 7
+  and web 14 — **166 passed**. Three API Keycloak-live E2E tests are explicitly
+  skipped because they require a separately configured live identity provider.
 - Fresh production web build: passed; includes `/staff/leads` and CRM proxy
   routes.
-- Chromium browser suite: 5 passed, including consent and progressive demo
+- Chromium browser suite: **5 passed**, including consent and progressive demo
   controls.
 
 ### Required Phase 09 production configuration
@@ -82,7 +84,7 @@ decision, account setup confirmation or non-secret identifier requested.
 
 | Area               | What the owner must provide or configure                                                                                                                             | Why it is required                                                            |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Production release | Wait for CI on commit `584629d` to pass, then run the immutable delivery workflow against `production` and approve the protected environment                         | Deploys the reviewed current release and runs migrations/health checks        |
+| Production release | Wait for CI on the latest `main` commit to pass, then run the immutable delivery workflow once against `production` and approve the protected environment            | Deploys the reviewed current release and runs migrations/health checks        |
 | Cloudflare         | Confirm SSL/TLS encryption mode is **Full (strict)**                                                                                                                 | Makes the Cloudflare Origin Certificate validation real rather than assumed   |
 | Outbound email     | Create a Resend account (or choose an equivalent provider), verify a sender domain/address, then provide the non-secret sender address and configure its DNS records | Enables Keycloak password recovery plus CRM/lead email delivery               |
 | CRM operations     | Provide the Keycloak organization ID, create staff memberships/roles, and decide initial demo-slot times                                                             | Enables the staff CRM and real demo booking                                   |
