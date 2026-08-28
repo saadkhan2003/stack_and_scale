@@ -14,7 +14,10 @@ RUN pnpm --filter @stack-and-scale/cms --prod deploy --legacy /production-app
 # `next start` and Payload never execute them at runtime.  Remove those
 # build-only binaries so they do not enlarge the image or trigger findings for
 # an unused Go runtime.
-RUN find /production-app/node_modules -type f -path '*/@esbuild/linux-*/bin/esbuild' -delete
+RUN find /production-app -type f \( \
+      -path '*/node_modules/@esbuild/linux-*/bin/esbuild' \
+      -o -path '*/node_modules/esbuild/bin/esbuild' \
+    \) -delete
 
 FROM node:24.18.0-bookworm-slim AS runtime
 WORKDIR /workspace
