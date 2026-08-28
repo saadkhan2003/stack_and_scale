@@ -5,11 +5,13 @@
 Implemented locally in the Phase 11 operations foundation:
 
 - API correlation-aware structured logs and a redacted, bearer-token-protected
-  Prometheus endpoint.
+  Prometheus endpoint. It exports only route/status counters plus bounded
+  outbox-status gauges, never customer or credential values.
 - Prometheus, Grafana, Loki, Promtail, node/container exporter, retention and
   resource-limit Compose configuration.
-- Alert rules for API availability/5xx, host disk/memory pressure and missed
-  verified backups.
+- Alert rules for API availability/5xx, durable outbox dead letters, booking
+  collision bursts, repeated authentication/authorization denials, host
+  disk/memory pressure and missed verified backups.
 - Encrypted Restic backup job, daily system timer template and a status metric
   written only after backup plus sampled repository validation succeeds.
 - Static status-page artifact intended for independently hosted publication.
