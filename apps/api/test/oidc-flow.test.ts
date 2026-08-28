@@ -19,6 +19,7 @@ import { AuthModule } from "../src/auth/auth.module.js";
 import {
   OidcFlowService,
   SESSION_COOKIE,
+  serializeCookie,
 } from "../src/auth/oidc-flow.service.js";
 import {
   TOKEN_VALIDATOR,
@@ -185,6 +186,19 @@ describe("oidc browser flow", () => {
     return jar;
   }
 
+  it("marks browser session cookies Secure in production", () => {
+    const priorNodeEnv = process.env["NODE_ENV"];
+    process.env["NODE_ENV"] = "production";
+    try {
+      expect(
+        serializeCookie({ name: "ss_session", value: "session-value" }),
+      ).toContain("Secure");
+    } finally {
+      if (priorNodeEnv === undefined) delete process.env["NODE_ENV"];
+      else process.env["NODE_ENV"] = priorNodeEnv;
+    }
+  });
+
   it("redirects sign-in start to the authorize endpoint with PKCE and state cookies", async () => {
     const response = await fastify.inject({
       method: "GET",
@@ -223,6 +237,7 @@ describe("oidc browser flow", () => {
       },
     });
     expect(callback.statusCode).toBe(302);
+    expect(callback.headers.location).toBe("/staff/leads");
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0]?.url).toBe(`${ISSUER}/protocol/openid-connect/token`);
     expect(fetchCalls[0]?.body.get("grant_type")).toBe("authorization_code");

@@ -29,6 +29,7 @@ export type CookieSpec = Readonly<{
   name: string;
   value: string;
   maxAgeSeconds?: number;
+  secure?: boolean;
 }>;
 
 export function serializeCookie(spec: CookieSpec): string {
@@ -40,6 +41,9 @@ export function serializeCookie(spec: CookieSpec): string {
   ];
   if (spec.maxAgeSeconds !== undefined) {
     parts.push(`Max-Age=${spec.maxAgeSeconds}`);
+  }
+  if (spec.secure ?? process.env["NODE_ENV"] === "production") {
+    parts.push("Secure");
   }
   return parts.join("; ");
 }

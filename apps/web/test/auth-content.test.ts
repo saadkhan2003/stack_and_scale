@@ -7,7 +7,7 @@ describe("authContentModel", () => {
     expect(authContentModel).toMatchObject({
       eyebrow: "Staff sign-in",
       heading: "Sign in to Stack & Scale.",
-      primaryAction: "Continue",
+      primaryAction: "Continue to secure sign-in",
     });
 
     expect(authContentModel.providerNote.toLowerCase()).toContain(

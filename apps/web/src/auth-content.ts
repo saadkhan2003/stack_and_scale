@@ -2,8 +2,6 @@ export type AuthContentModel = {
   eyebrow: string;
   heading: string;
   description: string;
-  emailLabel: string;
-  emailPlaceholder: string;
   primaryAction: string;
   providerNote: string;
   legalNote: string;
@@ -16,8 +14,6 @@ export function createAuthContentModel(
     "eyebrow",
     "heading",
     "description",
-    "emailLabel",
-    "emailPlaceholder",
     "primaryAction",
     "providerNote",
     "legalNote",
@@ -37,9 +33,7 @@ export const authContentModel = createAuthContentModel({
   heading: "Sign in to Stack & Scale.",
   description:
     "Use your staff account to reach dashboards, deployment tools, and operational controls.",
-  emailLabel: "Work email",
-  emailPlaceholder: "you@yourcompany.com",
-  primaryAction: "Continue",
+  primaryAction: "Continue to secure sign-in",
   providerNote:
     "Sign-in is handled by our identity provider via OpenID Connect. You will be redirected to a secure login page.",
   legalNote:

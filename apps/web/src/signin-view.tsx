@@ -13,22 +13,13 @@ export function SigninView({ model }: SigninViewProps) {
         <p>{model.description}</p>
       </div>
 
-      <form className="signin-card" action="/api/auth/oidc/start" method="post">
-        <label htmlFor="signin-email">{model.emailLabel}</label>
-        <input
-          id="signin-email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder={model.emailPlaceholder}
-          required
-        />
-        <button className="button button-primary" type="submit">
+      <div className="signin-card">
+        <a className="button button-primary" href="/api/auth/oidc/start">
           {model.primaryAction}
-        </button>
+        </a>
         <p className="signin-provider-note">{model.providerNote}</p>
         <p className="signin-legal-note">{model.legalNote}</p>
-      </form>
+      </div>
     </section>
   );
 }

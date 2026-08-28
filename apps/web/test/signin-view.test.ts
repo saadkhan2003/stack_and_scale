@@ -11,8 +11,7 @@ describe("SigninView", () => {
 
   it("consumes the shared auth content model shape", () => {
     const model = authContentModel;
-    expect(model.emailLabel).toBeTruthy();
-    expect(model.primaryAction).toBe("Continue");
+    expect(model.primaryAction).toBe("Continue to secure sign-in");
     expect(JSON.stringify(model)).not.toMatch(/password/i);
   });
 });

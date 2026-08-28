@@ -98,7 +98,9 @@ export class OidcFlowController {
         maxAgeSeconds: 0,
       }),
     ]);
-    reply.code(302).redirect("/admin");
+    // This session belongs to the public site's staff CRM, not Payload's
+    // separately authenticated CMS administration surface.
+    reply.code(302).redirect("/staff/leads");
   }
 
   @Get("logout")
