@@ -74,6 +74,25 @@ Set and verify:
 CMS authentication does not automatically grant CRM access. The staff CRM
 requires a configured Identity/Keycloak membership in `CRM_ORGANIZATION_ID`.
 
+## Owner inputs and external gates still needed
+
+These are not source-code tasks. Do not send passwords, API keys, private keys
+or certificate contents in chat or commit them to Git. Provide only the
+decision, account setup confirmation or non-secret identifier requested.
+
+| Area               | What the owner must provide or configure                                                                                                                             | Why it is required                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Production release | Wait for CI on commit `584629d` to pass, then run the immutable delivery workflow against `production` and approve the protected environment                         | Deploys the reviewed current release and runs migrations/health checks        |
+| Cloudflare         | Confirm SSL/TLS encryption mode is **Full (strict)**                                                                                                                 | Makes the Cloudflare Origin Certificate validation real rather than assumed   |
+| Outbound email     | Create a Resend account (or choose an equivalent provider), verify a sender domain/address, then provide the non-secret sender address and configure its DNS records | Enables Keycloak password recovery plus CRM/lead email delivery               |
+| CRM operations     | Provide the Keycloak organization ID, create staff memberships/roles, and decide initial demo-slot times                                                             | Enables the staff CRM and real demo booking                                   |
+| Backups            | Choose a geographically separate Restic-compatible backup provider/account and create independent credentials outside OVH                                            | Required for encrypted off-server backups and an isolated restore rehearsal   |
+| Monitoring/alerts  | Confirm the named alert recipient and create the independent uptime-check account; later create metrics/Grafana secrets only on the server                           | Enables actionable outage, resource and backup alerts                         |
+| Secret governance  | Name a second trusted secret custodian and record the appointment/review dates in `docs/security/SECRET-CUSTODIANS.md`                                               | One person alone is not sufficient for recovery-key control                   |
+| Legal/privacy      | Supply approved legal business identity, contact route, data practices, processor/DPA decisions and retention periods                                                | Required before public collection of production personal data can be approved |
+| Search/analytics   | Verify Search Console ownership and submit the sitemap; keep analytics disabled unless an approved processor and retention policy are selected                       | Completes search and consent/analytics launch requirements                    |
+| Staging/recovery   | Authorize an isolated, disposable staging environment and its provider/account before the rollback and restore drill                                                 | A production host must not be used as the staging or restore target           |
+
 ## Authoritative evidence and caveats
 
 - `docs/evidence/phase-00/00-05/VERIFICATION.md`
