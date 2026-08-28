@@ -8,9 +8,6 @@ const payloadConfigAlias = path.resolve(dirname, "./src/payload.config.ts");
 const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["sharp"],
-  turbopack: {
-    resolveAlias: { "@payload-config": payloadConfigAlias },
-  },
   webpack: (config) => {
     config.resolve ??= {};
     config.resolve.alias ??= {};
