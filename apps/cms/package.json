@@ -22,7 +22,7 @@
     "payload": "3.x",
     "react": "19.x",
     "react-dom": "19.x",
-    "sharp": "0.34.x"
+    "sharp": "0.35.x"
   },
   "devDependencies": {
     "@payloadcms/eslint-config": "3.x",
