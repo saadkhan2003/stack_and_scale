@@ -47,11 +47,14 @@ reviewed before any apply. Staging is explicitly disposable: after its
 evidence is exported, use `CONFIRM_STAGING_DESTROY=staging
 scripts/tofu-destroy-staging.sh`. Never use the destroy helper for production.
 
-After the infrastructure apply, the secret custodian creates an untracked
-`.env.production` file from the example. The delivery workflow brings up the
-internal PostgreSQL service, waits for its health check, migrates it and then
-starts the remaining services. Only `infra/` is synchronized; secret files
-never move through CI.
+After the infrastructure apply, the secret custodian creates the untracked
+`.env.production` file by running `scripts/bootstrap-production-secrets.sh`
+on the target host. There is deliberately no committed production environment
+template: the script generates required values locally and refuses to replace
+an existing environment. The delivery workflow brings up the internal
+PostgreSQL service, waits for its health check, migrates it and then starts the
+remaining services. Only `infra/` is synchronized; secret files never move
+through CI.
 
 For the current OVH production host, create the initial environment directly
 on the host after manually running the protected **Bootstrap production host
@@ -79,9 +82,9 @@ needs host access and package-registry read access.
 
 Caddy terminates TLS and is the sole public origin service. The application,
 CMS, API and identity routes share Caddy; PostgreSQL shares only the internal
-Docker database network and publishes no host port. Production values live in an
-untracked `.env.production` based on `.env.production.example`; never bake
-them into images.
+Docker database network and publishes no host port. Production values live in
+the untracked `.env.production` generated locally by the bootstrap script;
+never bake them into images.
 
 Before public traffic, configure the OVH host firewall so SSH remains
 key-only/administratively restricted and ports 80/443 accept only current
