@@ -38,7 +38,7 @@ export const authContentModel = createAuthContentModel({
   description:
     "Use your staff account to reach dashboards, deployment tools, and operational controls.",
   emailLabel: "Work email",
-  emailPlaceholder: "you@stackandscale.com",
+  emailPlaceholder: "you@yourcompany.com",
   primaryAction: "Continue",
   providerNote:
     "Sign-in is handled by our identity provider via OpenID Connect. You will be redirected to a secure login page.",

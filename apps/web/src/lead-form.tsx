@@ -121,7 +121,7 @@ export function LeadForm() {
         <h2>Thank you — your request is with us.</h2>
         <p>
           We will reply using the email address you provided. If it is urgent,
-          email hello@stackandscale.com.
+          include that in your message.
         </p>
         <button
           className="button button-secondary"
@@ -209,8 +209,8 @@ export function LeadForm() {
       </label>
       {status === "error" ? (
         <p className="form-error" role="alert">
-          {error} Your details are still in this form. You can try again or
-          email hello@stackandscale.com.
+          {error} Your details are still in this form. You can try again
+          shortly.
         </p>
       ) : null}
       <button

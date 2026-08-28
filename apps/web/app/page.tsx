@@ -138,10 +138,7 @@ export default function HomePage() {
             Let&apos;s make your next system useful from day one.
           </h2>
         </div>
-        <a
-          className="button button-primary"
-          href="mailto:hello@stackandscale.com"
-        >
+        <a className="button button-primary" href="/contact">
           Discuss your project <span aria-hidden="true">→</span>
         </a>
       </section>

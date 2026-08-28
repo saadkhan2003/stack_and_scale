@@ -39,14 +39,17 @@ export default function TermsPage() {
           You may use our website for lawful purposes only. You agree not to:
         </p>
         <ul>
-          <li>Use the website in any way that violates applicable law or regulation.</li>
+          <li>
+            Use the website in any way that violates applicable law or
+            regulation.
+          </li>
           <li>
             Attempt to gain unauthorised access to any part of the website or
             its systems.
           </li>
           <li>
-            Interfere with or disrupt the website, servers, or networks connected
-            to it.
+            Interfere with or disrupt the website, servers, or networks
+            connected to it.
           </li>
           <li>
             Submit false, misleading, or fraudulent information through contact
@@ -63,9 +66,9 @@ export default function TermsPage() {
           consent.
         </p>
         <p>
-          Any custom software, systems, or deliverables produced under a separate
-          engagement are governed by the terms of that engagement&apos;s written
-          agreement.
+          Any custom software, systems, or deliverables produced under a
+          separate engagement are governed by the terms of that
+          engagement&apos;s written agreement.
         </p>
 
         <h2>5. Limitation of liability</h2>
@@ -106,23 +109,22 @@ export default function TermsPage() {
         <h2>9. Governing law</h2>
         <p>
           These terms are governed by the laws of England and Wales. Any dispute
-          arising from these terms shall be subject to the exclusive jurisdiction
-          of the courts of England and Wales.
+          arising from these terms shall be subject to the exclusive
+          jurisdiction of the courts of England and Wales.
         </p>
 
         <h2>10. Changes to these terms</h2>
         <p>
           We may update these terms from time to time. The latest version will
-          always be available at{" "}
-          <a href="/terms">stackandscale.org/terms</a>. Continued use of the
-          website after changes are posted constitutes acceptance of the updated
-          terms.
+          always be available at <a href="/terms">stackandscale.org/terms</a>.
+          Continued use of the website after changes are posted constitutes
+          acceptance of the updated terms.
         </p>
 
         <h2>11. Contact us</h2>
         <p>
-          For questions about these terms, email{" "}
-          <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>.
+          For questions about these terms, use our{" "}
+          <a href="/contact">contact form</a>.
         </p>
       </article>
       <SiteFooter />

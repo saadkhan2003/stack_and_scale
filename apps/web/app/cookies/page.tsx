@@ -30,8 +30,8 @@ export default function CookiesPage() {
 
         <h3>Essential cookies</h3>
         <p>
-          These cookies are necessary for the website to function. They cannot be
-          switched off.
+          These cookies are necessary for the website to function. They cannot
+          be switched off.
         </p>
         <ul>
           <li>
@@ -90,8 +90,8 @@ export default function CookiesPage() {
 
         <h2>Contact us</h2>
         <p>
-          For questions about our use of cookies, email{" "}
-          <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>.
+          For questions about our use of cookies, use our{" "}
+          <a href="/contact">contact form</a>.
         </p>
       </article>
       <SiteFooter />

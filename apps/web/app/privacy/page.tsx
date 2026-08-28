@@ -21,16 +21,14 @@ export default function PrivacyPage() {
 
         <h2>1. Who we are</h2>
         <p>
-          Stack &amp; Scale (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) builds
-          operational software for businesses. This privacy policy explains how we
-          handle personal information when you visit our website, use our contact
-          form, or engage our services.
+          Stack &amp; Scale (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;)
+          builds operational software for businesses. This privacy policy
+          explains how we handle personal information when you visit our
+          website, use our contact form, or engage our services.
         </p>
         <p>
-          Data controller: Stack &amp; Scale.
-          <br />
-          Email:{" "}
-          <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>
+          Data controller: Stack &amp; Scale. Contact: use our{" "}
+          <a href="/contact">contact form</a>.
         </p>
 
         <h2>2. Information we collect</h2>
@@ -41,60 +39,63 @@ export default function PrivacyPage() {
           content of your message.
         </p>
         <p>
-          <strong>Server logs</strong> — our hosting infrastructure automatically
-          records the IP address, browser type, pages visited, and timestamps of
-          requests. These logs are used for security, debugging, and operational
-          monitoring.
+          <strong>Server logs</strong> — our hosting infrastructure
+          automatically records the IP address, browser type, pages visited, and
+          timestamps of requests. These logs are used for security, debugging,
+          and operational monitoring.
         </p>
         <p>
-          <strong>Analytics</strong> — if you consent to analytics, we may collect
-          anonymised page-view and interaction data. Analytics are off by default
-          and only activated with your explicit consent.
+          <strong>Analytics</strong> — if you consent to analytics, we may
+          collect anonymised page-view and interaction data. Analytics are off
+          by default and only activated with your explicit consent.
         </p>
 
         <h2>3. How we use your information</h2>
         <p>We use personal information to:</p>
         <ul>
           <li>Respond to your enquiry or demo request.</li>
-          <li>Manage our working relationship, including project communication.</li>
+          <li>
+            Manage our working relationship, including project communication.
+          </li>
           <li>Operate and secure our website and infrastructure.</li>
           <li>Comply with legal obligations.</li>
         </ul>
         <p>
-          We do not sell personal information to third parties. We do not use your
-          data for profiling or automated decision-making.
+          We do not sell personal information to third parties. We do not use
+          your data for profiling or automated decision-making.
         </p>
 
         <h2>4. Legal basis for processing</h2>
-        <p>
-          We process personal information under the following legal bases:
-        </p>
+        <p>We process personal information under the following legal bases:</p>
         <ul>
           <li>
-            <strong>Consent</strong> — when you submit a form or opt in to analytics.
+            <strong>Consent</strong> — when you submit a form or opt in to
+            analytics.
           </li>
           <li>
             <strong>Contract</strong> — when processing is necessary to fulfil a
-            contract with you or take steps at your request before entering into a
-            contract.
+            contract with you or take steps at your request before entering into
+            a contract.
           </li>
           <li>
-            <strong>Legitimate interest</strong> — for security monitoring, fraud
-            prevention, and improving our services, where these interests are not
-            overridden by your rights.
+            <strong>Legitimate interest</strong> — for security monitoring,
+            fraud prevention, and improving our services, where these interests
+            are not overridden by your rights.
           </li>
         </ul>
 
         <h2>5. Data sharing</h2>
-        <p>We share personal information only with service providers who assist
-          in operating our platform:</p>
+        <p>
+          We share personal information only with service providers who assist
+          in operating our platform:
+        </p>
         <ul>
           <li>
             <strong>Hosting</strong> — OVHcloud (server infrastructure).
           </li>
           <li>
-            <strong>CDN and DNS</strong> — Cloudflare (content delivery and
-            DDoS protection).
+            <strong>CDN and DNS</strong> — Cloudflare (content delivery and DDoS
+            protection).
           </li>
           <li>
             <strong>Email delivery</strong> — Resend (transactional email).
@@ -135,21 +136,25 @@ export default function PrivacyPage() {
           <li>Correct inaccurate or incomplete information.</li>
           <li>Request deletion of your personal information.</li>
           <li>Restrict or object to certain processing activities.</li>
-          <li>Request portability of your data in a machine-readable format.</li>
-          <li>Withdraw consent at any time (without affecting prior lawful processing).</li>
+          <li>
+            Request portability of your data in a machine-readable format.
+          </li>
+          <li>
+            Withdraw consent at any time (without affecting prior lawful
+            processing).
+          </li>
         </ul>
         <p>
-          To exercise any of these rights, email{" "}
-          <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>.
-          We will respond within 30 days.
+          To exercise any of these rights, use our{" "}
+          <a href="/contact">contact form</a>. We will respond within 30 days.
         </p>
 
         <h2>8. International transfers</h2>
         <p>
-          Our servers are hosted in the United Kingdom. If you access our website
-          from outside the UK, your information may be transferred to and stored
-          in the UK. We ensure appropriate safeguards are in place for any such
-          transfer.
+          Our servers are hosted in the United Kingdom. If you access our
+          website from outside the UK, your information may be transferred to
+          and stored in the UK. We ensure appropriate safeguards are in place
+          for any such transfer.
         </p>
 
         <h2>9. Security</h2>
@@ -172,8 +177,7 @@ export default function PrivacyPage() {
         <h2>11. Contact us</h2>
         <p>
           For questions about this privacy policy or how we handle your data,
-          email{" "}
-          <a href="mailto:hello@stackandscale.com">hello@stackandscale.com</a>.
+          use our <a href="/contact">contact form</a>.
         </p>
       </article>
       <SiteFooter />

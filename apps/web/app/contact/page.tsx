@@ -22,12 +22,8 @@ export default function ContactPage() {
       <section className="contact-options">
         <LeadForm />
         <p>
-          Prefer a message? Email{" "}
-          <a className="text-link" href="mailto:hello@stackandscale.com">
-            hello@stackandscale.com
-          </a>
-          . We provide an accessible email route because no form submission
-          should be a barrier to getting in touch.
+          Use the form to tell us what you need. We will reply using the email
+          address you provide.
         </p>
       </section>
       <SiteFooter />
