@@ -7,12 +7,17 @@ COPY apps/cms/package.json apps/cms/package.json
 RUN pnpm --filter @stack-and-scale/cms... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/cms build
+# Ship only the CMS app and its production dependency closure.
+RUN pnpm --filter @stack-and-scale/cms --prod deploy --legacy /production-app
 
 FROM node:24.18.0-bookworm-slim AS runtime
-WORKDIR /workspace/apps/cms
+WORKDIR /workspace
 ENV NODE_ENV=production
-RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
-COPY --from=build --chown=app:app /workspace /workspace
+RUN groupadd --gid 10001 app \
+    && useradd --uid 10001 --gid app --create-home app \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v1.22.22 \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm
+COPY --from=build --chown=app:app /production-app /workspace
 USER app
 EXPOSE 3200
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD node -e "fetch('http://127.0.0.1:3200/admin').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"

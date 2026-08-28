@@ -10,11 +10,16 @@ COPY packages/database/package.json packages/database/package.json
 RUN pnpm --filter @stack-and-scale/workers... install --frozen-lockfile
 COPY . .
 RUN pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/workers build
+# The delivery worker needs no development or browser-test dependencies at runtime.
+RUN pnpm --filter @stack-and-scale/workers --prod deploy --legacy /production-app
 
 FROM node:24.18.0-bookworm-slim AS runtime
 WORKDIR /workspace
 ENV NODE_ENV=production
-RUN groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
-COPY --from=build --chown=app:app /workspace /workspace
+RUN groupadd --gid 10001 app \
+    && useradd --uid 10001 --gid app --create-home app \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v1.22.22 \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm
+COPY --from=build --chown=app:app /production-app /workspace
 USER app
-CMD ["node", "apps/workers/dist/src/main.js"]
+CMD ["node", "dist/src/main.js"]
