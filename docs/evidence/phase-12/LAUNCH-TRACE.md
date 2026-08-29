@@ -112,9 +112,11 @@ Observed result: Website, CMS, API, Keycloak, PostgreSQL and workers are
   Rollback refusal guard was verified without contacting production.
 Decision: partial; monitoring stack and rules are loaded, and a controlled API
   outage entered the ApiUnavailable pending state before recovering healthy.
-  The rule did not reach firing during the bounded test and no notification
-  channel is configured. Full alert notification, rollback rehearsal, privacy
-  lifecycle, backup restore and legal/content approval remain open.
+  Alertmanager is now configured with Resend STARTTLS and a controlled
+  notification request was accepted after correcting the SMTP port to 587;
+  mailbox receipt still needs operator confirmation. Full alert confirmation,
+  rollback rehearsal, privacy lifecycle, backup restore and legal/content
+  approval remain open.
 ```
 
 The launch owner must record **pass**, **blocked**, or an explicitly approved

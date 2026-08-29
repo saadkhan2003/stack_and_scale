@@ -1,5 +1,5 @@
 global:
-  smtp_smarthost: smtp.resend.com:465
+  smtp_smarthost: smtp.resend.com:587
   smtp_from: '__TRANSACTIONAL_EMAIL_FROM__'
   smtp_auth_username: resend
   smtp_auth_password: '__RESEND_API_KEY__'
