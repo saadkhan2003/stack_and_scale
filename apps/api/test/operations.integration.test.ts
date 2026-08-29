@@ -159,4 +159,113 @@ describe("staff operations approvals and authorized search", () => {
       "approved",
     ]);
   });
+
+  it("keeps knowledge tenant-scoped and mirrors it into authorized search", async () => {
+    const created = await fastify.inject({
+      method: "POST",
+      url: "/api/v1/operations/knowledge",
+      headers: { "x-actor-id": managerId, "content-type": "application/json" },
+      payload: {
+        title: "Visible onboarding",
+        contentType: "onboarding",
+        body: "Use the approved staff checklist.",
+        reviewAt: new Date(Date.now() + 86_400_000).toISOString(),
+      },
+    });
+    expect(created.statusCode).toBe(201);
+    const articleId = created.json<{ data: { id: string } }>().data.id;
+    const read = await fastify.inject({
+      method: "GET",
+      url: `/api/v1/operations/knowledge/${articleId}`,
+      headers: { "x-actor-id": managerId },
+    });
+    expect(read.statusCode).toBe(200);
+    expect(read.json<{ data: { body: string } }>().data.body).toContain(
+      "approved",
+    );
+    const search = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/search?q=onboarding",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(search.statusCode).toBe(200);
+    expect(
+      search
+        .json<{ data: { title: string }[] }>()
+        .data.map((item) => item.title),
+    ).toContain("Visible onboarding");
+    const foreignRead = await pool.query(
+      "SELECT id FROM platform.knowledge_articles WHERE id = $1 AND organization_id = $2",
+      [articleId, foreignOrg],
+    );
+    expect(foreignRead.rows).toHaveLength(0);
+    const audit = await pool.query(
+      "SELECT action FROM platform.audit_events WHERE metadata->>'articleId' = $1",
+      [articleId],
+    );
+    expect(audit.rows.map((row) => row["action"])).toContain(
+      "staff.knowledge.created",
+    );
+    const deleted = await fastify.inject({
+      method: "DELETE",
+      url: `/api/v1/operations/knowledge/${articleId}`,
+      headers: { "x-actor-id": managerId },
+    });
+    expect(deleted.statusCode).toBe(200);
+    const removedSearch = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/search?q=onboarding",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(
+      removedSearch.json<{ data: { title: string }[] }>().data,
+    ).not.toContain(expect.objectContaining({ title: "Visible onboarding" }));
+  });
+
+  it("exports bounded aggregate reports without lead PII", async () => {
+    const json = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/reports?type=funnel&format=json",
+      headers: {
+        "x-actor-id": managerId,
+        "x-correlation-id": `report-${suffix}`,
+      },
+    });
+    expect(json.statusCode).toBe(200);
+    expect(JSON.stringify(json.json())).not.toContain("visible@example.test");
+    expect(
+      json.json<{ meta: { formula: string; timezone: string } }>().meta,
+    ).toMatchObject({ timezone: "UTC" });
+    const csv = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/reports?type=conversion&format=csv",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(csv.statusCode).toBe(200);
+    expect(csv.headers["content-type"]).toContain("text/csv");
+    expect(csv.body).not.toContain("visible@example.test");
+    const bounded = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/reports?type=activity&from=2020-01-01T00:00:00.000Z&to=2021-01-01T00:00:00.000Z",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(bounded.statusCode).toBe(400);
+    const invalidDate = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/reports?type=funnel&from=not-a-date",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(invalidDate.statusCode).toBe(400);
+    const memberCsv = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/operations/reports?type=funnel&format=csv",
+      headers: { "x-actor-id": `missing-${suffix}` },
+    });
+    expect(memberCsv.statusCode).toBe(403);
+    const audit = await pool.query(
+      "SELECT correlation_id FROM platform.audit_events WHERE action = 'staff.report.exported' AND organization_id = $1 AND correlation_id = $2",
+      [organizationId, `report-${suffix}`],
+    );
+    expect(audit.rows).toHaveLength(1);
+  });
 });

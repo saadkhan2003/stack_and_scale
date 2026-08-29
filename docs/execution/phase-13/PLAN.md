@@ -25,8 +25,12 @@ an actionable operations surface without introducing a paid platform.
 - Step 13.2 owns dashboard read models and dashboard tests.
 - Step 13.7 owns notification records, delivery state, preferences, outbox
   integration, staff inbox route and notification tests.
+- Step 13.8 owns the tenant-scoped knowledge schema, CRUD/search mirror,
+  staff page and knowledge integration tests.
+- Step 13.9 owns aggregate report queries, bounded JSON/CSV export, audit
+  records, staff page and report integration tests.
 - Authorization and CRM schema files remain frozen until a separate contract
-  change is approved.
+  change is approved; 13.8/13.9 only add permissions for their own routes.
 
 ## Capacity and cost
 

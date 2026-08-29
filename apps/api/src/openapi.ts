@@ -121,5 +121,17 @@ export const openApiDocument = {
         responses: { "200": { description: "Task completed" } },
       },
     },
+    "/api/v1/operations/knowledge": {
+      get: { summary: "List authorized internal knowledge articles" },
+      post: { summary: "Create an internal knowledge article" },
+    },
+    "/api/v1/operations/knowledge/{articleId}": {
+      get: { summary: "Read an authorized knowledge article" },
+      patch: { summary: "Update an internal knowledge article" },
+      delete: { summary: "Delete an internal knowledge article" },
+    },
+    "/api/v1/operations/reports": {
+      get: { summary: "Return a bounded aggregate operational report" },
+    },
   },
 } as const;

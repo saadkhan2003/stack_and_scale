@@ -18,6 +18,8 @@ import { MetricsInterceptor } from "./observability/metrics.interceptor.js";
 import { MetricsService } from "./observability/metrics.service.js";
 import { OperationsModule } from "./operations/operations.module.js";
 import { NotificationsModule } from "./notifications/notifications.module.js";
+import { KnowledgeModule } from "./knowledge/knowledge.module.js";
+import { ReportsModule } from "./reports/reports.module.js";
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { NotificationsModule } from "./notifications/notifications.module.js";
     RateLimitModule,
     OperationsModule,
     NotificationsModule,
+    KnowledgeModule,
+    ReportsModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [

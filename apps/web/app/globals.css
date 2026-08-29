@@ -1987,6 +1987,74 @@ h1 {
   color: var(--muted);
   font-size: 0.76rem;
 }
+.staff-knowledge,
+.staff-reports {
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 4rem 2rem;
+}
+.staff-knowledge-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.3fr);
+  margin-top: 2rem;
+}
+.staff-knowledge-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+.staff-knowledge-list li {
+  border-bottom: 1px solid var(--line);
+}
+.staff-knowledge-list button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 0.35rem;
+  padding: 1rem 0;
+  text-align: left;
+  width: 100%;
+}
+.staff-knowledge-list span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.staff-knowledge-form,
+.staff-report-controls {
+  display: grid;
+  gap: 1rem;
+}
+.staff-knowledge-form {
+  border-left: 1px solid var(--line);
+  padding-left: 2rem;
+}
+.staff-knowledge-form h2 {
+  margin: 0;
+}
+.staff-knowledge-form label,
+.staff-report-controls label {
+  display: grid;
+  font-size: 0.8rem;
+  font-weight: 750;
+  gap: 0.4rem;
+}
+.staff-knowledge-form input,
+.staff-knowledge-form select,
+.staff-knowledge-form textarea,
+.staff-report-controls select {
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font: inherit;
+  padding: 0.7rem;
+}
+.staff-report-controls {
+  align-items: end;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  margin-top: 2rem;
+}
 @media (max-width: 880px) {
   .staff-header,
   .staff-tools {
@@ -2008,6 +2076,16 @@ h1 {
   }
   .staff-crm-grid {
     grid-template-columns: 1fr;
+  }
+  .staff-knowledge-grid,
+  .staff-report-controls {
+    grid-template-columns: 1fr;
+  }
+  .staff-knowledge-form {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+    padding-top: 2rem;
   }
 }
 @media (max-width: 560px) {
