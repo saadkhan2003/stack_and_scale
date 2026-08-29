@@ -21,6 +21,7 @@ import { NotificationsModule } from "./notifications/notifications.module.js";
 import { KnowledgeModule } from "./knowledge/knowledge.module.js";
 import { ReportsModule } from "./reports/reports.module.js";
 import { ProposalModule } from "./proposals/proposal.module.js";
+import { ContractModule } from "./contracts/contract.module.js";
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ProposalModule } from "./proposals/proposal.module.js";
     KnowledgeModule,
     ReportsModule,
     ProposalModule,
+    ContractModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [
