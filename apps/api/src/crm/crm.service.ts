@@ -32,6 +32,20 @@ export type CrmSummary = Readonly<{
     leadEmail: string;
   }>;
   stageCounts: ReadonlyArray<{ stage: string; count: number }>;
+  unresolvedSupportItems: ReadonlyArray<{
+    id: string;
+    title: string;
+    status: string;
+    severity: string;
+    updatedAt: unknown;
+  }>;
+  pendingApprovals: ReadonlyArray<{
+    id: string;
+    resourceType: string;
+    resourceId: string;
+    expiresAt: unknown;
+    reminderAt: unknown;
+  }>;
 }>;
 
 @Injectable()
@@ -52,41 +66,53 @@ export class CrmService {
     return { data: (result.rows as LeadRow[]).map(toLead) };
   }
 
-  public async getSummary(): Promise<{ data: CrmSummary }> {
-    const [newLeads, overdueTasks, upcomingDemos, stageCounts] =
-      await Promise.all([
-        this.database.query(
-          `SELECT id, name, email, intake_type, created_at
+  public async getSummary(
+    organizationId: string,
+  ): Promise<{ data: CrmSummary }> {
+    const [
+      newLeads,
+      overdueTasks,
+      upcomingDemos,
+      stageCounts,
+      supportItems,
+      approvals,
+    ] = await Promise.all([
+      this.database.query(
+        `SELECT id, name, email, intake_type, created_at
              FROM platform.leads
-            WHERE stage = 'new'
+             WHERE organization_id = $1 AND stage = 'new'
             ORDER BY created_at DESC
             LIMIT 50`,
-        ),
-        this.database.query(
-          `SELECT t.id, t.lead_id, t.title, t.due_at,
+        [organizationId],
+      ),
+      this.database.query(
+        `SELECT t.id, t.lead_id, t.title, t.due_at,
                   l.name AS lead_name, l.email AS lead_email
              FROM platform.lead_tasks t
              JOIN platform.leads l ON l.id = t.lead_id
-            WHERE t.completed_at IS NULL
+             WHERE l.organization_id = $1 AND t.completed_at IS NULL
               AND t.due_at IS NOT NULL
               AND t.due_at < now()
             ORDER BY t.due_at ASC
             LIMIT 50`,
-        ),
-        this.database.query(
-          `SELECT b.id, b.lead_id, b.starts_at, b.timezone,
+        [organizationId],
+      ),
+      this.database.query(
+        `SELECT b.id, b.lead_id, b.starts_at, b.timezone,
                   l.name AS lead_name, l.email AS lead_email
              FROM platform.demo_bookings b
              JOIN platform.leads l ON l.id = b.lead_id
-            WHERE b.status = 'confirmed'
+             WHERE l.organization_id = $1 AND b.status = 'confirmed'
               AND b.starts_at >= now()
               AND b.starts_at < now() + interval '14 days'
             ORDER BY b.starts_at ASC
             LIMIT 50`,
-        ),
-        this.database.query(
-          `SELECT stage, COUNT(*)::int AS count
+        [organizationId],
+      ),
+      this.database.query(
+        `SELECT stage, COUNT(*)::int AS count
              FROM platform.leads
+            WHERE organization_id = $1
             GROUP BY stage
             ORDER BY CASE stage
               WHEN 'new' THEN 1
@@ -97,8 +123,27 @@ export class CrmService {
               ELSE 6
             END
             LIMIT 5`,
-        ),
-      ]);
+        [organizationId],
+      ),
+      this.database.query(
+        `SELECT id, title, status, severity, updated_at
+             FROM platform.support_items
+            WHERE organization_id = $1
+              AND status NOT IN ('resolved', 'closed')
+            ORDER BY CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2 ELSE 3 END,
+                     updated_at ASC
+            LIMIT 50`,
+        [organizationId],
+      ),
+      this.database.query(
+        `SELECT id, resource_type, resource_id, expires_at, reminder_at
+             FROM platform.approval_requests
+            WHERE organization_id = $1 AND decision = 'pending' AND expires_at > now()
+            ORDER BY expires_at ASC
+            LIMIT 50`,
+        [organizationId],
+      ),
+    ]);
 
     return {
       data: {
@@ -128,6 +173,20 @@ export class CrmService {
         stageCounts: stageCounts.rows.map((row) => ({
           stage: String(row["stage"]),
           count: Number(row["count"]),
+        })),
+        unresolvedSupportItems: supportItems.rows.map((row) => ({
+          id: String(row["id"]),
+          title: String(row["title"]),
+          status: String(row["status"]),
+          severity: String(row["severity"]),
+          updatedAt: row["updated_at"],
+        })),
+        pendingApprovals: approvals.rows.map((row) => ({
+          id: String(row["id"]),
+          resourceType: String(row["resource_type"]),
+          resourceId: String(row["resource_id"]),
+          expiresAt: row["expires_at"],
+          reminderAt: row["reminder_at"],
         })),
       },
     };

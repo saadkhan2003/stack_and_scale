@@ -30,6 +30,8 @@ describe("staff workspace shell", () => {
       overdueTasks: [],
       upcomingDemos: [],
       stageCounts: [{ stage: "new", count: 2 }],
+      unresolvedSupportItems: [],
+      pendingApprovals: [],
     };
     expect(summary.stageCounts[0]).toEqual({ stage: "new", count: 2 });
     expect(summary.newLeads).toHaveLength(0);

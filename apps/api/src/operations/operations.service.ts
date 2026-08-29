@@ -10,17 +10,40 @@ import os from "node:os";
 import path from "node:path";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 
 type ApprovalDecision = "approved" | "rejected";
+type ApprovalLifecycleEvent =
+  | "requested"
+  | ApprovalDecision
+  | "expired"
+  | "reminded"
+  | "escalated";
+
+const approvalPolicies = new Set([
+  "discount",
+  "proposal",
+  "refund",
+  "destructive_change",
+  "permission_change",
+  "api_credential",
+  "license_override",
+  "invoice_writeoff",
+  "contract_exception",
+  "provisioning",
+]);
 
 @Injectable()
 export class ApprovalService {
   public constructor(
     @Inject(PlatformDatabaseService)
     private readonly database: PlatformDatabaseService,
+    @Inject(NotificationsService)
+    private readonly notifications: NotificationsService,
   ) {}
 
   public async list(organizationId: string) {
+    await this.processLifecycle(organizationId, "staff-approval-list");
     const result = await this.database.query(
       `SELECT id, requester_id, approver_id, resource_type, resource_id,
               decision, reason, expires_at, decided_at, created_at
@@ -52,12 +75,30 @@ export class ApprovalService {
     },
     correlationId: string,
   ) {
+    if (!approvalPolicies.has(input.resourceType)) {
+      throw new ConflictException(
+        "This action is not covered by approval policy.",
+      );
+    }
     const id = `approval_${randomUUID()}`;
+    const expiresAt = new Date(input.expiresAt);
+    const remainingMs = Math.max(
+      60 * 60 * 1000,
+      expiresAt.getTime() - Date.now(),
+    );
+    const reminderAt = new Date(
+      Date.now() + Math.min(24 * 60 * 60 * 1000, remainingMs / 2),
+    );
+    const escalationAt = new Date(
+      Math.max(Date.now(), expiresAt.getTime() - 60 * 60 * 1000),
+    );
     const created = await this.database.query(
       `INSERT INTO platform.approval_requests
-        (id, organization_id, requester_id, resource_type, resource_id, reason, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7::timestamptz)
-       RETURNING id, requester_id, resource_type, resource_id, decision, reason, expires_at, created_at`,
+        (id, organization_id, requester_id, resource_type, resource_id, reason,
+         expires_at, reminder_at, escalation_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::timestamptz, $8::timestamptz, $9::timestamptz)
+       RETURNING id, requester_id, resource_type, resource_id, decision, reason,
+                 expires_at, reminder_at, escalation_at, created_at`,
       [
         id,
         organizationId,
@@ -65,7 +106,9 @@ export class ApprovalService {
         input.resourceType,
         input.resourceId,
         input.reason,
-        input.expiresAt,
+        expiresAt,
+        reminderAt,
+        escalationAt,
       ],
     );
     await this.recordTrail(
@@ -87,6 +130,7 @@ export class ApprovalService {
     reason: string,
     correlationId: string,
   ) {
+    await this.processLifecycle(organizationId, correlationId);
     const current = await this.database.query(
       `SELECT requester_id, decision, expires_at FROM platform.approval_requests
         WHERE id = $1 AND organization_id = $2`,
@@ -122,11 +166,116 @@ export class ApprovalService {
     return { data: updated.rows[0] };
   }
 
+  public async processLifecycle(organizationId: string, correlationId: string) {
+    const expired = await this.database.query(
+      `UPDATE platform.approval_requests
+          SET decision = 'expired', updated_at = now()
+        WHERE organization_id = $1 AND decision = 'pending' AND expires_at <= now()
+        RETURNING id, requester_id`,
+      [organizationId],
+    );
+    for (const row of expired.rows) {
+      await this.recordTrail(
+        String(row["id"]),
+        organizationId,
+        "approval-lifecycle",
+        "expired",
+        "Approval expired without a decision.",
+        correlationId,
+      );
+    }
+
+    const dueReminder = await this.database.query(
+      `UPDATE platform.approval_requests
+          SET reminded_at = now(), updated_at = now()
+        WHERE organization_id = $1 AND decision = 'pending'
+          AND reminder_at <= now() AND reminded_at IS NULL
+        RETURNING id, resource_type, resource_id`,
+      [organizationId],
+    );
+    for (const row of dueReminder.rows) {
+      await this.notifyApprovers(
+        organizationId,
+        String(row["id"]),
+        String(row["resource_type"]),
+        String(row["resource_id"]),
+        "reminded",
+        correlationId,
+      );
+    }
+
+    const dueEscalation = await this.database.query(
+      `UPDATE platform.approval_requests
+          SET escalated_at = now(), updated_at = now()
+        WHERE organization_id = $1 AND decision = 'pending'
+          AND escalation_at <= now() AND escalated_at IS NULL
+        RETURNING id, resource_type, resource_id`,
+      [organizationId],
+    );
+    for (const row of dueEscalation.rows) {
+      await this.notifyApprovers(
+        organizationId,
+        String(row["id"]),
+        String(row["resource_type"]),
+        String(row["resource_id"]),
+        "escalated",
+        correlationId,
+      );
+    }
+  }
+
+  private async notifyApprovers(
+    organizationId: string,
+    approvalId: string,
+    resourceType: string,
+    resourceId: string,
+    event: "reminded" | "escalated",
+    correlationId: string,
+  ) {
+    const recipients = await this.database.query(
+      `SELECT user_id FROM identity.memberships
+        WHERE organization_id = $1 AND status = 'active'
+          AND role = ANY($2::text[])`,
+      [
+        organizationId,
+        event === "escalated"
+          ? ["owner", "admin"]
+          : ["owner", "admin", "manager"],
+      ],
+    );
+    for (const recipient of recipients.rows) {
+      const recipientId = String(recipient["user_id"]);
+      await this.notifications.create(
+        organizationId,
+        "approval-lifecycle",
+        correlationId,
+        {
+          recipientId,
+          category: "operations",
+          urgency: event === "escalated" ? "high" : "normal",
+          title:
+            event === "escalated" ? "Approval escalated" : "Approval reminder",
+          body: `${resourceType} ${resourceId} requires an approval decision.`,
+          deepLink: `/staff/operations?approval=${encodeURIComponent(approvalId)}`,
+          dedupeKey: `approval-${event}-${approvalId}`,
+        },
+      );
+    }
+    await this.recordTrail(
+      approvalId,
+      organizationId,
+      "approval-lifecycle",
+      event,
+      `${event === "escalated" ? "Approval escalated" : "Approval reminder sent"}.`,
+      correlationId,
+    );
+  }
+
   private async recordTrail(
     approvalId: string,
     organizationId: string,
     actorId: string,
-    event: "requested" | ApprovalDecision,
+    event: ApprovalLifecycleEvent,
     reason: string,
     correlationId: string,
   ) {

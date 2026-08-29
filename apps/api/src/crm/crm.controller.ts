@@ -111,8 +111,8 @@ export class CrmSummaryController {
 
   @Get("summary")
   public async summary(@Req() request: FastifyRequest) {
-    await this.access.require(request, "crm:read");
-    return this.crm.getSummary();
+    const actor = await this.access.require(request, "crm:read");
+    return this.crm.getSummary(actor.organizationId);
   }
 }
 

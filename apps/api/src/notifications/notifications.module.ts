@@ -11,5 +11,6 @@ import { NotificationsService } from "./notifications.service.js";
   imports: [AuthModule, PlatformDatabaseModule],
   controllers: [NotificationsController],
   providers: [TenantAccessService, CrmAccessService, NotificationsService],
+  exports: [NotificationsService],
 })
 export class NotificationsModule {}

@@ -37,6 +37,20 @@ export type StaffSummary = Readonly<{
     leadEmail: string;
   }>;
   stageCounts: ReadonlyArray<{ stage: string; count: number }>;
+  unresolvedSupportItems: ReadonlyArray<{
+    id: string;
+    title: string;
+    status: string;
+    severity: string;
+    updatedAt: string;
+  }>;
+  pendingApprovals: ReadonlyArray<{
+    id: string;
+    resourceType: string;
+    resourceId: string;
+    expiresAt: string;
+    reminderAt: string | null;
+  }>;
 }>;
 
 export function staffAccessState(
@@ -197,6 +211,8 @@ export function StaffShell({
     overdueTasks: [],
     upcomingDemos: [],
     stageCounts: [],
+    unresolvedSupportItems: [],
+    pendingApprovals: [],
   };
   const totalLeads = dashboardSummary.stageCounts.reduce(
     (total, item) => total + item.count,
@@ -258,6 +274,28 @@ export function StaffShell({
             (item) => `${item.stage}: ${item.count}`,
           )}
           summary="Current lead stage counts. Open the lead inbox to inspect and progress records."
+        />
+        <QueueCard
+          count={dashboardSummary.pendingApprovals.length}
+          href="/staff/operations"
+          index="05"
+          label="Pending approvals"
+          items={dashboardSummary.pendingApprovals
+            .slice(0, 3)
+            .map(
+              (approval) => `${approval.resourceType}: ${approval.resourceId}`,
+            )}
+          summary="Actionable approval requests that have not expired. Policy checks still apply when a decision is submitted."
+        />
+        <QueueCard
+          count={dashboardSummary.unresolvedSupportItems.length}
+          href="/staff/operations"
+          index="06"
+          label="Unresolved support"
+          items={dashboardSummary.unresolvedSupportItems
+            .slice(0, 3)
+            .map((item) => item.title)}
+          summary="Support items in open, in-progress, or pending-customer states, excluding resolved and closed records."
         />
       </div>
     </section>

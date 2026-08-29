@@ -47,6 +47,16 @@ export class ApprovalController {
     );
   }
 
+  @Post("lifecycle")
+  public async lifecycle(@Req() request: FastifyRequest) {
+    const actor = await this.access.require(request, "approval:read");
+    await this.approvals.processLifecycle(
+      actor.organizationId,
+      correlationId(request),
+    );
+    return { data: { processed: true } };
+  }
+
   @Post(":approvalId/decision")
   public async decide(
     @Req() request: FastifyRequest,

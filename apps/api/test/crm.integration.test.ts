@@ -51,12 +51,12 @@ describe("CRM staff workflow", () => {
       ],
     );
     await pool.query(
-      "INSERT INTO platform.leads (id, email, name, source, idempotency_key) VALUES ($1, 'crm-lead@example.test', 'CRM Lead', 'test', $2)",
-      [leadId, `crm-${suffix}`],
+      "INSERT INTO platform.leads (id, organization_id, email, name, source, idempotency_key) VALUES ($1, $2, 'crm-lead@example.test', 'CRM Lead', 'test', $3)",
+      [leadId, organizationId, `crm-${suffix}`],
     );
     await pool.query(
-      "INSERT INTO platform.leads (id, email, name, source, idempotency_key, stage) VALUES ($1, 'queue-lead@example.test', 'Queue Lead', 'test', $2, 'qualified')",
-      [queueLeadId, `crm-queue-${suffix}`],
+      "INSERT INTO platform.leads (id, organization_id, email, name, source, idempotency_key, stage) VALUES ($1, $2, 'queue-lead@example.test', 'Queue Lead', 'test', $3, 'qualified')",
+      [queueLeadId, organizationId, `crm-queue-${suffix}`],
     );
     await pool.query(
       "INSERT INTO platform.lead_tasks (id, lead_id, title, due_at) VALUES ($1, $2, 'Call queue lead', now() - interval '1 hour')",
@@ -69,6 +69,14 @@ describe("CRM staff workflow", () => {
     await pool.query(
       "INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone) VALUES ($1, $2, now() + interval '3 days', 'Europe/Amsterdam')",
       [`booking-detail-${suffix}`, leadId],
+    );
+    await pool.query(
+      "INSERT INTO platform.support_items (id, organization_id, title, status, severity) VALUES ($1, $2, 'Sync issue needs review', 'in_progress', 'high')",
+      [`support-${suffix}`, organizationId],
+    );
+    await pool.query(
+      "INSERT INTO platform.approval_requests (id, organization_id, requester_id, resource_type, resource_id, reason, expires_at, reminder_at, escalation_at) VALUES ($1, $2, $3, 'discount', 'deal-dashboard', 'Review discount', now() + interval '2 days', now() + interval '1 day', now() + interval '1 day')",
+      [`approval-${suffix}`, organizationId, managerId],
     );
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -141,6 +149,8 @@ describe("CRM staff workflow", () => {
         overdueTasks: { id: string; leadId: string }[];
         upcomingDemos: { id: string; timezone: string }[];
         stageCounts: { stage: string; count: number }[];
+        unresolvedSupportItems: { id: string }[];
+        pendingApprovals: { id: string }[];
       };
     }>().data;
     expect(
@@ -165,6 +175,12 @@ describe("CRM staff workflow", () => {
     expect(summary.stageCounts.some((item) => item.stage === "qualified")).toBe(
       true,
     );
+    expect(summary.unresolvedSupportItems).toEqual([
+      expect.objectContaining({ id: `support-${suffix}` }),
+    ]);
+    expect(summary.pendingApprovals).toEqual([
+      expect.objectContaining({ id: `approval-${suffix}` }),
+    ]);
   });
 
   it("lets a manager assign, progress, note, and complete a follow-up", async () => {

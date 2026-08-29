@@ -160,6 +160,77 @@ describe("staff operations approvals and authorized search", () => {
     ]);
   });
 
+  it("expires due approvals and sends idempotent reminders without changing decisions", async () => {
+    const approvalId = `approval-lifecycle-${suffix}`;
+    await pool.query(
+      "INSERT INTO platform.approval_requests (id, organization_id, requester_id, resource_type, resource_id, reason, expires_at, reminder_at, escalation_at) VALUES ($1, $2, $3, 'refund', 'refund-1', 'Review refund', now() + interval '1 day', now() - interval '1 minute', now() + interval '1 hour')",
+      [approvalId, organizationId, managerId],
+    );
+    const lifecycle = await fastify.inject({
+      method: "POST",
+      url: "/api/v1/operations/approvals/lifecycle",
+      headers: { "x-actor-id": ownerId, "x-correlation-id": `life-${suffix}` },
+    });
+    expect(lifecycle.statusCode).toBe(201);
+    const approval = await pool.query(
+      "SELECT decision, reminded_at FROM platform.approval_requests WHERE id = $1",
+      [approvalId],
+    );
+    expect(approval.rows[0]).toMatchObject({ decision: "pending" });
+    expect(approval.rows[0]?.["reminded_at"]).toBeTruthy();
+    const notifications = await pool.query(
+      "SELECT id FROM platform.notifications WHERE organization_id = $1 AND dedupe_key = $2",
+      [organizationId, `approval-reminded-${approvalId}`],
+    );
+    expect(notifications.rows).toHaveLength(3);
+
+    await pool.query(
+      "UPDATE platform.approval_requests SET expires_at = now() - interval '1 minute' WHERE id = $1",
+      [approvalId],
+    );
+    await fastify.inject({
+      method: "POST",
+      url: "/api/v1/operations/approvals/lifecycle",
+      headers: { "x-actor-id": ownerId },
+    });
+    const expired = await pool.query(
+      "SELECT decision FROM platform.approval_requests WHERE id = $1",
+      [approvalId],
+    );
+    expect(expired.rows[0]?.["decision"]).toBe("expired");
+    const trail = await pool.query(
+      "SELECT event FROM platform.approval_audit_trail WHERE approval_id = $1 ORDER BY created_at",
+      [approvalId],
+    );
+    expect(trail.rows.map((row) => row["event"])).toEqual([
+      "reminded",
+      "expired",
+    ]);
+    const audit = await pool.query(
+      "SELECT action FROM platform.audit_events WHERE organization_id = $1 AND metadata->>'approvalId' = $2 ORDER BY occurred_at",
+      [organizationId, approvalId],
+    );
+    expect(audit.rows.map((row) => row["action"])).toEqual([
+      "staff.approval.reminded",
+      "staff.approval.expired",
+    ]);
+  });
+
+  it("rejects approval requests outside the governed action policy", async () => {
+    const response = await fastify.inject({
+      method: "POST",
+      url: "/api/v1/operations/approvals",
+      headers: { "x-actor-id": managerId, "content-type": "application/json" },
+      payload: {
+        resourceType: "unreviewed_action",
+        resourceId: "action-1",
+        reason: "Should be rejected",
+        expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      },
+    });
+    expect(response.statusCode).toBe(409);
+  });
+
   it("keeps knowledge tenant-scoped and mirrors it into authorized search", async () => {
     const created = await fastify.inject({
       method: "POST",
