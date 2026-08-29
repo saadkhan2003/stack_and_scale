@@ -9,6 +9,7 @@ export const staffNavigation = [
   { href: "/staff", label: "Dashboard" },
   { href: "/staff/leads", label: "Leads" },
   { href: "/staff/search", label: "Operations search" },
+  { href: "/staff/notifications", label: "Notifications" },
 ] as const;
 
 function StaffCommandSearch() {

@@ -55,4 +55,43 @@ describe("lead transactional email", () => {
       ),
     ).rejects.toThrow("missing a lead ID");
   });
+
+  it("delivers notification email and records the delivered state", async () => {
+    const email = new MemoryEmailAdapter();
+    const queries: string[] = [];
+    await deliverLeadEmail(
+      {
+        id: "event-notification-1",
+        eventType: "notification.email",
+        attempts: 1,
+        payload: { notificationId: "notification-1" },
+      },
+      {
+        query: (query) => {
+          queries.push(query);
+          return Promise.resolve({
+            rows: query.startsWith("SELECT")
+              ? [
+                  {
+                    title: "MFA required",
+                    body: "Review security.",
+                    email: "staff@example.test",
+                  },
+                ]
+              : [],
+          });
+        },
+      },
+      email,
+      undefined,
+    );
+    expect(email.sent).toEqual([
+      {
+        to: "staff@example.test",
+        subject: "MFA required",
+        text: "Review security.",
+      },
+    ]);
+    expect(queries.at(-1)).toContain("delivery_state = 'delivered'");
+  });
 });

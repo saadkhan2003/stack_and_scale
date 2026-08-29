@@ -24,6 +24,8 @@ const PERMISSIONS: readonly Permission[] = [
   "approval:read",
   "approval:request",
   "approval:decide",
+  "notification:read",
+  "notification:manage",
 ];
 
 function membership(role: StaffRole): MembershipSnapshot {

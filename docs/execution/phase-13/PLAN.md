@@ -23,6 +23,8 @@ an actionable operations surface without introducing a paid platform.
 
 - Step 13.1 owns staff route/layout files and staff UI tests.
 - Step 13.2 owns dashboard read models and dashboard tests.
+- Step 13.7 owns notification records, delivery state, preferences, outbox
+  integration, staff inbox route and notification tests.
 - Authorization and CRM schema files remain frozen until a separate contract
   change is approved.
 

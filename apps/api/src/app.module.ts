@@ -17,6 +17,7 @@ import { CrmModule } from "./crm/crm.module.js";
 import { MetricsInterceptor } from "./observability/metrics.interceptor.js";
 import { MetricsService } from "./observability/metrics.service.js";
 import { OperationsModule } from "./operations/operations.module.js";
+import { NotificationsModule } from "./notifications/notifications.module.js";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OperationsModule } from "./operations/operations.module.js";
     CrmModule,
     RateLimitModule,
     OperationsModule,
+    NotificationsModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [

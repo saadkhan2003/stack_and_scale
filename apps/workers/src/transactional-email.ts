@@ -75,6 +75,10 @@ export async function deliverLeadEmail(
   email: EmailAdapter,
   staffAddress: string | undefined,
 ): Promise<void> {
+  if (event.eventType === "notification.email") {
+    await deliverNotificationEmail(event, database, email);
+    return;
+  }
   if (
     event.eventType !== "crm.lead.created" &&
     event.eventType !== "crm.booking.confirmed"
@@ -109,6 +113,47 @@ export async function deliverLeadEmail(
       subject: "Your Stack & Scale demo booking",
       text: `Hi ${name},\n\nYour requested demo time has been recorded. Our team will confirm the details shortly.\n\nStack & Scale`,
     });
+  }
+}
+
+async function deliverNotificationEmail(
+  event: DeliverableOutboxEvent,
+  database: Queryable,
+  email: EmailAdapter,
+): Promise<void> {
+  const notificationId = value(event.payload["notificationId"]);
+  if (!notificationId) throw new Error("Notification event is missing an ID.");
+  const result = await database.query(
+    `SELECT n.title, n.body, u.email
+       FROM platform.notifications n
+       JOIN identity.users u ON u.id = n.recipient_id
+      WHERE n.id = $1`,
+    [notificationId],
+  );
+  const notification = result.rows[0];
+  if (!notification)
+    throw new Error("Notification referenced by event no longer exists.");
+  try {
+    const recipient = value(notification["email"]);
+    if (!recipient)
+      throw new Error("Notification recipient has no email address.");
+    await email.send({
+      to: recipient,
+      subject: value(notification["title"]) ?? "Stack & Scale notification",
+      text:
+        value(notification["body"]) ??
+        "You have a new notification in the staff workspace.",
+    });
+    await database.query(
+      "UPDATE platform.notifications SET delivery_state = 'delivered' WHERE id = $1",
+      [notificationId],
+    );
+  } catch (error) {
+    await database.query(
+      "UPDATE platform.notifications SET delivery_state = 'failed' WHERE id = $1",
+      [notificationId],
+    );
+    throw error;
   }
 }
 
