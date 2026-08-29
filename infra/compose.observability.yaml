@@ -3,7 +3,12 @@ services:
     environment:
       METRICS_BEARER_TOKEN_FILE: /run/secrets/metrics_bearer_token
     networks: [monitoring]
-    secrets: [metrics_bearer_token]
+    secrets:
+      - source: metrics_bearer_token_api
+        target: metrics_bearer_token
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
 
   prometheus:
     image: prom/prometheus:v3.5.0
@@ -19,7 +24,12 @@ services:
       - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
     networks: [monitoring]
-    secrets: [metrics_bearer_token]
+    secrets:
+      - source: metrics_bearer_token_prometheus
+        target: metrics_bearer_token
+        uid: "65534"
+        gid: "65534"
+        mode: 0400
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -128,7 +138,9 @@ volumes:
   grafana-data: {}
 
 secrets:
-  metrics_bearer_token:
-    file: ../secrets/metrics-bearer-token
+  metrics_bearer_token_api:
+    file: ../secrets/metrics-bearer-token-api
+  metrics_bearer_token_prometheus:
+    file: ../secrets/metrics-bearer-token-prometheus
   grafana_admin_password:
     file: ../secrets/grafana-admin-password
