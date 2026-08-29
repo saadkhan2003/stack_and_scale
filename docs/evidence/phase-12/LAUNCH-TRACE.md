@@ -96,6 +96,25 @@ approval; use controlled test records and an isolated restore environment.
 
 ## Launch decision checklist
 
+## Latest production evidence
+
+```text
+Date/time (UTC): 2026-08-29T11:33:43Z
+Environment and URL: OVH production; https://stackandscale.org
+Operator: Stack & Scale technical owner
+Release/image digest and database migration version: release 21269f4; API,
+  web, CMS and workers are running from that immutable release
+Observed result: Website, CMS, API, Keycloak, PostgreSQL and workers are
+  healthy. Prometheus is ready with 8 rules and 3/3 scrape targets up. Grafana
+  is running. Website and contact routes return 200 with no observed browser
+  console/network errors. API readiness returns 200. Public PostgreSQL port
+  5432 is blocked. An unverified privacy request returns 400 as required.
+  Rollback refusal guard was verified without contacting production.
+Decision: partial; monitoring detection and production smoke pass, but alert
+  notification delivery, full rollback rehearsal, privacy lifecycle, backup
+  restore and legal/content approval remain open.
+```
+
 The launch owner must record **pass**, **blocked**, or an explicitly approved
 deferral for every item. Security, privacy, backup/restore, data integrity and
 lead-capture gaps cannot be deferred for V1 launch.
