@@ -36,7 +36,8 @@ Latest Phase 09 commits:
 | 09    | Local complete                                   | Configure production CRM organization/memberships, demo slots, transactional email and DNS; then verify live staff OIDC access and real email delivery.                                                                                                                                         |
 | 10    | Live deployment verified; operational gates open | Host SSH/Docker/UFW baseline, Cloudflare-only origin access, Cloudflare Origin Certificate, protected server environment, live services and immutable promotion are verified. Remaining: Full (strict) evidence, public-database denial, rollback, capacity and independent-backup restoration. |
 | 11    | Local implementation complete                    | See `docs/evidence/phase-11/VERIFICATION.md`. Live alert routing, external uptime/status, independently protected backup storage, named owners and full restore exercises remain launch-blocking external gates.                                                                                |
-| 12    | Launch trace active; not approved                | Immutable production release and core health/OIDC/edge checks pass. Production journeys, performance, legal, privacy, monitoring, rollback and restore evidence remain open. Use `docs/evidence/phase-12/LAUNCH-TRACE.md` as the execution record.                                              |
+| 12    | Launch trace active; not approved                | Production release, monitoring stack, CRM access, smoke, accessibility/performance checks and database denial are recorded. Remaining: alert receipt, retained-image rollback rehearsal, privacy lifecycle, legal/content approval, and independent encrypted backup/restore (budget-deferred). |
+| 13    | Execution plan started                           | Staff operations platform is next. The decomposition gate is being created; implementation begins with the authenticated workspace shell and operational dashboard.                                                                                                                             |
 
 ## Phase 09: implemented and locally verified
 
@@ -126,6 +127,8 @@ decision, account setup confirmation or non-secret identifier requested.
 
 ## Next recommended work
 
-Complete the Phase 10–11 external gates and the Phase 12 production journey
-tests recorded in the evidence files. Phase 13 must wait for a recorded Phase
-12 launch review.
+Phase 12 remains open. Its explicit unresolved items are documented in
+`docs/evidence/phase-12/LAUNCH-TRACE.md`: alert receipt, rollback rehearsal,
+privacy lifecycle, and independent backup/restore. Phase 13 is proceeding as a
+separately documented staff-platform workstream and must not be described as a
+Phase 12 launch approval.
