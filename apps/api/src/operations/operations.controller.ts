@@ -14,7 +14,9 @@ import type { FastifyRequest } from "fastify";
 import { CrmAccessService } from "../crm/crm-access.service.js";
 import {
   ApprovalService,
+  CapacitySnapshotService,
   OperationsSearchService,
+  ReleaseVisibilityService,
 } from "./operations.service.js";
 
 @Controller("api/v1/operations/approvals")
@@ -97,6 +99,36 @@ export class OperationsSearchController {
       );
     }
     return this.searchService.search(actor.organizationId, query.trim());
+  }
+}
+
+@Controller("api/v1/operations/release")
+export class ReleaseVisibilityController {
+  public constructor(
+    @Inject(CrmAccessService) private readonly access: CrmAccessService,
+    @Inject(ReleaseVisibilityService)
+    private readonly releases: ReleaseVisibilityService,
+  ) {}
+
+  @Get()
+  public async get(@Req() request: FastifyRequest) {
+    await this.access.require(request, "audit:read");
+    return { data: await this.releases.snapshot() };
+  }
+}
+
+@Controller("api/v1/operations/capacity")
+export class CapacitySnapshotController {
+  public constructor(
+    @Inject(CrmAccessService) private readonly access: CrmAccessService,
+    @Inject(CapacitySnapshotService)
+    private readonly capacity: CapacitySnapshotService,
+  ) {}
+
+  @Get()
+  public async get(@Req() request: FastifyRequest) {
+    await this.access.require(request, "audit:read");
+    return { data: await this.capacity.snapshot() };
   }
 }
 

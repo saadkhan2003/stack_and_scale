@@ -1,8 +1,8 @@
 global:
   smtp_smarthost: smtp.resend.com:587
-  smtp_from: '__TRANSACTIONAL_EMAIL_FROM__'
+  smtp_from: "__TRANSACTIONAL_EMAIL_FROM__"
   smtp_auth_username: resend
-  smtp_auth_password: '__RESEND_API_KEY__'
+  smtp_auth_password: "__RESEND_API_KEY__"
   smtp_require_tls: true
 
 route:
@@ -15,5 +15,5 @@ route:
 receivers:
   - name: stack-and-scale-email
     email_configs:
-      - to: '__CRM_NOTIFICATION_EMAIL__'
+      - to: "__CRM_NOTIFICATION_EMAIL__"
         send_resolved: true

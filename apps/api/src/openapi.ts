@@ -93,6 +93,31 @@ export const openApiDocument = {
         },
       },
     },
+    "/api/v1/operations/release": {
+      get: {
+        summary:
+          "Read-only release and environment visibility for authorized staff",
+        responses: {
+          "200": {
+            description: "Sanitized release, health and rollback status",
+          },
+          "401": { description: "Authentication required" },
+          "403": { description: "Audit visibility permission denied" },
+        },
+      },
+    },
+    "/api/v1/operations/capacity": {
+      get: {
+        summary: "Bounded runtime capacity snapshot for authorized staff",
+        responses: {
+          "200": {
+            description: "CPU, memory, disk, connection and retention snapshot",
+          },
+          "401": { description: "Authentication required" },
+          "403": { description: "Audit visibility permission denied" },
+        },
+      },
+    },
     "/api/v1/crm/leads/{leadId}": {
       get: {
         summary: "Read a CRM lead timeline",

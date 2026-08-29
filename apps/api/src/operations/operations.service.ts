@@ -5,6 +5,9 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
+import { readdir, readFile, statfs } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
 
@@ -184,4 +187,268 @@ export class OperationsSearchService {
     );
     return { data: result.rows };
   }
+}
+
+export type ReleaseVisibility = Readonly<{
+  environment: string;
+  deployedVersion: string;
+  migrationVersion: string;
+  health: Readonly<{
+    status: "healthy" | "degraded";
+    application: "up";
+    database: "up" | "down";
+    migrations: "up" | "missing" | "down";
+    outbox: "up" | "missing" | "down";
+    privacy: "up" | "missing" | "down";
+  }>;
+  deploymentHistory: ReadonlyArray<
+    Readonly<{
+      environment: string;
+      imageTag: string;
+      schemaVersion: string;
+    }>
+  >;
+  rollback: Readonly<{
+    status: "available" | "unavailable";
+    targetVersion: string | null;
+    policy: "forward-only-migrations";
+  }>;
+}>;
+
+type DeploymentRecord = {
+  environment?: unknown;
+  imageTag?: unknown;
+  schemaVersion?: unknown;
+};
+
+@Injectable()
+export class ReleaseVisibilityService {
+  public constructor(
+    @Inject(PlatformDatabaseService)
+    private readonly database: PlatformDatabaseService,
+  ) {}
+
+  public async snapshot(): Promise<ReleaseVisibility> {
+    const directory =
+      process.env["DEPLOYMENTS_DIR"]?.trim() ||
+      "/opt/stack-and-scale/deployments";
+    const records = await this.readRecords(directory);
+    const current = records.find(
+      (record) => record.file === "current.json",
+    )?.value;
+    const history = records
+      .filter((record) => record.file !== "current.json")
+      .map(({ value }) => value)
+      .slice(0, 25);
+    const readiness = await this.database.readiness().catch(() => null);
+    const currentVersion = stringValue(current?.imageTag) ?? "unknown";
+    const migrationVersion = stringValue(current?.schemaVersion) ?? "unknown";
+    const deploymentHistory = history.map((record) =>
+      this.publicRecord(record),
+    );
+    const targetVersion =
+      deploymentHistory.find((record) => record.imageTag !== currentVersion)
+        ?.imageTag ?? null;
+
+    return {
+      environment:
+        process.env["APP_ENV"]?.trim() ||
+        process.env["NODE_ENV"]?.trim() ||
+        stringValue(current?.environment) ||
+        "unknown",
+      deployedVersion: currentVersion,
+      migrationVersion,
+      health: {
+        status: readiness?.status === "ready" ? "healthy" : "degraded",
+        application: "up",
+        database: readiness?.status === "ready" ? "up" : "down",
+        migrations: readiness?.checks.migrations ?? "down",
+        outbox: readiness?.checks.outbox ?? "down",
+        privacy: readiness?.checks.privacy ?? "down",
+      },
+      deploymentHistory,
+      rollback: {
+        status: targetVersion === null ? "unavailable" : "available",
+        targetVersion,
+        policy: "forward-only-migrations",
+      },
+    };
+  }
+
+  private async readRecords(directory: string) {
+    try {
+      const files = (await readdir(directory, { withFileTypes: true }))
+        .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+        .slice(0, 26);
+      const records = await Promise.all(
+        files.map(async (entry) => {
+          try {
+            const raw = JSON.parse(
+              await readFile(path.join(directory, entry.name), "utf8"),
+            ) as DeploymentRecord;
+            return { file: entry.name, value: raw };
+          } catch {
+            return null;
+          }
+        }),
+      );
+      return records
+        .filter(
+          (record): record is { file: string; value: DeploymentRecord } =>
+            record !== null,
+        )
+        .sort((left, right) => right.file.localeCompare(left.file));
+    } catch {
+      return [];
+    }
+  }
+
+  private publicRecord(record: DeploymentRecord) {
+    return {
+      environment: stringValue(record.environment) ?? "unknown",
+      imageTag: stringValue(record.imageTag) ?? "unknown",
+      schemaVersion: stringValue(record.schemaVersion) ?? "unknown",
+    };
+  }
+}
+
+export type CapacitySnapshot = Readonly<{
+  capturedAt: string;
+  environment: string;
+  metrics: Readonly<{
+    cpu: CapacityMetric;
+    memory: CapacityMetric;
+    disk: CapacityMetric;
+    connections: CapacityMetric;
+  }>;
+  retention: Readonly<{
+    metricsDays: number;
+    logsDays: number;
+    traces: "disabled-unless-measured";
+  }>;
+  degradationControls: readonly string[];
+  nextTopology: string;
+}>;
+
+type CapacityMetric = Readonly<{
+  current: number;
+  projected: number;
+  limit: number;
+  unit: string;
+  utilizationPercent: number;
+}>;
+
+@Injectable()
+export class CapacitySnapshotService {
+  public constructor(
+    @Inject(PlatformDatabaseService)
+    private readonly database: PlatformDatabaseService,
+  ) {}
+
+  public async snapshot(): Promise<CapacitySnapshot> {
+    const cpuLimit = Number(process.env["CAPACITY_CPU_LIMIT"] ?? 100);
+    const memoryLimit = Number(
+      process.env["CAPACITY_MEMORY_LIMIT_BYTES"] ?? 8 * 1024 ** 3,
+    );
+    const diskLimit = Number(
+      process.env["CAPACITY_DISK_LIMIT_BYTES"] ?? 75 * 1024 ** 3,
+    );
+    const connectionLimit = await this.connectionLimit();
+    const cpu = Math.min(
+      100,
+      Math.max(
+        0,
+        ((os.loadavg()[0] ?? 0) / Math.max(1, os.cpus().length)) * 100,
+      ),
+    );
+    const memory = Math.max(0, os.totalmem() - os.freemem());
+    const filesystem = await statfs(
+      process.env["CAPACITY_DISK_PATH"]?.trim() || "/",
+    ).catch(() => null);
+    const disk =
+      filesystem === null
+        ? 0
+        : Math.max(
+            0,
+            Number(filesystem.blocks - filesystem.bfree) *
+              Number(filesystem.bsize),
+          );
+    const connections = await this.connectionCount();
+
+    return {
+      capturedAt: new Date().toISOString(),
+      environment:
+        process.env["APP_ENV"]?.trim() ||
+        process.env["NODE_ENV"]?.trim() ||
+        "unknown",
+      metrics: {
+        cpu: metric(cpu, cpuLimit, "percent", 100),
+        memory: metric(memory, memoryLimit, "bytes"),
+        disk: metric(disk, diskLimit, "bytes"),
+        connections: metric(connections, connectionLimit, "connections"),
+      },
+      retention: {
+        metricsDays: 14,
+        logsDays: 7,
+        traces: "disabled-unless-measured",
+      },
+      degradationControls: [
+        "Disable optional staff widgets and indexing first.",
+        "Throttle reports and noncritical jobs before core workflows.",
+        "Reduce traces, then logs/metrics retention if core services are affected.",
+      ],
+      nextTopology:
+        "Add a separate application/database node when CPU or memory remains above 70% under representative load.",
+    };
+  }
+
+  private async connectionCount(): Promise<number> {
+    try {
+      const result = await this.database.query(
+        "SELECT count(*)::integer AS count FROM pg_stat_activity",
+      );
+      return boundedNumber(result.rows[0]?.["count"]);
+    } catch {
+      return 0;
+    }
+  }
+
+  private async connectionLimit(): Promise<number> {
+    try {
+      const result = await this.database.query(
+        "SELECT setting::integer AS value FROM pg_settings WHERE name = 'max_connections'",
+      );
+      return Math.max(1, boundedNumber(result.rows[0]?.["value"]) || 100);
+    } catch {
+      return 100;
+    }
+  }
+}
+
+function metric(
+  current: number,
+  limit: number,
+  unit: string,
+  cap?: number,
+): CapacityMetric {
+  const boundedCurrent = Math.max(0, Math.min(cap ?? limit, current));
+  return {
+    current: boundedCurrent,
+    projected: Math.min(limit, boundedCurrent * 2),
+    limit,
+    unit,
+    utilizationPercent: Math.round((boundedCurrent / Math.max(1, limit)) * 100),
+  };
+}
+
+function boundedNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : 0;
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 && value.length <= 128
+    ? value
+    : undefined;
 }

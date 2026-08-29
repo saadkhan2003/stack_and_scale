@@ -6,21 +6,32 @@ import { TenantAccessService } from "../identity/tenant-access.service.js";
 import { CrmAccessService } from "../crm/crm-access.service.js";
 import {
   ApprovalController,
+  CapacitySnapshotController,
   OperationsSearchController,
+  ReleaseVisibilityController,
 } from "./operations.controller.js";
 import {
   ApprovalService,
+  CapacitySnapshotService,
   OperationsSearchService,
+  ReleaseVisibilityService,
 } from "./operations.service.js";
 
 @Module({
   imports: [AuthModule, PlatformDatabaseModule],
-  controllers: [ApprovalController, OperationsSearchController],
+  controllers: [
+    ApprovalController,
+    OperationsSearchController,
+    ReleaseVisibilityController,
+    CapacitySnapshotController,
+  ],
   providers: [
     TenantAccessService,
     CrmAccessService,
     ApprovalService,
     OperationsSearchService,
+    ReleaseVisibilityService,
+    CapacitySnapshotService,
   ],
 })
 export class OperationsModule {}
