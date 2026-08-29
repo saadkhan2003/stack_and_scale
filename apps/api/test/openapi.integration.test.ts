@@ -36,6 +36,7 @@ describe("GET /openapi.json", () => {
       version: "0.0.0",
     });
     expect(Object.keys(body.paths).sort()).toEqual([
+      "/api/v1/accounting/exports",
       "/api/v1/crm/leads",
       "/api/v1/crm/leads/{leadId}",
       "/api/v1/crm/leads/{leadId}/notes",
@@ -52,6 +53,12 @@ describe("GET /openapi.json", () => {
       "/api/v1/proposals",
       "/api/v1/proposals/{proposalId}",
       "/api/v1/public/proposals/{token}",
+      "/api/v1/support/tickets",
+      "/api/v1/support/tickets/{ticketId}",
+      "/api/v1/support/tickets/{ticketId}/attachments",
+      "/api/v1/support/tickets/{ticketId}/comments",
+      "/api/v1/support/tickets/{ticketId}/escalate",
+      "/api/v1/support/tickets/{ticketId}/pause",
       "/health",
       "/leads",
       "/leads/demo-slots",

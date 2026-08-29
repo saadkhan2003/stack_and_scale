@@ -97,6 +97,30 @@ export const openApiDocument = {
       get: { summary: "List tenant-scoped staff proposals" },
       post: { summary: "Create a draft proposal" },
     },
+    "/api/v1/accounting/exports": {
+      get: { summary: "List tenant-scoped accounting exports" },
+      post: { summary: "Create a deterministic versioned accounting export" },
+    },
+    "/api/v1/support/tickets": {
+      get: { summary: "List tenant-scoped support tickets" },
+      post: { summary: "Create a support ticket" },
+    },
+    "/api/v1/support/tickets/{ticketId}": {
+      get: { summary: "Read a ticket and its SLA clocks" },
+      patch: { summary: "Update ticket ownership or status" },
+    },
+    "/api/v1/support/tickets/{ticketId}/comments": {
+      post: { summary: "Add a public comment or internal note" },
+    },
+    "/api/v1/support/tickets/{ticketId}/attachments": {
+      post: { summary: "Attach storage metadata to a support ticket" },
+    },
+    "/api/v1/support/tickets/{ticketId}/pause": {
+      post: { summary: "Pause or resume ticket SLA clocks" },
+    },
+    "/api/v1/support/tickets/{ticketId}/escalate": {
+      post: { summary: "Escalate a support ticket" },
+    },
     "/api/v1/proposals/{proposalId}": {
       get: { summary: "Read proposal versions and line items" },
     },

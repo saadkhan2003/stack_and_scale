@@ -23,6 +23,8 @@ import { ReportsModule } from "./reports/reports.module.js";
 import { ProposalModule } from "./proposals/proposal.module.js";
 import { ContractModule } from "./contracts/contract.module.js";
 import { InvoiceModule } from "./invoices/invoice.module.js";
+import { AccountingModule } from "./accounting/accounting.module.js";
+import { SupportModule } from "./support/support.module.js";
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { InvoiceModule } from "./invoices/invoice.module.js";
     ProposalModule,
     ContractModule,
     InvoiceModule,
+    AccountingModule,
+    SupportModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [
