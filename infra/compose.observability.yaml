@@ -41,10 +41,14 @@ services:
   alertmanager:
     image: prom/alertmanager:v0.28.1
     restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - --config.file=/etc/alertmanager/alertmanager.yml
-      - --config.expand-env
-      - --storage.path=/alertmanager
+      - >-
+        sed -e "s|__TRANSACTIONAL_EMAIL_FROM__|$${TRANSACTIONAL_EMAIL_FROM}|g"
+        -e "s|__RESEND_API_KEY__|$${RESEND_API_KEY}|g"
+        -e "s|__CRM_NOTIFICATION_EMAIL__|$${CRM_NOTIFICATION_EMAIL}|g"
+        /etc/alertmanager/alertmanager.yml > /tmp/alertmanager.yml &&
+        exec alertmanager --config.file=/tmp/alertmanager.yml
     environment:
       RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY}
       TRANSACTIONAL_EMAIL_FROM: ${TRANSACTIONAL_EMAIL_FROM:?set TRANSACTIONAL_EMAIL_FROM}
