@@ -490,3 +490,86 @@ export function transitionCommercialStatus(
   }
   return to;
 }
+
+export type InvoiceStatus =
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "issued"
+  | "due"
+  | "partially_paid"
+  | "paid"
+  | "overdue"
+  | "void"
+  | "refunded";
+
+export type PaymentMethod =
+  | "bank_transfer"
+  | "easypaisa"
+  | "jazzcash"
+  | "raast"
+  | "cash";
+
+export type PaymentAttemptStatus =
+  | "pending"
+  | "verified"
+  | "rejected"
+  | "cancelled";
+
+export type PaymentEventType =
+  | "recorded"
+  | "verified"
+  | "rejected"
+  | "allocated"
+  | "reversed"
+  | "corrected"
+  | "refunded";
+
+const invoiceTransitions: Readonly<
+  Record<InvoiceStatus, readonly InvoiceStatus[]>
+> = {
+  draft: ["pending_approval", "void"],
+  pending_approval: ["approved", "draft", "void"],
+  approved: ["issued", "void"],
+  issued: ["due", "void"],
+  due: ["partially_paid", "paid", "overdue", "void"],
+  partially_paid: ["partially_paid", "paid", "overdue", "void"],
+  paid: ["refunded"],
+  overdue: ["partially_paid", "paid", "void"],
+  void: [],
+  refunded: [],
+};
+
+export function canTransitionInvoiceStatus(
+  from: InvoiceStatus,
+  to: InvoiceStatus,
+): boolean {
+  return invoiceTransitions[from].includes(to);
+}
+
+export function transitionInvoiceStatus(
+  from: InvoiceStatus,
+  to: InvoiceStatus,
+): InvoiceStatus {
+  if (!canTransitionInvoiceStatus(from, to))
+    throw new Error(`invalid invoice status transition from ${from} to ${to}`);
+  return to;
+}
+
+export function requirePaymentMethod(method: string): PaymentMethod {
+  if (
+    !["bank_transfer", "easypaisa", "jazzcash", "raast", "cash"].includes(
+      method,
+    )
+  )
+    throw new Error("unsupported payment method");
+  return method as PaymentMethod;
+}
+
+export function requireNonNegativeMinorUnits(
+  value: number,
+  field: string,
+): void {
+  if (!Number.isSafeInteger(value) || value < 0)
+    throw new Error(`${field} must be a non-negative safe integer`);
+}

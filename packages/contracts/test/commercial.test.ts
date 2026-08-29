@@ -8,6 +8,8 @@ import {
   formatDocumentNumber,
   roundDecimal,
   transitionCommercialStatus,
+  requirePaymentMethod,
+  transitionInvoiceStatus,
 } from "../src/index.js";
 
 describe("commercial primitives", () => {
@@ -126,6 +128,17 @@ describe("commercial primitives", () => {
     );
     expect(() => transitionCommercialStatus("paid", "draft")).toThrow(
       "invalid commercial status transition",
+    );
+  });
+
+  it("keeps invoice states and payment methods explicit", () => {
+    expect(transitionInvoiceStatus("paid", "refunded")).toBe("refunded");
+    expect(requirePaymentMethod("raast")).toBe("raast");
+    expect(() => requirePaymentMethod("card")).toThrow(
+      "unsupported payment method",
+    );
+    expect(() => transitionInvoiceStatus("paid", "draft")).toThrow(
+      "invalid invoice status transition",
     );
   });
 });
