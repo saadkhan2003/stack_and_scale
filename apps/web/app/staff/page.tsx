@@ -17,7 +17,7 @@ export default async function StaffPage() {
   return (
     <StaffShell
       initialAccessState={access.state}
-      initialLeadCount={access.leadCount}
+      initialSummary={access.summary}
     />
   );
 }

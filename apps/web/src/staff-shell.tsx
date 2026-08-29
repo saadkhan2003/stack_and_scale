@@ -12,6 +12,33 @@ export type StaffAccessState =
   | "degraded"
   | "error";
 
+export type StaffSummary = Readonly<{
+  newLeads: ReadonlyArray<{
+    id: string;
+    name: string | null;
+    email: string;
+    intakeType: string;
+    createdAt: string;
+  }>;
+  overdueTasks: ReadonlyArray<{
+    id: string;
+    leadId: string;
+    title: string;
+    dueAt: string;
+    leadName: string | null;
+    leadEmail: string;
+  }>;
+  upcomingDemos: ReadonlyArray<{
+    id: string;
+    leadId: string;
+    startsAt: string;
+    timezone: string;
+    leadName: string | null;
+    leadEmail: string;
+  }>;
+  stageCounts: ReadonlyArray<{ stage: string; count: number }>;
+}>;
+
 export function staffAccessState(
   status: number,
 ): Exclude<StaffAccessState, "loading" | "ready"> {
@@ -95,13 +122,13 @@ function AccessMessage({
 
 export function StaffShell({
   initialAccessState = "loading",
-  initialLeadCount = null,
+  initialSummary = null,
 }: Readonly<{
   initialAccessState?: Exclude<StaffAccessState, "loading"> | "loading";
-  initialLeadCount?: number | null;
+  initialSummary?: StaffSummary | null;
 }>) {
   const [state, setState] = useState<StaffAccessState>(initialAccessState);
-  const [leadCount, setLeadCount] = useState<number | null>(initialLeadCount);
+  const [summary, setSummary] = useState<StaffSummary | null>(initialSummary);
 
   useEffect(() => {
     if (initialAccessState !== "loading") return;
@@ -109,7 +136,7 @@ export function StaffShell({
     const checkAccess = async () => {
       setState("loading");
       try {
-        const response = await fetch("/api/staff/crm/leads", {
+        const response = await fetch("/api/staff/crm/summary", {
           cache: "no-store",
         });
         if (!active) return;
@@ -118,8 +145,12 @@ export function StaffShell({
           playStaffCue(response.status === 403 ? "blocked" : "error");
           return;
         }
-        const payload = (await response.json()) as { data?: unknown[] };
-        setLeadCount(Array.isArray(payload.data) ? payload.data.length : 0);
+        const payload = (await response.json()) as { data?: StaffSummary };
+        if (!payload.data) {
+          setState("error");
+          return;
+        }
+        setSummary(payload.data);
         setState("ready");
         playStaffCue("unlock");
       } catch {
@@ -161,6 +192,16 @@ export function StaffShell({
     );
   }
 
+  const dashboardSummary = summary ?? {
+    newLeads: [],
+    overdueTasks: [],
+    upcomingDemos: [],
+    stageCounts: [],
+  };
+  const totalLeads = dashboardSummary.stageCounts.reduce(
+    (total, item) => total + item.count,
+    0,
+  );
   return (
     <section className="staff-dashboard" aria-labelledby="staff-heading">
       <div className="staff-dashboard-intro">
@@ -177,30 +218,90 @@ export function StaffShell({
         </span>
       </div>
       <div className="staff-dashboard-grid">
-        <a
-          className="staff-module staff-module-primary"
+        <QueueCard
+          className="staff-module-primary"
+          count={dashboardSummary.newLeads.length}
           href="/staff/leads"
-          onClick={() => playStaffCue("open")}
-        >
-          <span className="staff-module-index">01</span>
-          <h2>Lead inbox</h2>
-          <p>
-            Review the latest intake, update ownership and keep follow-up
-            moving.
-          </p>
-          <strong>
-            {leadCount ?? 0} active records <span aria-hidden="true">↗</span>
-          </strong>
-        </a>
-        <div className="staff-module staff-module-muted">
-          <span className="staff-module-index">02</span>
-          <h2>Operational queues</h2>
-          <p>
-            Tasks, demos and reports will appear here as the workspace grows.
-          </p>
-          <span className="staff-module-note">Coming in the next release</span>
-        </div>
+          index="01"
+          label="New leads"
+          items={dashboardSummary.newLeads
+            .slice(0, 3)
+            .map((lead) => lead.name ?? lead.email)}
+          summary={`Unworked leads in the CRM, capped at 50 records. ${totalLeads} total pipeline records are represented below.`}
+        />
+        <QueueCard
+          count={dashboardSummary.overdueTasks.length}
+          href="/staff/leads"
+          index="02"
+          label="Overdue follow-ups"
+          items={dashboardSummary.overdueTasks
+            .slice(0, 3)
+            .map((task) => task.title)}
+          summary="Open tasks whose due time has passed. Review the linked lead and complete the next action."
+        />
+        <QueueCard
+          count={dashboardSummary.upcomingDemos.length}
+          href="/staff/leads"
+          index="03"
+          label="Upcoming demos"
+          items={dashboardSummary.upcomingDemos
+            .slice(0, 3)
+            .map((demo) => demo.leadName ?? demo.leadEmail)}
+          summary="Confirmed demos scheduled in the next 14 days, shown in their stored booking timezone."
+        />
+        <QueueCard
+          count={totalLeads}
+          href="/staff/leads"
+          index="04"
+          label="Pipeline stages"
+          items={dashboardSummary.stageCounts.map(
+            (item) => `${item.stage}: ${item.count}`,
+          )}
+          summary="Current lead stage counts. Open the lead inbox to inspect and progress records."
+        />
       </div>
     </section>
+  );
+}
+
+function QueueCard({
+  className = "",
+  count,
+  href,
+  index,
+  items,
+  label,
+  summary,
+}: Readonly<{
+  className?: string;
+  count: number;
+  href: string;
+  index: string;
+  items: string[];
+  label: string;
+  summary: string;
+}>) {
+  return (
+    <a
+      className={`staff-module ${className}`}
+      href={href}
+      onClick={() => playStaffCue("open")}
+    >
+      <span className="staff-module-index">{index}</span>
+      <h2>{label}</h2>
+      <p>{summary}</p>
+      {items.length ? (
+        <ul className="staff-queue-items">
+          {items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <span className="staff-module-note">Nothing needs attention</span>
+      )}
+      <strong>
+        {count} {label.toLocaleLowerCase()} <span aria-hidden="true">↗</span>
+      </strong>
+    </a>
   );
 }

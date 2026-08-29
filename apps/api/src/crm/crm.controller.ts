@@ -102,6 +102,20 @@ export class CrmController {
   }
 }
 
+@Controller("api/v1/crm")
+export class CrmSummaryController {
+  public constructor(
+    @Inject(CrmAccessService) private readonly access: CrmAccessService,
+    @Inject(CrmService) private readonly crm: CrmService,
+  ) {}
+
+  @Get("summary")
+  public async summary(@Req() request: FastifyRequest) {
+    await this.access.require(request, "crm:read");
+    return this.crm.getSummary();
+  }
+}
+
 function parseUpdate(body: Record<string, unknown>) {
   const value = (key: string, maximum: number): string | null | undefined => {
     const candidate = body[key];

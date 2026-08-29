@@ -7,6 +7,33 @@ const stages = new Set(["new", "qualified", "proposal", "won", "lost"]);
 
 type LeadRow = Record<string, unknown>;
 
+export type CrmSummary = Readonly<{
+  newLeads: ReadonlyArray<{
+    id: string;
+    name: string | null;
+    email: string;
+    intakeType: string;
+    createdAt: unknown;
+  }>;
+  overdueTasks: ReadonlyArray<{
+    id: string;
+    leadId: string;
+    title: string;
+    dueAt: unknown;
+    leadName: string | null;
+    leadEmail: string;
+  }>;
+  upcomingDemos: ReadonlyArray<{
+    id: string;
+    leadId: string;
+    startsAt: unknown;
+    timezone: string;
+    leadName: string | null;
+    leadEmail: string;
+  }>;
+  stageCounts: ReadonlyArray<{ stage: string; count: number }>;
+}>;
+
 @Injectable()
 export class CrmService {
   public constructor(
@@ -23,6 +50,87 @@ export class CrmService {
         LIMIT 200`,
     );
     return { data: (result.rows as LeadRow[]).map(toLead) };
+  }
+
+  public async getSummary(): Promise<{ data: CrmSummary }> {
+    const [newLeads, overdueTasks, upcomingDemos, stageCounts] =
+      await Promise.all([
+        this.database.query(
+          `SELECT id, name, email, intake_type, created_at
+             FROM platform.leads
+            WHERE stage = 'new'
+            ORDER BY created_at DESC
+            LIMIT 50`,
+        ),
+        this.database.query(
+          `SELECT t.id, t.lead_id, t.title, t.due_at,
+                  l.name AS lead_name, l.email AS lead_email
+             FROM platform.lead_tasks t
+             JOIN platform.leads l ON l.id = t.lead_id
+            WHERE t.completed_at IS NULL
+              AND t.due_at IS NOT NULL
+              AND t.due_at < now()
+            ORDER BY t.due_at ASC
+            LIMIT 50`,
+        ),
+        this.database.query(
+          `SELECT b.id, b.lead_id, b.starts_at, b.timezone,
+                  l.name AS lead_name, l.email AS lead_email
+             FROM platform.demo_bookings b
+             JOIN platform.leads l ON l.id = b.lead_id
+            WHERE b.status = 'confirmed'
+              AND b.starts_at >= now()
+              AND b.starts_at < now() + interval '14 days'
+            ORDER BY b.starts_at ASC
+            LIMIT 50`,
+        ),
+        this.database.query(
+          `SELECT stage, COUNT(*)::int AS count
+             FROM platform.leads
+            GROUP BY stage
+            ORDER BY CASE stage
+              WHEN 'new' THEN 1
+              WHEN 'qualified' THEN 2
+              WHEN 'proposal' THEN 3
+              WHEN 'won' THEN 4
+              WHEN 'lost' THEN 5
+              ELSE 6
+            END
+            LIMIT 5`,
+        ),
+      ]);
+
+    return {
+      data: {
+        newLeads: newLeads.rows.map((row) => ({
+          id: String(row["id"]),
+          name: (row["name"] as string | null) ?? null,
+          email: String(row["email"]),
+          intakeType: String(row["intake_type"]),
+          createdAt: row["created_at"],
+        })),
+        overdueTasks: overdueTasks.rows.map((row) => ({
+          id: String(row["id"]),
+          leadId: String(row["lead_id"]),
+          title: String(row["title"]),
+          dueAt: row["due_at"],
+          leadName: (row["lead_name"] as string | null) ?? null,
+          leadEmail: String(row["lead_email"]),
+        })),
+        upcomingDemos: upcomingDemos.rows.map((row) => ({
+          id: String(row["id"]),
+          leadId: String(row["lead_id"]),
+          startsAt: row["starts_at"],
+          timezone: String(row["timezone"]),
+          leadName: (row["lead_name"] as string | null) ?? null,
+          leadEmail: String(row["lead_email"]),
+        })),
+        stageCounts: stageCounts.rows.map((row) => ({
+          stage: String(row["stage"]),
+          count: Number(row["count"]),
+        })),
+      },
+    };
   }
 
   public async getLead(leadId: string): Promise<{ data: unknown }> {

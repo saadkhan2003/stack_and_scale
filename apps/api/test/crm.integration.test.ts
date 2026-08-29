@@ -21,6 +21,7 @@ describe("CRM staff workflow", () => {
   const managerId = `user-crm-manager-${suffix}`;
   const memberId = `user-crm-member-${suffix}`;
   const leadId = `lead-crm-${suffix}`;
+  const queueLeadId = `lead-crm-queue-${suffix}`;
 
   beforeAll(async () => {
     process.env["CRM_ORGANIZATION_ID"] = organizationId;
@@ -52,6 +53,18 @@ describe("CRM staff workflow", () => {
     await pool.query(
       "INSERT INTO platform.leads (id, email, name, source, idempotency_key) VALUES ($1, 'crm-lead@example.test', 'CRM Lead', 'test', $2)",
       [leadId, `crm-${suffix}`],
+    );
+    await pool.query(
+      "INSERT INTO platform.leads (id, email, name, source, idempotency_key, stage) VALUES ($1, 'queue-lead@example.test', 'Queue Lead', 'test', $2, 'qualified')",
+      [queueLeadId, `crm-queue-${suffix}`],
+    );
+    await pool.query(
+      "INSERT INTO platform.lead_tasks (id, lead_id, title, due_at) VALUES ($1, $2, 'Call queue lead', now() - interval '1 hour')",
+      [`task-queue-${suffix}`, queueLeadId],
+    );
+    await pool.query(
+      "INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone) VALUES ($1, $2, now() + interval '2 days', 'Europe/Amsterdam')",
+      [`booking-queue-${suffix}`, queueLeadId],
     );
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -95,6 +108,59 @@ describe("CRM staff workflow", () => {
       headers: { cookie: `ss_session=${sessionId}` },
     });
     expect(response.statusCode).toBe(200);
+  });
+
+  it("authorizes the bounded CRM summary and returns actionable queues", async () => {
+    expect(
+      (await fastify.inject({ method: "GET", url: "/api/v1/crm/summary" }))
+        .statusCode,
+    ).toBe(401);
+    expect(
+      (
+        await fastify.inject({
+          method: "GET",
+          url: "/api/v1/crm/summary",
+          headers: { "x-actor-id": memberId },
+        })
+      ).statusCode,
+    ).toBe(403);
+
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/api/v1/crm/summary",
+      headers: { "x-actor-id": managerId },
+    });
+    expect(response.statusCode).toBe(200);
+    const summary = response.json<{
+      data: {
+        newLeads: { id: string; intakeType: string }[];
+        overdueTasks: { id: string; leadId: string }[];
+        upcomingDemos: { id: string; timezone: string }[];
+        stageCounts: { stage: string; count: number }[];
+      };
+    }>().data;
+    expect(
+      summary.newLeads.some(
+        (lead) => lead.id === leadId && lead.intakeType === "contact",
+      ),
+    ).toBe(true);
+    expect(
+      summary.overdueTasks.some(
+        (task) =>
+          task.id === `task-queue-${suffix}` && task.leadId === queueLeadId,
+      ),
+    ).toBe(true);
+    expect(
+      summary.upcomingDemos.some(
+        (demo) =>
+          demo.id === `booking-queue-${suffix}` &&
+          demo.timezone === "Europe/Amsterdam",
+      ),
+    ).toBe(true);
+    expect(summary.stageCounts.some((item) => item.stage === "new")).toBe(true);
+    expect(summary.stageCounts.some((item) => item.stage === "qualified")).toBe(
+      true,
+    );
   });
 
   it("lets a manager assign, progress, note, and complete a follow-up", async () => {
