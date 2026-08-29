@@ -20,6 +20,10 @@ const PERMISSIONS: readonly Permission[] = [
   "audit:read",
   "crm:read",
   "crm:manage",
+  "crm:search",
+  "approval:read",
+  "approval:request",
+  "approval:decide",
 ];
 
 function membership(role: StaffRole): MembershipSnapshot {

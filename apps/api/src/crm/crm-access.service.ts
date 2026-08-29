@@ -10,6 +10,7 @@ import type { FastifyRequest } from "fastify";
 import { ActorResolverService } from "../auth/actor-resolver.service.js";
 import type { CorrelatedRequest } from "../common/http/correlated-request.js";
 import { TenantAccessService } from "../identity/tenant-access.service.js";
+import type { Permission } from "@stack-and-scale/contracts";
 
 @Injectable()
 export class CrmAccessService {
@@ -22,8 +23,8 @@ export class CrmAccessService {
 
   public async require(
     request: FastifyRequest,
-    permission: "crm:read" | "crm:manage",
-  ): Promise<{ actorId: string; organizationId: string }> {
+    permission: Permission,
+  ): Promise<{ actorId: string; organizationId: string; role: string }> {
     const organizationId = process.env["CRM_ORGANIZATION_ID"]?.trim();
     if (!organizationId) {
       throw new ServiceUnavailableException(
@@ -43,6 +44,10 @@ export class CrmAccessService {
         throw new UnauthorizedException("Authentication is required.");
       throw new ForbiddenException("You do not have access to CRM leads.");
     }
-    return { actorId: decision.tenantContext.actorId, organizationId };
+    return {
+      actorId: decision.tenantContext.actorId,
+      organizationId,
+      role: decision.role,
+    };
   }
 }

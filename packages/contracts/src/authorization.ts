@@ -9,7 +9,11 @@ export type Permission =
   | "role:assign"
   | "audit:read"
   | "crm:read"
-  | "crm:manage";
+  | "crm:manage"
+  | "crm:search"
+  | "approval:read"
+  | "approval:request"
+  | "approval:decide";
 
 const staffRoles = new Set<StaffRole>(["owner", "admin", "manager", "member"]);
 
@@ -35,6 +39,10 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "audit:read",
       "crm:read",
       "crm:manage",
+      "crm:search",
+      "approval:read",
+      "approval:request",
+      "approval:decide",
     ],
   },
   admin: {
@@ -48,6 +56,10 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "audit:read",
       "crm:read",
       "crm:manage",
+      "crm:search",
+      "approval:read",
+      "approval:request",
+      "approval:decide",
     ],
   },
   manager: {
@@ -58,6 +70,9 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "member:invite",
       "crm:read",
       "crm:manage",
+      "crm:search",
+      "approval:read",
+      "approval:request",
     ],
   },
   member: {

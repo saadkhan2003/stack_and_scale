@@ -16,6 +16,7 @@ import { RateLimitModule } from "./common/http/rate-limit.module.js";
 import { CrmModule } from "./crm/crm.module.js";
 import { MetricsInterceptor } from "./observability/metrics.interceptor.js";
 import { MetricsService } from "./observability/metrics.service.js";
+import { OperationsModule } from "./operations/operations.module.js";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MetricsService } from "./observability/metrics.service.js";
     LeadModule,
     CrmModule,
     RateLimitModule,
+    OperationsModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [

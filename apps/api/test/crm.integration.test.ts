@@ -66,6 +66,10 @@ describe("CRM staff workflow", () => {
       "INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone) VALUES ($1, $2, now() + interval '2 days', 'Europe/Amsterdam')",
       [`booking-queue-${suffix}`, queueLeadId],
     );
+    await pool.query(
+      "INSERT INTO platform.demo_bookings (id, lead_id, starts_at, timezone) VALUES ($1, $2, now() + interval '3 days', 'Europe/Amsterdam')",
+      [`booking-detail-${suffix}`, leadId],
+    );
     const module = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -207,13 +211,58 @@ describe("CRM staff workflow", () => {
     expect(detail.statusCode).toBe(200);
     expect(
       detail.json<{
-        data: { notes: unknown[]; tasks: { completed_at: string | null }[] };
+        data: {
+          notes: unknown[];
+          consentAt: string | null;
+          timeline: { kind: string; occurredAt: string }[];
+          tasks: {
+            completed_at: string | null;
+            status: string;
+            priority: string;
+            isOverdue: boolean;
+          }[];
+        };
       }>().data.notes,
     ).toHaveLength(1);
+    const detailData = detail.json<{
+      data: {
+        consentAt: string | null;
+        timeline: { kind: string; occurredAt: string }[];
+        tasks: {
+          completed_at: string | null;
+          status: string;
+          priority: string;
+          isOverdue: boolean;
+        }[];
+      };
+    }>().data;
+    expect(detailData.consentAt).toBeNull();
+    expect(detailData.tasks[0]).toEqual(
+      expect.objectContaining({
+        status: "completed",
+        priority: "normal",
+        isOverdue: false,
+      }),
+    );
+    expect(detailData.timeline.map((item) => item.kind)).toEqual(
+      expect.arrayContaining([
+        "lead",
+        "activity",
+        "note",
+        "task",
+        "booking",
+        "opportunity",
+      ]),
+    );
     expect(
-      detail.json<{ data: { tasks: { completed_at: string | null }[] } }>().data
-        .tasks[0]?.completed_at,
-    ).toBeTruthy();
+      detailData.timeline.every(
+        (item, index, items) =>
+          index === 0 ||
+          Date.parse(items[index - 1]!.occurredAt) >=
+            Date.parse(item.occurredAt),
+      ),
+    ).toBe(true);
+    expect(detailData.tasks[0]?.completed_at).toBeTruthy();
     expect(
       detail.json<{
         data: { opportunities: { pipeline: string; stage: string }[] };

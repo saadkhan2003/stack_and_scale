@@ -46,8 +46,8 @@ export class LeadService {
     const eventId = `event_${randomUUID()}`;
     const result = await this.database.query(
       `WITH inserted_lead AS (
-        INSERT INTO platform.leads (id, email, name, phone, message, intake_type, source, idempotency_key, consent_at, attribution)
-        VALUES ($1, lower($2), $3, $4, $5, $6, $7, $8, now(), $9::jsonb)
+         INSERT INTO platform.leads (id, email, name, phone, message, intake_type, source, idempotency_key, consent_at, attribution, organization_id)
+         VALUES ($1, lower($2), $3, $4, $5, $6, $7, $8, now(), $9::jsonb, NULLIF($15, ''))
         ON CONFLICT (idempotency_key) DO NOTHING
         RETURNING id
       ), activity AS (
@@ -81,6 +81,7 @@ export class LeadService {
         input.correlationId,
         eventId,
         `opportunity_${leadId}`,
+        process.env["CRM_ORGANIZATION_ID"] ?? "",
       ],
     );
     const createdId = result.rows[0]?.["id"];

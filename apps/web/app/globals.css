@@ -1761,6 +1761,172 @@ h1 {
   line-height: 1.7;
   padding-left: 1.2rem;
 }
+.staff-crm-lede,
+.staff-field-note {
+  color: var(--muted);
+  max-width: 62ch;
+}
+.staff-search-form {
+  border-top: 1px solid var(--line);
+  margin: 2rem 0;
+  padding-top: 1.2rem;
+}
+.staff-search-form label {
+  display: block;
+  font-weight: 750;
+  margin-bottom: 0.6rem;
+}
+.staff-search-form > div {
+  display: flex;
+  gap: 0.7rem;
+}
+.staff-search-form input {
+  background: #fffdf7;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  flex: 1;
+  font: inherit;
+  min-width: 0;
+  padding: 0.9rem;
+}
+.staff-search-records {
+  border-top: 1px solid var(--line);
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+.staff-search-records li {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 0;
+}
+.staff-search-records small {
+  color: var(--muted);
+}
+.staff-lead-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.staff-lead-heading h2 {
+  margin-bottom: 0;
+}
+.staff-record-id,
+.staff-timeline-kind {
+  color: var(--petrol);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.staff-sensitive {
+  background: rgba(19, 93, 97, 0.06);
+  border-left: 3px solid var(--petrol);
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+}
+.staff-sensitive h3 {
+  border: 0;
+  margin: 0 0 0.45rem;
+  padding: 0;
+}
+.staff-sensitive p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 0;
+}
+.staff-sensitive dl {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1rem 0 0;
+}
+.staff-sensitive dl div {
+  min-width: 0;
+}
+.staff-sensitive dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.staff-sensitive dd {
+  margin: 0.2rem 0 0;
+  overflow-wrap: anywhere;
+}
+.staff-task-list {
+  list-style: none;
+  padding-left: 0 !important;
+}
+.staff-task-list li {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+}
+.staff-task-list li > div {
+  display: grid;
+  gap: 0.25rem;
+}
+.staff-task-list li span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.staff-task-list li.is-overdue strong,
+.staff-task-list li.is-overdue span {
+  color: #9b3c2f;
+}
+.staff-task-list button {
+  background: var(--petrol);
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 0.55rem 0.8rem;
+  white-space: nowrap;
+}
+.staff-task-list button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.staff-timeline {
+  border-left: 1px solid var(--line);
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.2rem;
+}
+.staff-timeline li {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  padding: 0.8rem 0;
+  position: relative;
+}
+.staff-timeline li::before {
+  background: var(--solar);
+  border: 3px solid #fffdf7;
+  border-radius: 50%;
+  content: "";
+  height: 0.55rem;
+  left: -1.55rem;
+  position: absolute;
+  top: 1.15rem;
+  width: 0.55rem;
+}
+.staff-timeline p {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}
+.staff-timeline time {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
 @media (max-width: 880px) {
   .staff-header,
   .staff-tools {
@@ -1785,6 +1951,13 @@ h1 {
   }
 }
 @media (max-width: 560px) {
+  .staff-sensitive dl {
+    grid-template-columns: 1fr;
+  }
+  .staff-task-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
   .staff-tools {
     gap: 0.4rem;
   }

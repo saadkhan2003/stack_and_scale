@@ -8,6 +8,7 @@ import { primeStaffAudio, setSoundEnabled, soundEnabled } from "./staff-sfx";
 export const staffNavigation = [
   { href: "/staff", label: "Dashboard" },
   { href: "/staff/leads", label: "Leads" },
+  { href: "/staff/search", label: "Operations search" },
 ] as const;
 
 function StaffCommandSearch() {
@@ -74,7 +75,7 @@ function StaffCommandSearch() {
               autoFocus
               id="staff-workspace-search"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Dashboard or leads"
+              placeholder="Dashboard, leads, or search"
               type="search"
               value={query}
             />

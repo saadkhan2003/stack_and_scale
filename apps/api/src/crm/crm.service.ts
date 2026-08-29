@@ -44,7 +44,7 @@ export class CrmService {
   public async listLeads(): Promise<{ data: unknown[] }> {
     const result = await this.database.query(
       `SELECT id, email, name, phone, message, intake_type, source, stage, owner_id,
-              probability, estimated_value, next_action_at, lost_reason, attribution, created_at
+              probability, estimated_value, next_action_at, lost_reason, attribution, consent_at, created_at
          FROM platform.leads
         ORDER BY created_at DESC
         LIMIT 200`,
@@ -153,7 +153,15 @@ export class CrmService {
           [leadId],
         ),
         this.database.query(
-          "SELECT id, assignee_id, title, due_at, completed_at, created_at FROM platform.lead_tasks WHERE lead_id = $1 ORDER BY created_at DESC",
+          `SELECT id, assignee_id, title, due_at, completed_at, created_at,
+                  CASE WHEN completed_at IS NOT NULL THEN 'completed'
+                       WHEN due_at IS NOT NULL AND due_at < now() THEN 'overdue'
+                       ELSE 'open' END AS status,
+                  CASE WHEN completed_at IS NULL AND due_at IS NOT NULL AND due_at < now()
+                       THEN 'high' ELSE 'normal' END AS priority
+             FROM platform.lead_tasks
+            WHERE lead_id = $1
+            ORDER BY created_at DESC`,
           [leadId],
         ),
         this.database.query(
@@ -161,18 +169,77 @@ export class CrmService {
           [leadId],
         ),
         this.database.query(
-          "SELECT o.id, o.title, o.stage, o.owner_id, o.probability, o.estimated_value, o.next_action_at, o.lost_reason, p.name AS pipeline FROM platform.opportunities o JOIN platform.crm_pipeline_templates p ON p.id = o.pipeline_template_id WHERE o.lead_id = $1",
+          "SELECT o.id, o.title, o.stage, o.owner_id, o.probability, o.estimated_value, o.next_action_at, o.lost_reason, o.created_at, o.updated_at, p.name AS pipeline FROM platform.opportunities o JOIN platform.crm_pipeline_templates p ON p.id = o.pipeline_template_id WHERE o.lead_id = $1",
           [leadId],
         ),
       ]);
+    const timeline = [
+      {
+        id: `lead-created-${String(row["id"])}`,
+        kind: "lead",
+        eventType: "lead.created",
+        occurredAt: toTimestamp(row["created_at"]),
+        title: "Lead received",
+        detail: String(row["intake_type"]),
+      },
+      ...activities.rows.map((item) => ({
+        id: String(item["id"]),
+        kind: "activity",
+        eventType: String(item["type"]),
+        occurredAt: toTimestamp(item["created_at"]),
+        title: String(item["type"]),
+        metadata: item["metadata"],
+      })),
+      ...notes.rows.map((item) => ({
+        id: String(item["id"]),
+        kind: "note",
+        eventType: "note.created",
+        occurredAt: toTimestamp(item["created_at"]),
+        title: "Note",
+        detail: String(item["body"]),
+      })),
+      ...tasks.rows.map((item) => ({
+        id: String(item["id"]),
+        kind: "task",
+        eventType: `task.${String(item["status"])}`,
+        occurredAt: toTimestamp(item["created_at"]),
+        title: String(item["title"]),
+        detail: item["due_at"] ?? null,
+        status: String(item["status"]),
+      })),
+      ...bookings.rows.map((item) => ({
+        id: String(item["id"]),
+        kind: "booking",
+        eventType: `booking.${String(item["status"])}`,
+        occurredAt: toTimestamp(item["created_at"]),
+        title: "Demo booking",
+        detail: item["starts_at"],
+        status: String(item["status"]),
+      })),
+      ...opportunities.rows.map((item) => ({
+        id: String(item["id"]),
+        kind: "opportunity",
+        eventType: `opportunity.${String(item["stage"])}`,
+        occurredAt: toTimestamp(item["updated_at"] ?? item["created_at"]),
+        title: String(item["title"]),
+        detail: String(item["stage"]),
+        status: String(item["stage"]),
+      })),
+    ].sort((left, right) => {
+      return (
+        Date.parse(String(right.occurredAt)) -
+        Date.parse(String(left.occurredAt))
+      );
+    });
     return {
       data: {
         ...toLead(row),
         activities: activities.rows,
         notes: notes.rows,
-        tasks: tasks.rows,
+        tasks: tasks.rows.map(toTask),
         bookings: bookings.rows,
         opportunities: opportunities.rows,
+        timeline,
       },
     };
   }
@@ -214,7 +281,7 @@ export class CrmService {
               next_action_at = CASE WHEN $8::boolean THEN $9::timestamptz ELSE next_action_at END,
               lost_reason = CASE WHEN $10::boolean THEN $11 ELSE lost_reason END
         WHERE id = $1
-      RETURNING id, email, name, phone, message, intake_type, source, stage, owner_id, probability, estimated_value, next_action_at, lost_reason, attribution, created_at`,
+      RETURNING id, email, name, phone, message, intake_type, source, stage, owner_id, probability, estimated_value, next_action_at, lost_reason, attribution, consent_at, created_at`,
       [
         leadId,
         input.stage ?? null,
@@ -290,11 +357,14 @@ export class CrmService {
         throw new Error("Task assignee must be an active CRM staff member.");
     }
     const result = await this.database.query(
-      "INSERT INTO platform.lead_tasks (id, lead_id, assignee_id, title, due_at) VALUES ($1, $2, $3, $4, $5::timestamptz) RETURNING id, assignee_id, title, due_at, completed_at, created_at",
+      `INSERT INTO platform.lead_tasks (id, lead_id, assignee_id, title, due_at)
+       VALUES ($1, $2, $3, $4, $5::timestamptz)
+       RETURNING id, assignee_id, title, due_at, completed_at, created_at,
+                 'open' AS status, 'normal' AS priority`,
       [`task_${randomUUID()}`, leadId, assigneeId, title, dueAt],
     );
     await this.recordActivity(leadId, actorId, "task.created", {});
-    return { data: result.rows[0] };
+    return { data: toTask(result.rows[0] as LeadRow) };
   }
 
   public async completeTask(
@@ -303,13 +373,17 @@ export class CrmService {
     actorId: string,
   ): Promise<{ data: unknown }> {
     const result = await this.database.query(
-      "UPDATE platform.lead_tasks SET completed_at = now() WHERE id = $1 AND lead_id = $2 AND completed_at IS NULL RETURNING id, assignee_id, title, due_at, completed_at, created_at",
+      `UPDATE platform.lead_tasks
+          SET completed_at = now()
+        WHERE id = $1 AND lead_id = $2 AND completed_at IS NULL
+        RETURNING id, assignee_id, title, due_at, completed_at, created_at,
+                  'completed' AS status, 'normal' AS priority`,
       [taskId, leadId],
     );
-    const row = result.rows[0];
+    const row = result.rows[0] as LeadRow | undefined;
     if (!row) throw new NotFoundException("Open task not found.");
     await this.recordActivity(leadId, actorId, "task.completed", {});
-    return { data: row };
+    return { data: toTask(row) };
   }
 
   private async assertLead(leadId: string): Promise<void> {
@@ -354,6 +428,40 @@ function toLead(row: LeadRow): Record<string, unknown> {
     nextActionAt: row["next_action_at"],
     lostReason: row["lost_reason"],
     attribution: row["attribution"],
+    consentAt: row["consent_at"] ?? null,
     createdAt: row["created_at"],
   };
+}
+
+function toTask(row: LeadRow): Record<string, unknown> {
+  const completed =
+    row["completed_at"] !== null && row["completed_at"] !== undefined;
+  const databaseStatus = row["status"];
+  const status =
+    databaseStatus === "completed" ||
+    databaseStatus === "overdue" ||
+    databaseStatus === "open"
+      ? databaseStatus
+      : completed
+        ? "completed"
+        : "open";
+  const overdue = status === "overdue";
+  const databasePriority = row["priority"];
+  return {
+    ...row,
+    status,
+    priority:
+      databasePriority === "high" || databasePriority === "normal"
+        ? databasePriority
+        : overdue
+          ? "high"
+          : "normal",
+    isOverdue: overdue,
+  };
+}
+
+function toTimestamp(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return new Date(value).toISOString();
+  throw new Error("CRM timeline record has no valid timestamp.");
 }

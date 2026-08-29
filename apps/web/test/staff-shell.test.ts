@@ -9,6 +9,7 @@ describe("staff workspace shell", () => {
     expect(staffNavigation).toEqual([
       { href: "/staff", label: "Dashboard" },
       { href: "/staff/leads", label: "Leads" },
+      { href: "/staff/search", label: "Operations search" },
     ]);
   });
 
