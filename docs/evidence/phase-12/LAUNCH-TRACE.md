@@ -8,26 +8,27 @@ not production proof. A check becomes **passed** only when its stated
 environment, operator, timestamp and evidence are recorded below or in a
 linked dated record.
 
-**Current verdict: launch review is blocked by external setup.** No production
-launch is approved yet. The local implementation and the external checks are
+**Current verdict: launch review is blocked by external setup.** The immutable
+production release and core edge smoke checks now pass, but no production launch
+is approved yet. The local implementation and the external checks are
 deliberately separated so that nothing is silently treated as complete.
 
 ## V1 requirement trace
 
-| V1 capability                         | Local implementation/evidence                                      | Required production acceptance                                                                                                  | Owner                     | Current state              |
-| ------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------- |
-| V1-01 Brand and design                | Phase 02/07 evidence; public site implementation                   | Review deployed desktop/mobile routes against approved assets and truthful proof                                                | Content owner             | External review pending    |
-| V1-02 Public routes/content           | CMS and public-route implementation; Phase 06–08 evidence          | Publish each required route family and verify rendered content through the real domain                                          | Content owner             | External review pending    |
-| V1-03 Conversion                      | Phase 09 lead/demo/WhatsApp implementation and Chromium tests      | Submit product demo and project inquiry; verify attribution, confirmation and staff handling                                    | Sales owner               | External journey pending   |
-| V1-04 CMS publishing                  | Phase 06 contract/browser evidence                                 | Draft → review → publish → preview/cache refresh → correct public metadata                                                      | CMS owner                 | External journey pending   |
-| V1-05 SEO/search                      | Phase 08 evidence                                                  | Verify canonical/robots/sitemap/schema/search, Search Console ownership and production analytics consent behavior               | Content/SEO owner         | External review pending    |
-| V1-06 Lead engine/basic CRM           | Phase 09 API, database, worker and browser evidence                | Lead → CRM record/opportunity/task → real email; retry a failed delivery without a duplicate lead                               | Sales owner               | External journey pending   |
-| V1-07 Identity/authorization          | Phase 05 evidence and Keycloak configuration                       | Verify live staff role access, MFA policy, recovery and unauthorized denial/audit behavior                                      | Security owner            | External journey pending   |
-| V1-08 Backend/data                    | Phase 03–04 contracts, migrations and tests                        | Rehearse production migration and validate `/ready`, outbox, privacy operations and database access boundaries                  | Technical owner           | External rehearsal pending |
-| V1-09 Delivery/environments           | Phase 10 Compose/IaC/delivery evidence                             | Apply/destroy staging; deploy immutable image; rehearse failed deployment and rollback                                          | Technical owner           | External rehearsal pending |
-| V1-10 Security/recovery/observability | [Phase 11 evidence](../phase-11/VERIFICATION.md)                   | Prove alerts, independent status, encrypted off-server backup and isolated restore                                              | Security/operations owner | Launch blocker             |
-| V1-11 Privacy operations              | Privacy controls and notices implemented across phases 00/03/04/08 | Complete access/export, correction, restriction, erasure, propagation, legal-hold and retention tests against actual processors | Privacy owner             | Launch blocker             |
-| V1-12 Launch proof                    | This trace and Phase 10–11 operations artifacts                    | Pass all journeys, quality, security, cost and recovery gates in production                                                     | Launch owner              | Launch blocker             |
+| V1 capability                         | Local implementation/evidence                                      | Required production acceptance                                                                                                  | Owner                     | Current state                               |
+| ------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------- |
+| V1-01 Brand and design                | Phase 02/07 evidence; public site implementation                   | Review deployed desktop/mobile routes against approved assets and truthful proof                                                | Content owner             | External review pending                     |
+| V1-02 Public routes/content           | CMS and public-route implementation; Phase 06–08 evidence          | Publish each required route family and verify rendered content through the real domain                                          | Content owner             | External review pending                     |
+| V1-03 Conversion                      | Phase 09 lead/demo/WhatsApp implementation and Chromium tests      | Submit product demo and project inquiry; verify attribution, confirmation and staff handling                                    | Sales owner               | External journey pending                    |
+| V1-04 CMS publishing                  | Phase 06 contract/browser evidence                                 | Draft → review → publish → preview/cache refresh → correct public metadata                                                      | CMS owner                 | External journey pending                    |
+| V1-05 SEO/search                      | Phase 08 evidence                                                  | Verify canonical/robots/sitemap/schema/search, Search Console ownership and production analytics consent behavior               | Content/SEO owner         | External review pending                     |
+| V1-06 Lead engine/basic CRM           | Phase 09 API, database, worker and browser evidence                | Lead → CRM record/opportunity/task → real email; retry a failed delivery without a duplicate lead                               | Sales owner               | External journey pending                    |
+| V1-07 Identity/authorization          | Phase 05 evidence and Keycloak configuration                       | Verify live staff role access, MFA policy, recovery and unauthorized denial/audit behavior                                      | Security owner            | External journey pending                    |
+| V1-08 Backend/data                    | Phase 03–04 contracts, migrations and tests                        | Rehearse production migration and validate `/ready`, outbox, privacy operations and database access boundaries                  | Technical owner           | External rehearsal pending                  |
+| V1-09 Delivery/environments           | Phase 10 Compose/IaC/delivery evidence; run 33244836006            | Apply/destroy staging; deploy immutable image; rehearse failed deployment and rollback                                          | Technical owner           | Production deploy passed; rehearsal pending |
+| V1-10 Security/recovery/observability | [Phase 11 evidence](../phase-11/VERIFICATION.md)                   | Prove alerts, independent status, encrypted off-server backup and isolated restore                                              | Security/operations owner | Launch blocker                              |
+| V1-11 Privacy operations              | Privacy controls and notices implemented across phases 00/03/04/08 | Complete access/export, correction, restriction, erasure, propagation, legal-hold and retention tests against actual processors | Privacy owner             | Launch blocker                              |
+| V1-12 Launch proof                    | This trace and Phase 10–11 operations artifacts                    | Pass all journeys, quality, security, cost and recovery gates in production                                                     | Launch owner              | Launch blocker                              |
 
 ## Required end-to-end journeys
 
@@ -129,7 +130,11 @@ Decision: pass | blocked | approved deferral
 
 ## Launch decision
 
-**Status: blocked pending the external gates listed above.**
+**Status: blocked pending the external gates listed above.** The current
+production release `4f4d26f9f9d4282bfc436af06e36a756a5dddbaa` completed immutable
+image builds, all four CRITICAL/HIGH Trivy gates, database migration, CMS
+migration and promotion. Live website, CMS, API readiness and OIDC-start checks
+also passed; edge header removal was subsequently reloaded and verified.
 
 When the server, domain, Cloudflare zone, protected secrets and independent
 backup target are configured, execute this document together with
