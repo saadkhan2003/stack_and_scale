@@ -33,7 +33,11 @@ export function StaffLeadInbox() {
       setNotice(
         response.status === 401
           ? "Sign in to access the CRM."
-          : "You do not have access to the CRM.",
+          : response.status === 403
+            ? "You do not have access to the CRM."
+            : response.status === 503
+              ? "CRM is temporarily unavailable."
+              : "Unable to load the CRM inbox.",
       );
       return;
     }

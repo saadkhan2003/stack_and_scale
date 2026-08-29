@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function StaffLeadsPage() {
-  return (
-    <main className="site-shell">
-      <StaffLeadInbox />
-    </main>
-  );
+  return <StaffLeadInbox />;
 }
