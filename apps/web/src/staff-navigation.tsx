@@ -8,6 +8,7 @@ import { primeStaffAudio, setSoundEnabled, soundEnabled } from "./staff-sfx";
 export const staffNavigation = [
   { href: "/staff", label: "Dashboard" },
   { href: "/staff/leads", label: "Leads" },
+  { href: "/staff/proposals", label: "Proposals" },
   { href: "/staff/search", label: "Operations search" },
   { href: "/staff/notifications", label: "Notifications" },
   { href: "/staff/knowledge", label: "Knowledge" },

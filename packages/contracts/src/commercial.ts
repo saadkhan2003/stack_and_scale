@@ -15,6 +15,12 @@ function requireText(value: string, field: string): void {
   }
 }
 
+function requireTimestamp(value: string, field: string): void {
+  if (Number.isNaN(Date.parse(value))) {
+    throw new Error(`${field} must be an ISO-8601 timestamp`);
+  }
+}
+
 function requireSafeInteger(value: number, field: string): void {
   if (!Number.isSafeInteger(value)) {
     throw new Error(`${field} must be a safe integer`);
@@ -416,6 +422,37 @@ export type CommercialStatus =
   | "overdue"
   | "cancelled"
   | "void";
+
+export type ProposalStatus =
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "issued"
+  | "accepted"
+  | "rejected"
+  | "expired"
+  | "cancelled";
+
+export type ProposalVersion = Readonly<{
+  proposalId: string;
+  version: number;
+  status: "draft" | "issued";
+  validFrom: string;
+  validUntil: string;
+}>;
+
+export function createProposalVersion(input: ProposalVersion): ProposalVersion {
+  requireText(input.proposalId, "proposalId");
+  requireSafeInteger(input.version, "version");
+  if (input.version <= 0) throw new Error("version must be positive");
+  if (input.status !== "draft" && input.status !== "issued")
+    throw new Error("proposal version status must be draft or issued");
+  requireTimestamp(input.validFrom, "validFrom");
+  requireTimestamp(input.validUntil, "validUntil");
+  if (Date.parse(input.validUntil) < Date.parse(input.validFrom))
+    throw new Error("validUntil must not be before validFrom");
+  return Object.freeze({ ...input });
+}
 
 const commercialStatusTransitions: Readonly<
   Record<CommercialStatus, readonly CommercialStatus[]>

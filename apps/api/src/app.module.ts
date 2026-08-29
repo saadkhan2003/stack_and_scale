@@ -20,6 +20,7 @@ import { OperationsModule } from "./operations/operations.module.js";
 import { NotificationsModule } from "./notifications/notifications.module.js";
 import { KnowledgeModule } from "./knowledge/knowledge.module.js";
 import { ReportsModule } from "./reports/reports.module.js";
+import { ProposalModule } from "./proposals/proposal.module.js";
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ReportsModule } from "./reports/reports.module.js";
     NotificationsModule,
     KnowledgeModule,
     ReportsModule,
+    ProposalModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [

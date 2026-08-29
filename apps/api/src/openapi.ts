@@ -93,6 +93,17 @@ export const openApiDocument = {
         },
       },
     },
+    "/api/v1/proposals": {
+      get: { summary: "List tenant-scoped staff proposals" },
+      post: { summary: "Create a draft proposal" },
+    },
+    "/api/v1/proposals/{proposalId}": {
+      get: { summary: "Read proposal versions and line items" },
+    },
+    "/api/v1/public/proposals/{token}": {
+      get: { summary: "View a published proposal by capability token" },
+      post: { summary: "Record acceptance evidence for the published version" },
+    },
     "/api/v1/operations/release": {
       get: {
         summary:
