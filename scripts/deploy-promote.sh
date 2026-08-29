@@ -67,7 +67,11 @@ ssh "${remote}" "${compose} run --rm api node packages/database/dist/migrate.js"
 # migrations. Run it before starting the CMS so a brand-new production volume
 # cannot enter a restart loop while querying collections that do not exist yet.
 ssh "${remote}" "${compose} run --rm cms node_modules/.bin/payload migrate"
-ssh "${remote}" "${compose} up -d caddy web api cms workers keycloak postgres"
+# Caddy reads its bind-mounted configuration only at startup. Recreate only the
+# edge container so routing/header changes take effect without restarting the
+# application services unnecessarily.
+ssh "${remote}" "${compose} up -d --force-recreate caddy"
+ssh "${remote}" "${compose} up -d web api cms workers keycloak postgres"
 if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "${compose} up -d prometheus loki promtail grafana node-exporter cadvisor"
 fi
@@ -80,9 +84,6 @@ ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/a
 ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-cms-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
 ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-keycloak-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
 ssh "${remote}" "docker inspect --format '{{.State.Running}}' stack-and-scale-production-caddy-1 | grep -qx true"
-# Caddy reads its bind-mounted configuration only at startup; explicitly reload
-# it after syncing infra so edge-header and routing changes take effect.
-ssh "${remote}" "${compose} exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile"
 schema_version="$(ssh "${remote}" "${compose} exec -T api node -e \"const fs=require('fs'); const files=fs.readdirSync('packages/database/migrations').filter(f=>/^[0-9]+.*\\.sql$/.test(f)).sort(); process.stdout.write(files.at(-1) || 'unknown')\"" || true)"
 ssh "${remote}" "mkdir -p ${remote_root}/deployments && printf '%s\\n' '{\"environment\":\"${environment}\",\"imageTag\":\"${image_tag}\",\"schemaVersion\":\"${schema_version:-unknown}\"}' | tee ${remote_root}/deployments/${image_tag}.json > ${remote_root}/deployments/current.json"
 trap - ERR
