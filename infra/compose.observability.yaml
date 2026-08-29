@@ -38,6 +38,29 @@ services:
       resources:
         limits: { cpus: "0.25", memory: 256M }
 
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --config.expand-env
+      - --storage.path=/alertmanager
+    environment:
+      RESEND_API_KEY: ${RESEND_API_KEY:?set RESEND_API_KEY}
+      TRANSACTIONAL_EMAIL_FROM: ${TRANSACTIONAL_EMAIL_FROM:?set TRANSACTIONAL_EMAIL_FROM}
+      CRM_NOTIFICATION_EMAIL: ${CRM_NOTIFICATION_EMAIL:?set CRM_NOTIFICATION_EMAIL}
+    volumes:
+      - ./observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    networks: [monitoring, egress]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.15", memory: 128M }
+
   loki:
     image: grafana/loki:3.4.2
     restart: unless-stopped
@@ -134,6 +157,7 @@ networks:
 
 volumes:
   prometheus-data: {}
+  alertmanager-data: {}
   loki-data: {}
   grafana-data: {}
 
