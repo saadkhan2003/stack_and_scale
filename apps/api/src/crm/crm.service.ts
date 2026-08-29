@@ -55,13 +55,15 @@ export class CrmService {
     private readonly database: PlatformDatabaseService,
   ) {}
 
-  public async listLeads(): Promise<{ data: unknown[] }> {
+  public async listLeads(organizationId: string): Promise<{ data: unknown[] }> {
     const result = await this.database.query(
       `SELECT id, email, name, phone, message, intake_type, source, stage, owner_id,
               probability, estimated_value, next_action_at, lost_reason, attribution, consent_at, created_at
          FROM platform.leads
+        WHERE organization_id = $1
         ORDER BY created_at DESC
         LIMIT 200`,
+      [organizationId],
     );
     return { data: (result.rows as LeadRow[]).map(toLead) };
   }
@@ -192,12 +194,15 @@ export class CrmService {
     };
   }
 
-  public async getLead(leadId: string): Promise<{ data: unknown }> {
+  public async getLead(
+    leadId: string,
+    organizationId: string,
+  ): Promise<{ data: unknown }> {
     const lead = await this.database.query(
       `SELECT id, email, name, phone, message, intake_type, source, stage, owner_id,
               probability, estimated_value, next_action_at, lost_reason, attribution, created_at
-         FROM platform.leads WHERE id = $1`,
-      [leadId],
+         FROM platform.leads WHERE id = $1 AND organization_id = $2`,
+      [leadId, organizationId],
     );
     const row = lead.rows[0] as LeadRow | undefined;
     if (!row) throw new NotFoundException("Lead not found.");

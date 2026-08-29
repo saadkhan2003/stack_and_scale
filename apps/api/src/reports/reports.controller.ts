@@ -3,6 +3,10 @@ import {
   Controller,
   Get,
   Inject,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Param,
   Query,
   Req,
   Res,
@@ -46,6 +50,45 @@ export class ReportsController {
       format,
       (request as CorrelatedRequest).correlationId ?? "staff-report",
     );
+    return { data: result.body, meta: result.meta };
+  }
+
+  @Post("exports")
+  @HttpCode(HttpStatus.ACCEPTED)
+  public async createExport(
+    @Req() request: FastifyRequest,
+    @Query("type") type?: string,
+    @Query("from") from?: string,
+    @Query("to") to?: string,
+    @Query("timezone") timezone?: string,
+  ) {
+    const actor = await this.access.require(request, "report:export");
+    if (!reportTypes.includes(type as (typeof reportTypes)[number]))
+      throw new BadRequestException("Choose a supported report type.");
+    return this.reports.createExport(
+      actor.organizationId,
+      actor.actorId,
+      type as (typeof reportTypes)[number],
+      from,
+      to,
+      timezone,
+      (request as CorrelatedRequest).correlationId ?? "staff-report",
+    );
+  }
+
+  @Get("exports/:exportId")
+  public async downloadExport(
+    @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+    @Param("exportId") exportId: string,
+  ) {
+    const actor = await this.access.require(request, "report:export");
+    const result = await this.reports.downloadExport(
+      actor.organizationId,
+      actor.actorId,
+      exportId,
+      (request as CorrelatedRequest).correlationId ?? "staff-report",
+    );
     if (result.format === "csv") {
       reply.header("content-type", "text/csv; charset=utf-8");
       reply.header(
@@ -54,6 +97,6 @@ export class ReportsController {
       );
       return result.body;
     }
-    return { data: result.body, meta: result.meta };
+    return result;
   }
 }

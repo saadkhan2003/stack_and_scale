@@ -21,15 +21,15 @@ export class CrmController {
     @Inject(CrmService) private readonly crm: CrmService,
   ) {}
   @Get() public async list(@Req() request: FastifyRequest) {
-    await this.access.require(request, "crm:read");
-    return this.crm.listLeads();
+    const actor = await this.access.require(request, "crm:read");
+    return this.crm.listLeads(actor.organizationId);
   }
   @Get(":leadId") public async get(
     @Req() request: FastifyRequest,
     @Param("leadId") leadId: string,
   ) {
-    await this.access.require(request, "crm:read");
-    return this.crm.getLead(leadId);
+    const actor = await this.access.require(request, "crm:read");
+    return this.crm.getLead(leadId, actor.organizationId);
   }
   @Patch(":leadId") public async update(
     @Req() request: FastifyRequest,

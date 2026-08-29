@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
@@ -12,7 +17,7 @@ export const reportTypes = [
 ] as const;
 type ReportType = (typeof reportTypes)[number];
 type ReportResult = {
-  format: "json" | "csv";
+  format: "json";
   type: ReportType;
   body: unknown;
   meta: Record<string, string>;
@@ -57,12 +62,10 @@ export class ReportsService {
       throw new BadRequestException(
         "Report windows must be positive and at most 92 days.",
       );
-    if (
-      formatInput !== undefined &&
-      formatInput !== "json" &&
-      formatInput !== "csv"
-    )
-      throw new BadRequestException("Format must be json or csv.");
+    if (formatInput !== undefined && formatInput !== "json")
+      throw new BadRequestException(
+        "CSV reports must be requested as an export job.",
+      );
     const params = [organizationId, from.toISOString(), to.toISOString()];
     let rows;
     if (type === "funnel")
@@ -105,25 +108,168 @@ export class ReportsService {
       timezone,
       from: from.toISOString(),
       to: to.toISOString(),
-      bounded: "synchronous; maximum 92 days",
+      bounded: "synchronous JSON read; maximum 92 days",
     };
-    const format = formatInput === "csv" ? "csv" : "json";
-    const body = format === "csv" ? toCsv(rows, type) : rows;
+    await this.audit(
+      organizationId,
+      actorId,
+      "staff.report.exported",
+      correlationId,
+      type,
+      `json-read:${randomUUID()}`,
+      "json",
+    );
+    return { format: "json", type, body: rows, meta };
+  }
+
+  public async createExport(
+    organizationId: string,
+    actorId: string,
+    type: ReportType,
+    fromInput: string | undefined,
+    toInput: string | undefined,
+    timezoneInput: string | undefined,
+    correlationId: string,
+  ) {
+    const range = validateRange(fromInput, toInput, timezoneInput);
+    const id = `report_export_${randomUUID()}`;
     await this.database.query(
-      `INSERT INTO platform.audit_events (id, organization_id, actor_id, action, correlation_id, metadata) VALUES ($1, $2, $3, 'staff.report.exported', $4, jsonb_build_object('reportType', $5::text, 'format', $6::text, 'from', $7::text, 'to', $8::text))`,
+      `INSERT INTO platform.report_export_jobs (id, organization_id, requested_by, report_type, from_at, to_at, timezone)
+       VALUES ($1, $2, $3, $4, $5::timestamptz, $6::timestamptz, $7)`,
+      [
+        id,
+        organizationId,
+        actorId,
+        type,
+        range.from.toISOString(),
+        range.to.toISOString(),
+        range.timezone,
+      ],
+    );
+    await this.audit(
+      organizationId,
+      actorId,
+      "staff.report.export.requested",
+      correlationId,
+      type,
+      id,
+    );
+    return {
+      data: {
+        id,
+        status: "pending",
+        reportType: type,
+        expiresAt: new Date(Date.now() + 24 * 86_400_000).toISOString(),
+      },
+    };
+  }
+
+  public async downloadExport(
+    organizationId: string,
+    actorId: string,
+    id: string,
+    correlationId: string,
+  ) {
+    const result = await this.database.query(
+      `SELECT id, report_type, status, csv_body, expires_at, failure_reason
+         FROM platform.report_export_jobs WHERE id = $1 AND organization_id = $2`,
+      [id, organizationId],
+    );
+    const job = result.rows[0];
+    if (!job) throw new NotFoundException("Report export not found.");
+    if (
+      job["status"] !== "expired" &&
+      new Date(String(job["expires_at"])).getTime() <= Date.now()
+    ) {
+      await this.database.query(
+        "UPDATE platform.report_export_jobs SET status = 'expired', csv_body = NULL WHERE id = $1 AND organization_id = $2",
+        [id, organizationId],
+      );
+      job["status"] = "expired";
+      job["csv_body"] = null;
+    }
+    if (job["status"] === "completed" && typeof job["csv_body"] === "string") {
+      await this.database.query(
+        "UPDATE platform.report_export_jobs SET downloaded_at = now() WHERE id = $1 AND organization_id = $2",
+        [id, organizationId],
+      );
+      await this.audit(
+        organizationId,
+        actorId,
+        "staff.report.export.downloaded",
+        correlationId,
+        String(job["report_type"]),
+        id,
+      );
+      return {
+        format: "csv" as const,
+        type: String(job["report_type"]),
+        body: job["csv_body"],
+      };
+    }
+    return {
+      format: "json" as const,
+      data: {
+        id: job["id"],
+        status: job["status"],
+        reportType: job["report_type"],
+        expiresAt: job["expires_at"],
+        failureReason: job["failure_reason"],
+      },
+    };
+  }
+
+  private async audit(
+    organizationId: string,
+    actorId: string,
+    action: string,
+    correlationId: string,
+    reportType: string,
+    exportId: string,
+    format = "csv",
+  ) {
+    await this.database.query(
+      `INSERT INTO platform.audit_events (id, organization_id, actor_id, action, correlation_id, metadata)
+       VALUES ($1, $2, $3, $4, $5, jsonb_build_object('reportType', $6::text, 'exportId', $7::text, 'format', $8::text))`,
       [
         `audit_${randomUUID()}`,
         organizationId,
         actorId,
+        action,
         correlationId,
-        type,
+        reportType,
+        exportId,
         format,
-        from.toISOString(),
-        to.toISOString(),
       ],
     );
-    return { format, type, body, meta };
   }
+}
+
+function validateRange(
+  fromInput: string | undefined,
+  toInput: string | undefined,
+  timezoneInput: string | undefined,
+) {
+  if (
+    (fromInput !== undefined && Number.isNaN(Date.parse(fromInput))) ||
+    (toInput !== undefined && Number.isNaN(Date.parse(toInput)))
+  )
+    throw new BadRequestException("Report dates must be valid ISO timestamps.");
+  const to = toInput ? new Date(toInput) : new Date();
+  const from = fromInput
+    ? new Date(fromInput)
+    : new Date(to.getTime() - 30 * 86_400_000);
+  const timezone = timezoneInput || "UTC";
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: timezone });
+  } catch {
+    throw new BadRequestException("Timezone must be a valid IANA timezone.");
+  }
+  if (from >= to || to.getTime() - from.getTime() > 92 * 86_400_000)
+    throw new BadRequestException(
+      "Report windows must be positive and at most 92 days.",
+    );
+  return { from, to, timezone };
 }
 
 function formulaFor(type: ReportType): string {
@@ -137,29 +283,4 @@ function formulaFor(type: ReportType): string {
       "Won leads divided by leads, grouped by source, multiplied by 100.",
     activity: "Lead activities grouped by type.",
   }[type];
-}
-
-function toCsv(rows: Record<string, unknown>[], type: ReportType): string {
-  const defaultColumns: Record<ReportType, string[]> = {
-    funnel: ["stage", "leads"],
-    "response-time": ["responded_leads", "average_minutes"],
-    workload: ["assignee_id", "total_tasks", "open_tasks", "completed_tasks"],
-    conversion: ["source", "leads", "won", "conversion_percent"],
-    activity: ["type", "activities"],
-  };
-  const columns = Object.keys(rows[0] ?? {}).length
-    ? Object.keys(rows[0] ?? {})
-    : defaultColumns[type];
-  const cell = (value: unknown) => {
-    const text =
-      value === null || value === undefined
-        ? ""
-        : typeof value === "string" ||
-            typeof value === "number" ||
-            typeof value === "boolean"
-          ? String(value)
-          : JSON.stringify(value);
-    return `"${text.replaceAll('"', '""')}"`;
-  };
-  return `${columns.map(cell).join(",")}\n${rows.map((row) => columns.map((column) => cell(row[column])).join(",")).join("\n")}\n`;
 }

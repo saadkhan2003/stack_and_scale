@@ -46,6 +46,12 @@ type Detail = Lead & {
   timeline: TimelineItem[];
   opportunities: { id: string; pipeline: string; stage: string }[];
 };
+type KnowledgeSuggestion = {
+  id: string;
+  title: string;
+  content_type: string;
+  review_at: string;
+};
 
 export const sensitiveLeadFields = [
   { key: "email", label: "Email", editable: false },
@@ -78,6 +84,7 @@ export function StaffLeadInbox() {
   const [selected, setSelected] = useState<Detail | null>(null);
   const [notice, setNotice] = useState("Loading CRM inbox...");
   const [busyTask, setBusyTask] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<KnowledgeSuggestion[]>([]);
   const refresh = async () => {
     const response = await fetch("/api/staff/crm/leads", { cache: "no-store" });
     if (!response.ok) {
@@ -111,6 +118,18 @@ export function StaffLeadInbox() {
     }
     const payload = (await response.json()) as { data: Detail };
     setSelected(payload.data);
+    const suggestionsResponse = await fetch(
+      `/api/staff/operations/knowledge/suggestions?leadId=${encodeURIComponent(leadId)}`,
+      { cache: "no-store" },
+    );
+    if (suggestionsResponse.ok) {
+      setSuggestions(
+        ((await suggestionsResponse.json()) as { data: KnowledgeSuggestion[] })
+          .data,
+      );
+    } else {
+      setSuggestions([]);
+    }
     playStaffCue("open");
   };
   const update = async (form: FormData) => {
@@ -278,6 +297,20 @@ export function StaffLeadInbox() {
             <p>
               Pipeline: {selected.opportunities[0]?.pipeline ?? "Shared pool"}
             </p>
+            <section aria-labelledby="knowledge-suggestions-heading">
+              <h3 id="knowledge-suggestions-heading">Suggested procedures</h3>
+              <ul>
+                {suggestions.map((item) => (
+                  <li key={item.id}>
+                    <strong>{item.title}</strong>{" "}
+                    <span>{item.content_type}</span>
+                  </li>
+                ))}
+              </ul>
+              {!suggestions.length ? (
+                <p>No contextual procedures found.</p>
+              ) : null}
+            </section>
             <form action={(form) => void update(form)}>
               <label>
                 Owner ID

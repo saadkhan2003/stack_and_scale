@@ -155,8 +155,19 @@ export const openApiDocument = {
       patch: { summary: "Update an internal knowledge article" },
       delete: { summary: "Delete an internal knowledge article" },
     },
+    "/api/v1/operations/knowledge/suggestions": {
+      get: {
+        summary: "Return permission-filtered contextual knowledge suggestions",
+      },
+    },
     "/api/v1/operations/reports": {
-      get: { summary: "Return a bounded aggregate operational report" },
+      get: { summary: "Return a bounded synchronous JSON operational report" },
+    },
+    "/api/v1/operations/reports/exports": {
+      post: { summary: "Queue an access-controlled CSV report export" },
+    },
+    "/api/v1/operations/reports/exports/{exportId}": {
+      get: { summary: "Read or download an authorized report export" },
     },
   },
 } as const;

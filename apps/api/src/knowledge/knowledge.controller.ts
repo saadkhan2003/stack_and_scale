@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from "@nestjs/common";
 import type { FastifyRequest } from "fastify";
@@ -26,6 +27,21 @@ export class KnowledgeController {
   public async list(@Req() request: FastifyRequest) {
     const actor = await this.access.require(request, "knowledge:read");
     return this.knowledge.list(actor.organizationId);
+  }
+
+  @Get("suggestions")
+  public async suggestions(
+    @Req() request: FastifyRequest,
+    @Query("leadId") leadId?: string,
+    @Query("workflow") workflow?: string,
+  ) {
+    const actor = await this.access.require(request, "knowledge:read");
+    return this.knowledge.suggestions(
+      actor.organizationId,
+      actor.role,
+      leadId,
+      workflow,
+    );
   }
 
   @Get(":articleId")
@@ -99,6 +115,13 @@ function parseArticle(body: Record<string, unknown>) {
   const contentTypeValue = typeof contentType === "string" ? contentType : "";
   const statusValue = typeof status === "string" ? status : "";
   const ownerId = body["ownerId"];
+  const allowedRoles = parseList(body["allowedRoles"], [
+    "owner",
+    "admin",
+    "manager",
+    "member",
+  ]);
+  const contextTags = parseList(body["contextTags"], []);
   const reviewAt = text("reviewAt", 80);
   if (
     !["procedure", "script", "faq", "onboarding"].includes(contentTypeValue) ||
@@ -116,7 +139,25 @@ function parseArticle(body: Record<string, unknown>) {
     ownerId: ownerId === undefined ? undefined : text("ownerId", 200),
     reviewAt,
     status: statusValue,
+    allowedRoles,
+    contextTags,
   };
+}
+
+function parseList(value: unknown, fallback: string[]): string[] {
+  if (value === undefined) return fallback;
+  if (
+    !Array.isArray(value) ||
+    value.length > 12 ||
+    value.some((item) => typeof item !== "string" || item.trim().length === 0)
+  ) {
+    throw new BadRequestException(
+      "Lists must contain up to 12 non-empty strings.",
+    );
+  }
+  return value.map((item) =>
+    (item as string).trim().toLowerCase().slice(0, 80),
+  );
 }
 
 function correlationId(request: FastifyRequest): string {

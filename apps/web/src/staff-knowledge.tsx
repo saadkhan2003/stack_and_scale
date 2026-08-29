@@ -11,14 +11,28 @@ type Article = {
   owner_id: string;
   review_at: string;
   status: string;
+  allowed_roles?: string[];
+  context_tags?: string[];
 };
-const blank = {
+type ArticleForm = {
+  title: string;
+  contentType: string;
+  body: string;
+  ownerId: string;
+  reviewAt: string;
+  status: string;
+  allowedRoles: string[];
+  contextTags: string[];
+};
+const blank: ArticleForm = {
   title: "",
   contentType: "procedure",
   body: "",
   ownerId: "",
   reviewAt: "",
   status: "published",
+  allowedRoles: ["owner", "admin", "manager", "member"],
+  contextTags: [],
 };
 
 export function StaffKnowledge() {
@@ -59,6 +73,8 @@ export function StaffKnowledge() {
       ownerId: article.owner_id,
       reviewAt: article.review_at.slice(0, 10),
       status: article.status,
+      allowedRoles: article.allowed_roles ?? blank.allowedRoles,
+      contextTags: article.context_tags ?? [],
     });
   };
   const save = async (event: React.FormEvent) => {
@@ -210,6 +226,36 @@ export function StaffKnowledge() {
               <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
+          </label>
+          <label>
+            Visible roles (comma separated)
+            <input
+              value={form.allowedRoles.join(", ")}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  allowedRoles: event.target.value
+                    .split(",")
+                    .map((item) => item.trim().toLowerCase())
+                    .filter(Boolean),
+                })
+              }
+            />
+          </label>
+          <label>
+            Context tags (comma separated)
+            <input
+              value={form.contextTags.join(", ")}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  contextTags: event.target.value
+                    .split(",")
+                    .map((item) => item.trim().toLowerCase())
+                    .filter(Boolean),
+                })
+              }
+            />
           </label>
           <label>
             Body

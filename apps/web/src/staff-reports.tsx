@@ -17,7 +17,10 @@ export function StaffReports() {
   );
   const download = async (format: "json" | "csv") => {
     const response = await fetch(
-      `/api/staff/operations/reports?type=${type}&format=${format}`,
+      format === "csv"
+        ? `/api/staff/operations/reports/exports?type=${type}`
+        : `/api/staff/operations/reports?type=${type}&format=${format}`,
+      format === "csv" ? { method: "POST" } : undefined,
     );
     if (!response.ok) {
       setNotice(
@@ -35,7 +38,41 @@ export function StaffReports() {
       });
       saveBlob(blob, `${type}-report.json`);
     } else {
-      saveBlob(await response.blob(), `${type}-report.csv`);
+      const job = (await response.json()) as { data: { id: string } };
+      setNotice("CSV export queued. Preparing download...");
+      for (let attempt = 0; attempt < 30; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const downloadResponse = await fetch(
+          `/api/staff/operations/reports/exports/${encodeURIComponent(job.data.id)}`,
+          { cache: "no-store" },
+        );
+        if (
+          downloadResponse.status === 200 &&
+          downloadResponse.headers.get("content-type")?.includes("text/csv")
+        ) {
+          saveBlob(await downloadResponse.blob(), `${type}-report.csv`);
+          break;
+        }
+        if (downloadResponse.ok) {
+          const status = (await downloadResponse.json()) as {
+            data: { status: string; failureReason?: string };
+          };
+          if (
+            status.data.status === "failed" ||
+            status.data.status === "expired"
+          ) {
+            setNotice(
+              status.data.failureReason ?? "CSV export is no longer available.",
+            );
+            playStaffCue("error");
+            return;
+          }
+        }
+        if (attempt === 29) {
+          setNotice("CSV export is taking longer than expected.");
+          return;
+        }
+      }
     }
     setNotice(`${type} report downloaded.`);
     playStaffCue("check");
@@ -49,7 +86,7 @@ export function StaffReports() {
       <h1 id="reports-heading">Operational reports</h1>
       <p className="staff-crm-lede">
         Aggregate lead funnel, response time, workload, conversion, and activity
-        data. Downloads are synchronous and limited to 92 days.
+        data. JSON reads are synchronous; CSV exports are retained for 24 hours.
       </p>
       <p aria-live="polite" role="status">
         {notice}
