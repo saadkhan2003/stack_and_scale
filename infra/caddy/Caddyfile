@@ -23,7 +23,9 @@
 	request_body {
 		max_size 2MB
 	}
-	reverse_proxy web:3000
+	reverse_proxy web:3000 {
+		header_down -X-Powered-By
+	}
 }
 
 cms.{$PUBLIC_DOMAIN} {
@@ -40,7 +42,9 @@ cms.{$PUBLIC_DOMAIN} {
 	request_body {
 		max_size 32MB
 	}
-	reverse_proxy cms:3200
+	reverse_proxy cms:3200 {
+		header_down -X-Powered-By
+	}
 }
 
 api.{$PUBLIC_DOMAIN} {
@@ -57,7 +61,9 @@ api.{$PUBLIC_DOMAIN} {
 	handle /metrics* {
 		respond "Not found" 404
 	}
-	reverse_proxy api:3100
+	reverse_proxy api:3100 {
+		header_down -X-Powered-By
+	}
 }
 
 identity.{$PUBLIC_DOMAIN} {
@@ -69,5 +75,7 @@ identity.{$PUBLIC_DOMAIN} {
 		-Server
 		-X-Powered-By
 	}
-	reverse_proxy keycloak:8080
+	reverse_proxy keycloak:8080 {
+		header_down -X-Powered-By
+	}
 }
