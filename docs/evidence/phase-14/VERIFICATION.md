@@ -36,6 +36,16 @@ operational gates are resolved.
 - Storage: 7 tests passed.
 - Lint, typecheck, builds, formatting and migration checks passed.
 
+## Production smoke
+
+- Immutable delivery run `33304916000` completed successfully.
+- Production release `008c7f72a0682080d1af3b81e781755cb40b31c2` is running on
+  OVH; migrations `0010` through `0019` applied successfully.
+- Website, API readiness and CMS login endpoints returned `200`.
+- Unauthenticated invoice and support endpoints returned `401`.
+- API, web, CMS, workers, PostgreSQL, Keycloak, Prometheus, Grafana and
+  Alertmanager are running; disk usage was 30% at verification.
+
 ## Open exit gates
 
 1. Select and legally approve an e-sign provider; complete its adapter,
