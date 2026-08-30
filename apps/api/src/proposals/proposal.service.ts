@@ -15,6 +15,7 @@ import {
 import { createCanonicalPdf } from "@stack-and-scale/storage";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
+import { documentBrand } from "../files/document-brand.js";
 
 export type ProposalLineInput = Readonly<{
   id?: string;
@@ -359,6 +360,7 @@ export class ProposalService {
     const requiredLines = totals.lines ?? [];
     const optionalLines = totals.optional?.lines ?? [];
     const body = createCanonicalPdf({
+      brand: documentBrand(),
       title: String(row["title"]),
       documentNumber: `${id}-v${version}`,
       currency: String(row["currency"]),

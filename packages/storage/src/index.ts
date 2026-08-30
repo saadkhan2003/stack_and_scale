@@ -357,6 +357,11 @@ export type CanonicalPdfEvidence = Readonly<{
   value: string;
 }>;
 
+export type CanonicalPdfBrand = Readonly<{
+  name: string;
+  primaryRgb: readonly [number, number, number];
+}>;
+
 export type CanonicalPdfInput = Readonly<{
   title: string;
   documentNumber: string;
@@ -366,6 +371,7 @@ export type CanonicalPdfInput = Readonly<{
   notes?: string;
   lineItems: readonly CanonicalPdfLineItem[];
   evidence?: readonly CanonicalPdfEvidence[];
+  brand?: CanonicalPdfBrand;
 }>;
 
 export type CanonicalPdf = Readonly<{
@@ -401,10 +407,20 @@ export function createCanonicalPdf(input: CanonicalPdfInput): CanonicalPdf {
       : []),
   ].flatMap((line) => wrapPdfText(normalizePdfText(line), 92));
 
+  const brand = input.brand ? normalizePdfBrand(input.brand) : undefined;
   const content = [
     "BT",
-    "/F1 11 Tf",
-    "50 742 Td",
+    ...(brand
+      ? [
+          "/F1 16 Tf",
+          `${brand.primaryRgb.map(pdfColor).join(" ")} rg`,
+          "50 755 Td",
+          `(${escapePdfText(brand.name)}) Tj`,
+          "0 g",
+          "/F1 11 Tf",
+          "0 -25 Td",
+        ]
+      : ["/F1 11 Tf", "50 742 Td"]),
     ...lines.flatMap((line, index) => [
       `(${escapePdfText(line)}) Tj`,
       ...(index === lines.length - 1 ? [] : ["0 -15 Td"]),
@@ -460,6 +476,25 @@ function normalizePdfText(value: string): string {
     .replace(/\r\n?/g, "\n")
     .replace(/\n/g, " ")
     .replace(/[^\x20-\x7E]/g, "?");
+}
+
+function normalizePdfBrand(input: CanonicalPdfBrand): CanonicalPdfBrand {
+  const name = normalizePdfText(input.name).trim();
+  if (!name) throw new Error("brand name must not be empty");
+  if (
+    input.primaryRgb.some(
+      (component) =>
+        !Number.isInteger(component) || component < 0 || component > 255,
+    )
+  )
+    throw new Error(
+      "brand primaryRgb components must be integers from 0 through 255",
+    );
+  return { name, primaryRgb: input.primaryRgb };
+}
+
+function pdfColor(component: number): string {
+  return (component / 255).toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function escapePdfText(value: string): string {

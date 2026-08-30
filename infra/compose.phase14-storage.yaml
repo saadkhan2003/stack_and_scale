@@ -1,0 +1,15 @@
+# This overlay is loaded only by a storage-enabled protected deployment. It
+# keeps MinIO application credentials out of the normal production topology.
+services:
+  api:
+    secrets:
+      - source: minio_api_access_key
+        target: minio_api_access_key
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
+      - source: minio_api_secret_key
+        target: minio_api_secret_key
+        uid: "10001"
+        gid: "10001"
+        mode: 0400

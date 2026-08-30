@@ -41,4 +41,24 @@ describe("canonical PDF", () => {
     expect(pdf).toContain("Not a qualified signature");
     expect(pdf).toContain("/CreationDate (D:20260830120000Z)");
   });
+
+  it("renders a deterministic visual brand header", () => {
+    const pdf = createCanonicalPdf({
+      ...input,
+      brand: { name: "Stack & Scale", primaryRgb: [11, 22, 22] },
+    }).body.toString("ascii");
+
+    expect(pdf).toContain("(Stack & Scale) Tj");
+    expect(pdf).toContain("0.043137 0.086275 0.086275 rg");
+    expect(pdf).toContain("0 g");
+  });
+
+  it("rejects an invalid brand color", () => {
+    expect(() =>
+      createCanonicalPdf({
+        ...input,
+        brand: { name: "Stack & Scale", primaryRgb: [256, 22, 22] },
+      }),
+    ).toThrow("brand primaryRgb components");
+  });
 });

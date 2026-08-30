@@ -22,6 +22,7 @@ import {
 import { createCanonicalPdf } from "@stack-and-scale/storage";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
+import { documentBrand } from "../files/document-brand.js";
 
 export const ESIGN_PROVIDER_ADAPTER = Symbol("ESIGN_PROVIDER_ADAPTER");
 
@@ -409,6 +410,7 @@ export class ContractService {
       [contractId, organizationId],
     );
     const body = createCanonicalPdf({
+      brand: documentBrand(),
       title: String(row["title"]),
       documentNumber: contractId,
       currency: String(row["currency"]),

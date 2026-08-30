@@ -22,6 +22,7 @@ import { createCanonicalPdf } from "@stack-and-scale/storage";
 import type { Queryable } from "@stack-and-scale/database";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
+import { documentBrand } from "../files/document-brand.js";
 
 export const PAYMENT_PROVIDER_ADAPTER = Symbol("PAYMENT_PROVIDER_ADAPTER");
 export type PaymentProviderEvent = Readonly<{
@@ -683,6 +684,7 @@ export class InvoiceService {
       String(payment.rows[0].received_at ?? payment.rows[0].created_at),
     ).toISOString();
     const pdf = createCanonicalPdf({
+      brand: documentBrand(),
       title: "Payment receipt",
       documentNumber: String(receipt.receipt_number),
       currency: String(payment.rows[0].currency),

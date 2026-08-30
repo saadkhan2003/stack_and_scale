@@ -52,20 +52,10 @@ services:
       API_HOST: 0.0.0.0
     # The database network is internal to this one-host Compose deployment.
     networks: [edge, application, database, egress, storage]
-    secrets:
-      - source: minio_api_access_key
-        target: minio_api_access_key
-        uid: "10001"
-        gid: "10001"
-        mode: 0400
-      - source: minio_api_secret_key
-        target: minio_api_secret_key
-        uid: "10001"
-        gid: "10001"
-        mode: 0400
-    depends_on:
-      minio-init:
-        condition: service_completed_successfully
+    # Storage is an opt-in profile. Do not make the always-on API depend on
+    # `minio-init`, otherwise a disabled profile prevents a normal deployment
+    # from rendering or starting. The activation runbook starts and verifies
+    # the profile before the S3/ClamAV environment flags are enabled.
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]

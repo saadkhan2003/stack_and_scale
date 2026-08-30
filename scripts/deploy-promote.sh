@@ -32,9 +32,19 @@ ssh "${remote}" "test -s ${remote_root}/secrets/cloudflare-origin.crt && test -s
 # Synchronize only deployment configuration. Target-host secret files are never
 # copied from CI or a developer machine.
 rsync -az --delete infra/ "${remote}:${remote_root}/infra/"
-rsync -az scripts/backup-production.sh "${remote}:${remote_root}/scripts/backup-production.sh"
-ssh "${remote}" "chmod 0750 ${remote_root}/scripts/backup-production.sh"
+rsync -az scripts/backup-production.sh scripts/bootstrap-phase14-storage.sh \
+  "${remote}:${remote_root}/scripts/"
+ssh "${remote}" "chmod 0750 ${remote_root}/scripts/backup-production.sh ${remote_root}/scripts/bootstrap-phase14-storage.sh"
 compose="IMAGE_TAG=${image_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production -f ${remote_root}/infra/compose.production.yaml"
+phase14_storage_enabled=0
+# The private storage lane is an explicit production opt-in. When its API
+# configuration is selected, every protected deployment must bring MinIO and
+# ClamAV up before starting the API; otherwise a later normal release would
+# boot with S3 configured but no private object store.
+if ssh "${remote}" "grep -qx 'PRIVATE_STORAGE_PROVIDER=s3' ${remote_root}/.env.production || grep -qx 'MALWARE_SCAN_PROVIDER=clamav' ${remote_root}/.env.production"; then
+  phase14_storage_enabled=1
+  compose+=" -f ${remote_root}/infra/compose.phase14-storage.yaml --profile phase14-storage"
+fi
 if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "test -s ${remote_root}/secrets/metrics-bearer-token && test -s ${remote_root}/secrets/grafana-admin-password" || {
     echo "Refusing observability deployment: protected metrics and Grafana secret files are missing." >&2
@@ -59,6 +69,16 @@ trap rollback_on_failure ERR
 ssh "${remote}" "${compose} pull"
 ssh "${remote}" "${compose} up -d postgres"
 ssh "${remote}" "for attempt in \$(seq 1 20); do ${compose} exec -T postgres pg_isready -U \"\$POSTGRES_USER\" -d stack_and_scale && break; test \$attempt -eq 20 && exit 1; sleep 3; done"
+if [[ "${phase14_storage_enabled}" == "1" ]]; then
+  ssh "${remote}" "test -s ${remote_root}/secrets/minio-root-user && test -s ${remote_root}/secrets/minio-root-password && test -s ${remote_root}/secrets/minio-api-access-key && test -s ${remote_root}/secrets/minio-api-secret-key" || {
+    echo "Refusing storage-enabled deployment: MinIO secret files are missing." >&2
+    exit 2
+  }
+  ssh "${remote}" "${compose} up -d minio clamav"
+  ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-minio-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
+  ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-clamav-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
+  ssh "${remote}" "${compose} run --rm minio-init"
+fi
 # tsconfig.build.json emits the database package source directly into dist/.
 # Keep this in sync with packages/database/tsconfig.build.json; using dist/src
 # would make a first production release stop after PostgreSQL is healthy.

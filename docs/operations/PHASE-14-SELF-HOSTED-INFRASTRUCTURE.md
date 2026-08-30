@@ -10,6 +10,11 @@ network. ClamAV also has egress solely to retrieve signature updates; it has no
 published listener. The API selects local storage and a pending scan hook unless the explicit
 production environment configuration selects S3 and ClamAV.
 
+`infra/compose.phase14-storage.yaml` is applied only by a storage-enabled
+protected deployment. It mounts the MinIO application credentials into the API;
+the normal production Compose model mounts no storage credentials and therefore
+does not require storage secret files.
+
 Documenso is defined in the `documenso` Compose profile and is disabled by
 default. `sign.${PUBLIC_DOMAIN}` is its only edge route. Do not enable the
 profile until the provider, jurisdiction, data-location, retention, callback,
@@ -17,23 +22,32 @@ DNS and capacity gates below have recorded evidence.
 
 ## Activation
 
-1. Create non-committed files under `secrets/`: `minio-root-user`,
-   `minio-root-password`, `minio-api-access-key`, `minio-api-secret-key`,
-   `documenso-nextauth-secret`, `documenso-encryption-key`, and
-   `documenso-encryption-secondary-key`. Use distinct, rotated values; only the
-   API receives the MinIO application credentials.
-2. Copy `.env.production.example` outside the repository as `.env.production`.
-   Keep `PRIVATE_STORAGE_PROVIDER=s3`, `MALWARE_SCAN_PROVIDER=clamav`, and the
-   two API `*_FILE` credential paths. Set a dedicated private bucket name.
-3. Render before starting: `docker compose --profile phase14-storage --env-file
-   .env.production -f infra/compose.production.yaml config`. The `minio-init` job creates the
-   bucket and attaches only object get/put/delete rights to the API identity.
-4. Start the profile after the protected release workflow completes with
-   `docker compose --profile phase14-storage ... up -d minio minio-init clamav`.
-   Verify MinIO and ClamAV health, a clean upload, an EICAR quarantine
+1. On the production host, run
+   `cd /opt/stack-and-scale && ENABLE_PHASE14_STORAGE=1 bash scripts/bootstrap-phase14-storage.sh`.
+   It creates four distinct server-local MinIO credentials and changes only the
+   private `.env.production` file. Store all four values from `secrets/` in a
+   password manager; never commit or paste them.
+2. Render before starting:
+
+   ```bash
+   docker compose --profile phase14-storage --env-file .env.production \
+     -f infra/compose.production.yaml \
+     -f infra/compose.phase14-storage.yaml config
+   ```
+
+   The `minio-init` job creates the bucket and attaches only object
+   get/put/delete rights to the API identity.
+3. Run the protected release workflow after the script changes the provider
+   values.
+   It detects the opt-in configuration, verifies all four server-local MinIO
+   secret files, starts MinIO and ClamAV, waits for their health checks, and
+   completes the bucket/least-privilege identity initialization before starting
+   the API. Verify a clean upload, an EICAR quarantine
    test in an approved non-production environment, download authorization,
    object restore and retention before treating the lane as production-ready.
-5. For Documenso, set `DOCUMENSO_DATABASE_URL`, provision its two secrets, add
+   The normal API deliberately does not depend on this opt-in profile; enable
+   its S3 and ClamAV environment settings only after these checks pass.
+4. For Documenso, set `DOCUMENSO_DATABASE_URL`, provision its two secrets, add
    the `sign` DNS record through the approved Cloudflare/origin process, then
    start with `--profile documenso`. Confirm the exact image release and
    environment names against the selected Documenso release documentation
