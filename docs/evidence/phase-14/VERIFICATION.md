@@ -30,7 +30,7 @@ operational gates are resolved.
 
 ## Verification
 
-- API: 100 tests passed, 3 environment-gated tests skipped.
+- API: 109 tests passed, 3 environment-gated tests skipped.
 - Workers: 14 tests passed.
 - Contracts: 52 tests passed.
 - Storage: 7 tests passed.
