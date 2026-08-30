@@ -68,7 +68,7 @@ jobs:
       # Workspace packages publish JavaScript from dist/ in production. Build
       # them first so the API tests exercise the same import boundary as the
       # Docker runtime rather than loading TypeScript source files directly.
-      - run: pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/database migrate && pnpm --filter @stack-and-scale/api test && pnpm --filter @stack-and-scale/web build
+      - run: pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/storage build && pnpm --filter @stack-and-scale/database migrate && pnpm --filter @stack-and-scale/api test && pnpm --filter @stack-and-scale/web build
       - uses: docker/setup-buildx-action@v3
         with:
           cleanup: false
