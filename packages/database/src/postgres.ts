@@ -16,12 +16,13 @@ export type DatabaseConnectionOptions = Readonly<{
 export type DatabasePool = Queryable &
   Readonly<{
     end(): Promise<void>;
+    transaction<T>(work: (client: Queryable) => Promise<T>): Promise<T>;
   }>;
 
 export function createPostgresPool(
   options: DatabaseConnectionOptions = {},
 ): DatabasePool {
-  return new Pool({
+  const pool = new Pool({
     connectionString: options.connectionString,
     host: options.host,
     port: options.port,
@@ -29,6 +30,27 @@ export function createPostgresPool(
     user: options.user,
     password: options.password,
   });
+  return {
+    query: async (text, values) =>
+      (await pool.query(text, values as unknown[])) as {
+        rows: Record<string, unknown>[];
+      },
+    end: () => pool.end(),
+    transaction: async <T>(work: (client: Queryable) => Promise<T>) => {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const result = await work(client);
+        await client.query("COMMIT");
+        return result;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+  };
 }
 
 export function createPostgresPoolFromEnv(

@@ -8,6 +8,7 @@ import {
   type CreatePrivacyRequestRecordResult,
   type DatabasePool,
   type DatabaseReadiness,
+  type Queryable,
 } from "@stack-and-scale/database";
 
 @Injectable()
@@ -24,6 +25,10 @@ export class PlatformDatabaseService implements OnModuleDestroy {
 
   public query(text: string, values?: readonly unknown[]) {
     return this.pool.query(text, values);
+  }
+
+  public transaction<T>(work: (client: Queryable) => Promise<T>): Promise<T> {
+    return this.pool.transaction(work);
   }
 
   public async createPrivacyRequest(

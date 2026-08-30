@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from "@nestjs/common";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import {
@@ -11,7 +12,9 @@ import {
   createProposalVersion,
   type CommercialLineItem,
 } from "@stack-and-scale/contracts";
+import { createCanonicalPdf } from "@stack-and-scale/storage";
 import { PlatformDatabaseService } from "../platform-database.service.js";
+import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
 
 export type ProposalLineInput = Readonly<{
   id?: string;
@@ -42,6 +45,9 @@ export class ProposalService {
   public constructor(
     @Inject(PlatformDatabaseService)
     private readonly database: PlatformDatabaseService,
+    @Inject(CanonicalArtifactService)
+    @Optional()
+    private readonly artifacts?: CanonicalArtifactService,
   ) {}
 
   public async list(organizationId: string) {
@@ -328,6 +334,94 @@ export class ProposalService {
       Object.entries(row).filter(([key]) => key !== "organization_id"),
     );
     return { data: { ...publicData, lineItems: items.rows } };
+  }
+
+  public async artifact(
+    id: string,
+    version: number,
+    organizationId: string,
+    actorId: string,
+  ) {
+    const result = await this.database.query(
+      "SELECT p.title, v.id AS version_id, v.version, v.status, v.currency, v.valid_until, v.issued_at, v.totals, v.notes FROM platform.proposals p JOIN platform.proposal_versions v ON v.proposal_id = p.id AND v.organization_id = p.organization_id WHERE p.id = $1 AND p.organization_id = $2 AND v.version = $3 AND v.status = 'issued'",
+      [id, organizationId, version],
+    );
+    const row = result.rows[0];
+    if (!row) throw new NotFoundException("Issued proposal version not found.");
+    const items = await this.database.query(
+      "SELECT description, quantity, unit_price_minor_units, optional, position FROM platform.proposal_line_items WHERE organization_id = $1 AND version_id = $2 ORDER BY position",
+      [organizationId, row["version_id"]],
+    );
+    const totals = (row["totals"] ?? {}) as {
+      lines?: Array<{ total?: { minorUnits?: number } }>;
+      optional?: { lines?: Array<{ total?: { minorUnits?: number } }> };
+    };
+    const requiredLines = totals.lines ?? [];
+    const optionalLines = totals.optional?.lines ?? [];
+    const body = createCanonicalPdf({
+      title: String(row["title"]),
+      documentNumber: `${id}-v${version}`,
+      currency: String(row["currency"]),
+      issuedAt: new Date(String(row["issued_at"])).toISOString(),
+      validUntil: new Date(String(row["valid_until"])).toISOString(),
+      notes: typeof row["notes"] === "string" ? row["notes"] : "",
+      lineItems: items.rows.map((item) => {
+        const calculated = item["optional"]
+          ? optionalLines.shift()
+          : requiredLines.shift();
+        return {
+          description: String(item["description"]),
+          quantity: Number(item["quantity"]),
+          unitPriceMinorUnits: Number(item["unit_price_minor_units"]),
+          totalMinorUnits: Number(
+            calculated?.total?.minorUnits ??
+              Number(item["unit_price_minor_units"]) * Number(item["quantity"]),
+          ),
+          optional: item["optional"] === true,
+        };
+      }),
+      evidence: [
+        { label: "Document version", value: `${id} version ${version}` },
+      ],
+    });
+    if (!this.artifacts)
+      throw new ConflictException(
+        "Document artifact storage is not configured.",
+      );
+    return this.artifacts.retain({
+      organizationId,
+      actorId,
+      resourceType: "proposal",
+      resourceId: id,
+      resourceVersionId: String(row["version_id"]),
+      filename: `${id}-v${version}.pdf`,
+      body: body.body,
+      checksumSha256: body.checksumSha256,
+    });
+  }
+
+  public async artifactAccess(
+    id: string,
+    version: number,
+    organizationId: string,
+    actorId: string,
+  ) {
+    const versionRow = await this.database.query(
+      "SELECT v.id FROM platform.proposal_versions v WHERE v.proposal_id = $1 AND v.organization_id = $2 AND v.version = $3 AND v.status = 'issued'",
+      [id, organizationId, version],
+    );
+    if (!versionRow.rows[0])
+      throw new NotFoundException("Issued proposal version not found.");
+    if (!this.artifacts)
+      throw new ConflictException(
+        "Document artifact storage is not configured.",
+      );
+    return this.artifacts.signedAccess(
+      organizationId,
+      actorId,
+      "proposal",
+      String(versionRow.rows[0]["id"]),
+    );
   }
 
   public async accept(

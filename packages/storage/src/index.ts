@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
 
 export type PrivateStorageAccess = "private";
@@ -27,6 +28,7 @@ export type StoredPrivateObject = Readonly<{
  */
 export interface PrivateObjectStorage {
   putObject(input: PutPrivateObjectInput): Promise<StoredPrivateObject>;
+  deleteObject(reference: PrivateObjectReference): Promise<void>;
   getObject(reference: PrivateObjectReference): Promise<Buffer>;
   createSignedAccess(
     reference: PrivateObjectReference,
@@ -102,6 +104,14 @@ export class LocalPrivateStorage implements PrivateObjectStorage {
     return readFile(this.resolvePrivatePath(this.createStorageKey(reference)));
   }
 
+  public async deleteObject(reference: PrivateObjectReference): Promise<void> {
+    try {
+      await unlink(this.resolvePrivatePath(this.createStorageKey(reference)));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
+
   public async createSignedAccess(
     reference: PrivateObjectReference,
     expiresInSeconds: number,
@@ -174,4 +184,149 @@ export class LocalPrivateStorage implements PrivateObjectStorage {
 
     return candidatePath;
   }
+}
+
+export type CanonicalPdfLineItem = Readonly<{
+  description: string;
+  quantity: number;
+  unitPriceMinorUnits: number;
+  totalMinorUnits: number;
+  optional?: boolean;
+}>;
+
+export type CanonicalPdfEvidence = Readonly<{
+  label: string;
+  value: string;
+}>;
+
+export type CanonicalPdfInput = Readonly<{
+  title: string;
+  documentNumber: string;
+  currency: string;
+  issuedAt: string;
+  validUntil?: string;
+  notes?: string;
+  lineItems: readonly CanonicalPdfLineItem[];
+  evidence?: readonly CanonicalPdfEvidence[];
+}>;
+
+export type CanonicalPdf = Readonly<{
+  body: Buffer;
+  checksumSha256: string;
+}>;
+
+/**
+ * Creates a deliberately small, deterministic PDF. The caller owns the
+ * canonical data and supplies the historical issuedAt timestamp; no current
+ * time, random ID, or producer-specific metadata enters the bytes.
+ */
+export function createCanonicalPdf(input: CanonicalPdfInput): CanonicalPdf {
+  const lines = [
+    input.title,
+    `Document ${input.documentNumber}`,
+    `Issued ${input.issuedAt}`,
+    ...(input.validUntil ? [`Valid until ${input.validUntil}`] : []),
+    "",
+    ...input.lineItems.map(
+      (item) =>
+        `${item.optional ? "Optional: " : ""}${item.description} | ${item.quantity} x ${item.unitPriceMinorUnits} ${input.currency} | ${item.totalMinorUnits} ${input.currency}`,
+    ),
+    "",
+    `Total currency: ${input.currency}`,
+    ...(input.notes ? ["", input.notes] : []),
+    ...(input.evidence && input.evidence.length > 0
+      ? [
+          "",
+          "Evidence",
+          ...input.evidence.map((item) => `${item.label}: ${item.value}`),
+        ]
+      : []),
+  ].flatMap((line) => wrapPdfText(normalizePdfText(line), 92));
+
+  const content = [
+    "BT",
+    "/F1 11 Tf",
+    "50 742 Td",
+    ...lines.flatMap((line, index) => [
+      `(${escapePdfText(line)}) Tj`,
+      ...(index === lines.length - 1 ? [] : ["0 -15 Td"]),
+    ]),
+    "ET",
+  ].join("\n");
+  const metadataDate = pdfDate(input.issuedAt);
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+    `<< /Length ${Buffer.byteLength(content, "ascii")} >>\nstream\n${content}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+    `<< /Title (${escapePdfText(input.title)}) /CreationDate (${metadataDate}) /ModDate (${metadataDate}) >>`,
+  ];
+  const chunks = [Buffer.from("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", "binary")];
+  const offsets = [0];
+  for (let index = 0; index < objects.length; index += 1) {
+    offsets.push(Buffer.concat(chunks).byteLength);
+    chunks.push(
+      Buffer.from(`${index + 1} 0 obj\n${objects[index]}\nendobj\n`, "ascii"),
+    );
+  }
+  const xrefOffset = Buffer.concat(chunks).byteLength;
+  chunks.push(
+    Buffer.from(
+      `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`,
+      "ascii",
+    ),
+  );
+  for (let index = 1; index <= objects.length; index += 1)
+    chunks.push(
+      Buffer.from(
+        `${String(offsets[index]).padStart(10, "0")} 00000 n \n`,
+        "ascii",
+      ),
+    );
+  chunks.push(
+    Buffer.from(
+      `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R /Info 6 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`,
+      "ascii",
+    ),
+  );
+  const body = Buffer.concat(chunks);
+  return {
+    body,
+    checksumSha256: createSha256(body),
+  };
+}
+
+function normalizePdfText(value: string): string {
+  return value
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n/g, " ")
+    .replace(/[^\x20-\x7E]/g, "?");
+}
+
+function escapePdfText(value: string): string {
+  return normalizePdfText(value).replace(
+    /[\\()]/g,
+    (character) => `\\${character}`,
+  );
+}
+
+function wrapPdfText(value: string, width: number): string[] {
+  if (value.length <= width) return [value];
+  const result: string[] = [];
+  for (let offset = 0; offset < value.length; offset += width)
+    result.push(value.slice(offset, offset + width));
+  return result;
+}
+
+function pdfDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime()))
+    throw new Error("issuedAt must be an ISO-8601 timestamp");
+  const iso = date.toISOString();
+  return `D:${iso.slice(0, 4)}${iso.slice(5, 7)}${iso.slice(8, 10)}${iso.slice(11, 13)}${iso.slice(14, 16)}${iso.slice(17, 19)}Z`;
+}
+
+function createSha256(body: Uint8Array): string {
+  return createHash("sha256").update(body).digest("hex");
 }

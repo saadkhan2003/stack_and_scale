@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Headers,
   Inject,
   Param,
@@ -134,6 +135,28 @@ export class ContractController {
         ...(retentionUntil ? { retentionUntil } : {}),
         legalHold: body["legalHold"] === true,
       },
+    );
+  }
+  @Get(":contractId/artifact") public async artifact(
+    @Req() request: FastifyRequest,
+    @Param("contractId") contractId: string,
+  ) {
+    const actor = await this.access.require(request, "crm:read");
+    return this.contracts.artifact(
+      actor.organizationId,
+      actor.actorId,
+      contractId,
+    );
+  }
+  @Get(":contractId/artifact/access") public async artifactAccess(
+    @Req() request: FastifyRequest,
+    @Param("contractId") contractId: string,
+  ) {
+    const actor = await this.access.require(request, "crm:read");
+    return this.contracts.artifactAccess(
+      actor.organizationId,
+      actor.actorId,
+      contractId,
     );
   }
 }

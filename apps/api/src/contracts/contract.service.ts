@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
   ServiceUnavailableException,
 } from "@nestjs/common";
 import { createHash, randomUUID } from "node:crypto";
@@ -18,7 +19,9 @@ import {
   type SignerIdentityEvidence,
   type SignedArtifactMetadata,
 } from "@stack-and-scale/contracts";
+import { createCanonicalPdf } from "@stack-and-scale/storage";
 import { PlatformDatabaseService } from "../platform-database.service.js";
+import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
 
 export const ESIGN_PROVIDER_ADAPTER = Symbol("ESIGN_PROVIDER_ADAPTER");
 
@@ -31,6 +34,9 @@ export class ContractService {
     private readonly database: PlatformDatabaseService,
     @Inject(ESIGN_PROVIDER_ADAPTER)
     private readonly adapter: ESignProviderAdapter | undefined,
+    @Inject(CanonicalArtifactService)
+    @Optional()
+    private readonly artifacts?: CanonicalArtifactService,
   ) {}
 
   public async createTemplate(
@@ -384,6 +390,98 @@ export class ContractService {
       ],
     );
     return { data: { ...result.rows[0], completionSubstitute: false } };
+  }
+
+  public async artifact(
+    organizationId: string,
+    actorId: string,
+    contractId: string,
+  ) {
+    const result = await this.database.query(
+      "SELECT c.id, c.template_version_id, c.proposal_version_id, c.rendered_sha256, tv.body, p.title, pv.currency, pv.issued_at, pv.valid_until FROM platform.contracts c JOIN platform.contract_template_versions tv ON tv.id = c.template_version_id JOIN platform.proposals p ON p.id = c.proposal_id JOIN platform.proposal_versions pv ON pv.id = c.proposal_version_id WHERE c.id = $1 AND c.organization_id = $2 AND c.status IN ('ready','sent','partially_signed','signed')",
+      [contractId, organizationId],
+    );
+    const row = result.rows[0];
+    if (!row)
+      throw new NotFoundException("Contract artifact source not found.");
+    const signers = await this.database.query(
+      "SELECT name, email, identity_method FROM platform.contract_signers WHERE contract_id = $1 AND organization_id = $2 ORDER BY email",
+      [contractId, organizationId],
+    );
+    const body = createCanonicalPdf({
+      title: String(row["title"]),
+      documentNumber: contractId,
+      currency: String(row["currency"]),
+      issuedAt: new Date(String(row["issued_at"])).toISOString(),
+      validUntil: new Date(String(row["valid_until"])).toISOString(),
+      notes: String(row["body"]),
+      lineItems: [
+        {
+          description: "Contract document",
+          quantity: 1,
+          unitPriceMinorUnits: 0,
+          totalMinorUnits: 0,
+        },
+      ],
+      evidence: [
+        {
+          label: "Template version",
+          value: String(row["template_version_id"]),
+        },
+        {
+          label: "Proposal version",
+          value: String(row["proposal_version_id"]),
+        },
+        {
+          label: "Rendered content SHA-256",
+          value: String(row["rendered_sha256"]),
+        },
+        ...signers.rows.map((signer) => ({
+          label: "Signer evidence",
+          value: `${String(signer["name"])} <${String(signer["email"])}> via ${String(signer["identity_method"])}`,
+        })),
+        {
+          label: "Signature status",
+          value: "E-sign evidence is not a qualified digital signature",
+        },
+      ],
+    });
+    if (!this.artifacts)
+      throw new ConflictException(
+        "Document artifact storage is not configured.",
+      );
+    return this.artifacts.retain({
+      organizationId,
+      actorId,
+      resourceType: "contract",
+      resourceId: contractId,
+      resourceVersionId: contractId,
+      filename: `${contractId}.pdf`,
+      body: body.body,
+      checksumSha256: body.checksumSha256,
+    });
+  }
+
+  public async artifactAccess(
+    organizationId: string,
+    actorId: string,
+    contractId: string,
+  ) {
+    const contract = await this.database.query(
+      "SELECT id FROM platform.contracts WHERE id = $1 AND organization_id = $2 AND status IN ('ready','sent','partially_signed','signed')",
+      [contractId, organizationId],
+    );
+    if (!contract.rows[0]) throw new NotFoundException("Contract not found.");
+    if (!this.artifacts)
+      throw new ConflictException(
+        "Document artifact storage is not configured.",
+      );
+    return this.artifacts.signedAccess(
+      organizationId,
+      actorId,
+      "contract",
+      contractId,
+    );
   }
 }
 

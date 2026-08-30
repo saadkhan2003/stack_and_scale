@@ -5,10 +5,12 @@ import { CrmAccessService } from "../crm/crm-access.service.js";
 import { TenantAccessService } from "../identity/tenant-access.service.js";
 import { PlatformDatabaseModule } from "../platform-database.module.js";
 import { PrivateFilesController } from "./private-files.controller.js";
+import { CanonicalArtifactService } from "./canonical-artifact.service.js";
 import {
   MALWARE_SCAN_HOOK,
   PRIVATE_STORAGE,
   PrivateFilesService,
+  PrivateFilesRetentionService,
 } from "./private-files.service.js";
 
 @Module({
@@ -18,6 +20,8 @@ import {
     TenantAccessService,
     CrmAccessService,
     PrivateFilesService,
+    CanonicalArtifactService,
+    PrivateFilesRetentionService,
     {
       provide: PRIVATE_STORAGE,
       useFactory: () =>
@@ -43,5 +47,6 @@ import {
       useValue: { scan: () => Promise.resolve("pending" as const) },
     },
   ],
+  exports: [PRIVATE_STORAGE, CanonicalArtifactService],
 })
 export class PrivateFilesModule {}

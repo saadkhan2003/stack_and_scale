@@ -102,6 +102,33 @@ export class ProposalController {
       correlationId(request),
     );
   }
+  @Get(":proposalId/versions/:version/artifact") public async artifact(
+    @Req() request: FastifyRequest,
+    @Param("proposalId") id: string,
+    @Param("version") version: string,
+  ) {
+    const actor = await this.access.require(request, "crm:read");
+    return this.proposals.artifact(
+      id,
+      Number(version),
+      actor.organizationId,
+      actor.actorId,
+    );
+  }
+  @Get(":proposalId/versions/:version/artifact/access")
+  public async artifactAccess(
+    @Req() request: FastifyRequest,
+    @Param("proposalId") id: string,
+    @Param("version") version: string,
+  ) {
+    const actor = await this.access.require(request, "crm:read");
+    return this.proposals.artifactAccess(
+      id,
+      Number(version),
+      actor.organizationId,
+      actor.actorId,
+    );
+  }
 }
 
 @Controller("api/v1/public/proposals")

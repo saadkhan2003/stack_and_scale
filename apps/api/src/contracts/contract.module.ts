@@ -8,9 +8,10 @@ import {
   EsignCallbackController,
 } from "./contract.controller.js";
 import { ContractService, ESIGN_PROVIDER_ADAPTER } from "./contract.service.js";
+import { PrivateFilesModule } from "../files/private-files.module.js";
 
 @Module({
-  imports: [AuthModule, PlatformDatabaseModule],
+  imports: [AuthModule, PlatformDatabaseModule, PrivateFilesModule],
   controllers: [ContractController, EsignCallbackController],
   providers: [
     TenantAccessService,

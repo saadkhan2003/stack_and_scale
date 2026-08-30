@@ -8,9 +8,10 @@ import {
   PublicProposalController,
 } from "./proposal.controller.js";
 import { ProposalService } from "./proposal.service.js";
+import { PrivateFilesModule } from "../files/private-files.module.js";
 
 @Module({
-  imports: [AuthModule, PlatformDatabaseModule],
+  imports: [AuthModule, PlatformDatabaseModule, PrivateFilesModule],
   controllers: [ProposalController, PublicProposalController],
   providers: [TenantAccessService, CrmAccessService, ProposalService],
 })
