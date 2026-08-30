@@ -2,7 +2,8 @@
 
 ## Scope and default state
 
-`infra/compose.production.yaml` defines private MinIO and ClamAV services on
+`infra/compose.production.yaml` defines private MinIO and ClamAV services under
+the `phase14-storage` Compose profile on
 the internal `storage` Docker network. Neither service publishes a host port or
 has a Caddy route. The API is the only application service attached to that
 network. ClamAV also has egress solely to retrieve signature updates; it has no
@@ -24,11 +25,12 @@ DNS and capacity gates below have recorded evidence.
 2. Copy `.env.production.example` outside the repository as `.env.production`.
    Keep `PRIVATE_STORAGE_PROVIDER=s3`, `MALWARE_SCAN_PROVIDER=clamav`, and the
    two API `*_FILE` credential paths. Set a dedicated private bucket name.
-3. Render before starting: `docker compose --env-file .env.production -f
-infra/compose.production.yaml config`. The `minio-init` job creates the
+3. Render before starting: `docker compose --profile phase14-storage --env-file
+   .env.production -f infra/compose.production.yaml config`. The `minio-init` job creates the
    bucket and attaches only object get/put/delete rights to the API identity.
-4. Start the normal production topology through the existing protected release
-   workflow. Verify MinIO and ClamAV health, a clean upload, an EICAR quarantine
+4. Start the profile after the protected release workflow completes with
+   `docker compose --profile phase14-storage ... up -d minio minio-init clamav`.
+   Verify MinIO and ClamAV health, a clean upload, an EICAR quarantine
    test in an approved non-production environment, download authorization,
    object restore and retention before treating the lane as production-ready.
 5. For Documenso, set `DOCUMENSO_DATABASE_URL`, provision its two secrets, add
