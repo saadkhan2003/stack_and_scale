@@ -79,3 +79,17 @@ identity.{$PUBLIC_DOMAIN} {
 		header_down -X-Powered-By
 	}
 }
+
+sign.{$PUBLIC_DOMAIN} {
+	import cloudflare_origin_tls
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		-X-Powered-By
+	}
+	reverse_proxy documenso:3000 {
+		header_down -X-Powered-By
+	}
+}

@@ -27,6 +27,10 @@ operational gates are resolved.
 - Idempotent resumable provisioning with approval gates and worker execution.
 - Template-controlled commercial communications, preferences, delivery state and
   resend auditing.
+- Private self-hosted infrastructure definitions for MinIO S3-compatible
+  storage, ClamAV scanning, API adapter selection, secret-file wiring and a
+  disabled Documenso profile. This is manifest and unit-test evidence only;
+  no storage, scanner, e-sign or provider deployment has been performed.
 
 ## Verification
 
@@ -60,6 +64,9 @@ operational gates are resolved.
 5. Link accepted proposal/payment outcomes to a real customer/project account.
 6. Measure PDF, file, support, payment, e-sign and communications workloads and
    update the capacity ledger with approved costs/caps.
+7. Complete the self-hosted lane activation runbook, including DNS/operator,
+   legal/provider, backup and capacity gates in
+   `docs/operations/PHASE-14-SELF-HOSTED-INFRASTRUCTURE.md`.
 
 No provider, tax rule, qualified signature or payment settlement is claimed by
 the local implementation until these gates have evidence.

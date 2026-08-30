@@ -1,6 +1,13 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname, relative, resolve, sep } from "node:path";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export type PrivateStorageAccess = "private";
 
@@ -43,6 +50,19 @@ export type SignedPrivateAccess = Readonly<{
 
 export type LocalPrivateStorageOptions = Readonly<{
   rootDirectory: string;
+  policy: Readonly<{
+    allowedContentTypes: readonly string[];
+    maxBytes: number;
+  }>;
+}>;
+
+export type S3PrivateStorageOptions = Readonly<{
+  endpoint: string;
+  region: string;
+  bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  forcePathStyle?: boolean;
   policy: Readonly<{
     allowedContentTypes: readonly string[];
     maxBytes: number;
@@ -183,6 +203,144 @@ export class LocalPrivateStorage implements PrivateObjectStorage {
     }
 
     return candidatePath;
+  }
+}
+
+/**
+ * Private S3-compatible adapter for MinIO or another explicitly configured
+ * endpoint. It does not create buckets or alter bucket policy; those are
+ * deployment responsibilities so the application credential stays scoped.
+ */
+export class S3PrivateStorage implements PrivateObjectStorage {
+  private readonly client: S3Client;
+  private readonly bucket: string;
+  private readonly allowedContentTypes: ReadonlySet<string>;
+  private readonly maxBytes: number;
+
+  public constructor(options: S3PrivateStorageOptions) {
+    if (!options.endpoint.trim())
+      throw new Error("S3 endpoint must not be empty");
+    if (!options.region.trim()) throw new Error("S3 region must not be empty");
+    if (!options.bucket.trim()) throw new Error("S3 bucket must not be empty");
+    if (!options.accessKeyId.trim() || !options.secretAccessKey.trim())
+      throw new Error("S3 credentials must not be empty");
+    if (
+      !Number.isSafeInteger(options.policy.maxBytes) ||
+      options.policy.maxBytes < 1
+    )
+      throw new Error("maxBytes must be a positive safe integer");
+    if (options.policy.allowedContentTypes.length === 0)
+      throw new Error("allowedContentTypes must not be empty");
+
+    this.client = new S3Client({
+      endpoint: options.endpoint,
+      region: options.region,
+      forcePathStyle: options.forcePathStyle ?? true,
+      credentials: {
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
+      },
+    });
+    this.bucket = options.bucket;
+    this.allowedContentTypes = new Set(options.policy.allowedContentTypes);
+    this.maxBytes = options.policy.maxBytes;
+  }
+
+  public async putObject(
+    input: PutPrivateObjectInput,
+  ): Promise<StoredPrivateObject> {
+    this.assertAllowedUpload(input);
+    const storageKey = this.createStorageKey(input);
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+        Body: input.body,
+        ContentType: input.contentType,
+      }),
+    );
+    return {
+      storageKey,
+      contentType: input.contentType,
+      sizeBytes: input.body.byteLength,
+      access: "private",
+    };
+  }
+
+  public async getObject(reference: PrivateObjectReference): Promise<Buffer> {
+    const response = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: this.createStorageKey(reference),
+      }),
+    );
+    if (!response.Body)
+      throw new Error("S3 object response did not contain a body");
+    return Buffer.from(await response.Body.transformToByteArray());
+  }
+
+  public async deleteObject(reference: PrivateObjectReference): Promise<void> {
+    await this.client.send(
+      new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: this.createStorageKey(reference),
+      }),
+    );
+  }
+
+  public async createSignedAccess(
+    reference: PrivateObjectReference,
+    expiresInSeconds: number,
+  ): Promise<SignedPrivateAccess> {
+    if (
+      !Number.isSafeInteger(expiresInSeconds) ||
+      expiresInSeconds < 1 ||
+      expiresInSeconds > 900
+    )
+      throw new Error("signed access must expire within 15 minutes");
+    const expiresAt = new Date(
+      Date.now() + expiresInSeconds * 1000,
+    ).toISOString();
+    return {
+      url: await getSignedUrl(
+        this.client,
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: this.createStorageKey(reference),
+        }),
+        { expiresIn: expiresInSeconds },
+      ),
+      expiresAt,
+    };
+  }
+
+  private assertAllowedUpload(input: PutPrivateObjectInput): void {
+    this.assertSafeReference(input);
+    if (!this.allowedContentTypes.has(input.contentType))
+      throw new Error("contentType is not allowed");
+    if (input.body.byteLength > this.maxBytes)
+      throw new Error("body exceeds the configured maximum size");
+  }
+
+  private createStorageKey(reference: PrivateObjectReference): string {
+    this.assertSafeReference(reference);
+    return `${reference.organizationId}/${reference.objectKey}`;
+  }
+
+  private assertSafeReference(reference: PrivateObjectReference): void {
+    if (!organizationIdPattern.test(reference.organizationId))
+      throw new Error("organizationId must be a safe organization identifier");
+    const segments = reference.objectKey.split("/");
+    if (
+      reference.objectKey.length === 0 ||
+      reference.objectKey.startsWith("/") ||
+      reference.objectKey.includes("\\") ||
+      segments.some(
+        (segment) =>
+          segment.length === 0 || segment === "." || segment === "..",
+      )
+    )
+      throw new Error("objectKey must be a safe relative object key");
   }
 }
 

@@ -51,7 +51,21 @@ services:
       API_PORT: 3100
       API_HOST: 0.0.0.0
     # The database network is internal to this one-host Compose deployment.
-    networks: [edge, application, database, egress]
+    networks: [edge, application, database, egress, storage]
+    secrets:
+      - source: minio_api_access_key
+        target: minio_api_access_key
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
+      - source: minio_api_secret_key
+        target: minio_api_secret_key
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -86,7 +100,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3200
-    networks: [edge, application, database, egress]
+    networks: [edge, application, database, egress, storage]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -170,13 +184,149 @@ services:
       resources:
         limits: { cpus: "1.50", memory: 2048M }
 
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/minio_root_user
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_root_password
+    volumes:
+      - minio-data:/data
+    networks: [storage]
+    secrets: [minio_root_user, minio_root_password]
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://127.0.0.1:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.75", memory: 768M }
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    restart: "no"
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - >-
+        mc alias set local http://minio:9000 "$$(cat /run/secrets/minio_root_user)"
+        "$$(cat /run/secrets/minio_root_password)";
+        mc mb --ignore-existing local/$${PRIVATE_STORAGE_S3_BUCKET};
+        mc admin user add local "$$(cat /run/secrets/minio_api_access_key)"
+        "$$(cat /run/secrets/minio_api_secret_key)" || true;
+        printf '%s' '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject"],"Resource":["arn:aws:s3:::'
+        "$${PRIVATE_STORAGE_S3_BUCKET}"'/*"]}]}' > /tmp/private-files-policy.json;
+        mc admin policy create local private-files /tmp/private-files-policy.json || true;
+        mc admin policy attach local private-files --user "$$(cat /run/secrets/minio_api_access_key)"
+    environment:
+      PRIVATE_STORAGE_S3_BUCKET: ${PRIVATE_STORAGE_S3_BUCKET:?set PRIVATE_STORAGE_S3_BUCKET}
+    networks: [storage]
+    secrets:
+      - minio_root_user
+      - minio_root_password
+      - minio_api_access_key
+      - minio_api_secret_key
+    depends_on:
+      minio:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.20", memory: 128M }
+
+  clamav:
+    image: clamav/clamav:1.4.2_base
+    restart: unless-stopped
+    # The daemon remains private; this network is only for signature updates.
+    networks: [storage, egress]
+    volumes:
+      - clamav-database:/var/lib/clamav
+    healthcheck:
+      test:
+        ["CMD-SHELL", "clamdscan --config-file=/etc/clamav/clamd.conf --ping 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.75", memory: 1024M }
+
+  documenso:
+    image: ${DOCUMENSO_IMAGE:-documenso/documenso:2.0.0}
+    profiles: [documenso]
+    restart: unless-stopped
+    env_file: ../.env.production
+    entrypoint: ["/bin/sh", "/opt/stack-and-scale/documenso-entrypoint.sh"]
+    environment:
+      NEXT_PUBLIC_WEBAPP_URL: https://sign.${PUBLIC_DOMAIN:?set PUBLIC_DOMAIN}
+      NEXT_PRIVATE_INTERNAL_WEBAPP_URL: http://documenso:3000
+      NEXT_PRIVATE_DATABASE_URL: ${DOCUMENSO_DATABASE_URL:?set DOCUMENSO_DATABASE_URL}
+      NEXT_PRIVATE_DIRECT_DATABASE_URL: ${DOCUMENSO_DATABASE_URL:?set DOCUMENSO_DATABASE_URL}
+      NEXT_PUBLIC_UPLOAD_TRANSPORT: database
+    volumes:
+      - ./documenso/entrypoint.sh:/opt/stack-and-scale/documenso-entrypoint.sh:ro
+    networks: [edge, database]
+    secrets:
+      [
+        documenso_nextauth_secret,
+        documenso_encryption_key,
+        documenso_encryption_secondary_key,
+      ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "fetch(''http://127.0.0.1:3000'').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits: { cpus: "0.75", memory: 1024M }
+
 networks:
   edge: {}
   application: { internal: true }
   database: { internal: true }
   egress: {}
+  storage: { internal: true }
 
 volumes:
   caddy-data: {}
   caddy-config: {}
   postgres-data: {}
+  minio-data: {}
+  clamav-database: {}
+
+secrets:
+  minio_root_user:
+    file: ../secrets/minio-root-user
+  minio_root_password:
+    file: ../secrets/minio-root-password
+  minio_api_access_key:
+    file: ../secrets/minio-api-access-key
+  minio_api_secret_key:
+    file: ../secrets/minio-api-secret-key
+  documenso_nextauth_secret:
+    file: ../secrets/documenso-nextauth-secret
+  documenso_encryption_key:
+    file: ../secrets/documenso-encryption-key
+  documenso_encryption_secondary_key:
+    file: ../secrets/documenso-encryption-secondary-key
