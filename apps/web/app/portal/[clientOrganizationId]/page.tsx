@@ -144,6 +144,13 @@ export default async function PortalPage(
             enabled: boolean;
           }>
         }
+        tickets={
+          arrayAt(tickets, "tickets") as Array<{
+            id: string;
+            subject: string;
+            status: string;
+          }>
+        }
         members={
           arrayAt(membersResponse, "members") as Array<{
             id: string;

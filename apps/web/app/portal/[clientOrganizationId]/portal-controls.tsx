@@ -19,16 +19,24 @@ type Member = {
   status: "active" | "suspended" | "revoked";
 };
 
+type Ticket = {
+  id: string;
+  subject: string;
+  status: string;
+};
+
 export function PortalControls({
   clientOrganizationId,
   reviews,
   preferences,
+  tickets,
   members,
   canManageMembers,
 }: Readonly<{
   clientOrganizationId: string;
   reviews: Review[];
   preferences: Preference[];
+  tickets: Ticket[];
   members: Member[];
   canManageMembers: boolean;
 }>) {
@@ -153,6 +161,43 @@ export function PortalControls({
           </label>
           <button type="submit">Send request</button>
         </form>
+        {tickets.length ? <h3>Your open and recent requests</h3> : null}
+        <ul>
+          {tickets.map((ticket) => (
+            <li key={ticket.id}>
+              <strong>{ticket.subject}</strong> — {ticket.status}
+              <form
+                onSubmit={(event) => {
+                  void (async () => {
+                    event.preventDefault();
+                    const form = new FormData(event.currentTarget);
+                    try {
+                      await send(`support/tickets/${ticket.id}/comments`, {
+                        body: form.get("body"),
+                      });
+                      event.currentTarget.reset();
+                      setMessage(
+                        "Your reply has been added. Refresh to see the updated ticket.",
+                      );
+                    } catch (error) {
+                      setMessage(
+                        error instanceof Error
+                          ? error.message
+                          : "Unable to add reply.",
+                      );
+                    }
+                  })();
+                }}
+              >
+                <label>
+                  Add a public reply
+                  <textarea name="body" required maxLength={12000} />
+                </label>
+                <button type="submit">Send reply</button>
+              </form>
+            </li>
+          ))}
+        </ul>
       </section>
       <section aria-labelledby="notifications-heading">
         <h2 id="notifications-heading">Notifications</h2>
