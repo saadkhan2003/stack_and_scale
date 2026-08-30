@@ -18,7 +18,10 @@ import {
   requireNonNegativeMinorUnits,
   requirePaymentMethod,
 } from "@stack-and-scale/contracts";
+import { createCanonicalPdf } from "@stack-and-scale/storage";
+import type { Queryable } from "@stack-and-scale/database";
 import { PlatformDatabaseService } from "../platform-database.service.js";
+import { CanonicalArtifactService } from "../files/canonical-artifact.service.js";
 
 export const PAYMENT_PROVIDER_ADAPTER = Symbol("PAYMENT_PROVIDER_ADAPTER");
 export type PaymentProviderEvent = Readonly<{
@@ -48,6 +51,22 @@ export type InvoiceLineInput = Readonly<{
     | undefined;
 }>;
 
+export type ReconciliationStatus =
+  | "unmatched"
+  | "partially_matched"
+  | "matched";
+
+export function reconciliationStatus(
+  matchedMinorUnits: number,
+  outstandingMinorUnits: number,
+): ReconciliationStatus {
+  if (matchedMinorUnits <= 0 || matchedMinorUnits > outstandingMinorUnits)
+    return "unmatched";
+  return matchedMinorUnits === outstandingMinorUnits
+    ? "matched"
+    : "partially_matched";
+}
+
 @Injectable()
 export class InvoiceService {
   public constructor(
@@ -55,6 +74,8 @@ export class InvoiceService {
     private readonly database: PlatformDatabaseService,
     @Inject(PAYMENT_PROVIDER_ADAPTER)
     private readonly adapter: PaymentProviderAdapter | undefined,
+    @Inject(CanonicalArtifactService)
+    private readonly artifacts: CanonicalArtifactService,
   ) {}
 
   public async list(organizationId: string) {
@@ -375,6 +396,196 @@ export class InvoiceService {
     return { data: { paymentId, allocatedMinorUnits: total } };
   }
 
+  public async reconcile(
+    paymentId: string,
+    organizationId: string,
+    actorId: string,
+    input: {
+      invoiceId?: string;
+      amountMinorUnits: number;
+      currency: string;
+      idempotencyKey: string;
+      correctionOf?: string;
+      reason?: string;
+    },
+  ) {
+    requireNonNegativeMinorUnits(input.amountMinorUnits, "amountMinorUnits");
+    if (
+      input.amountMinorUnits === 0 ||
+      !input.idempotencyKey.trim() ||
+      !/^[A-Z]{3}$/.test(input.currency)
+    )
+      throw new BadRequestException(
+        "A positive amount, currency and idempotencyKey are required.",
+      );
+    const requestFingerprint = createHash("sha256")
+      .update(
+        JSON.stringify({
+          paymentId,
+          invoiceId: input.invoiceId ?? null,
+          amountMinorUnits: input.amountMinorUnits,
+          currency: input.currency,
+          correctionOf: input.correctionOf ?? null,
+        }),
+      )
+      .digest("hex");
+
+    return this.database.transaction(async (db) => {
+      const duplicate = await db.query(
+        `SELECT id, payment_attempt_id, invoice_id, allocation_id, status, payment_amount_minor_units, matched_amount_minor_units, currency, mismatch_reason, correction_of, request_fingerprint, created_at
+         FROM platform.payment_reconciliations WHERE organization_id=$1 AND idempotency_key=$2`,
+        [organizationId, input.idempotencyKey.trim()],
+      );
+      if (duplicate.rows[0]) {
+        if (duplicate.rows[0].request_fingerprint !== requestFingerprint)
+          throw new ConflictException(
+            "Idempotency key was already used for a different reconciliation.",
+          );
+        return { data: duplicate.rows[0], duplicate: true };
+      }
+
+      const paymentResult = await db.query(
+        `SELECT id, amount_minor_units, currency, status FROM platform.payment_attempts
+         WHERE id=$1 AND organization_id=$2 FOR UPDATE`,
+        [paymentId, organizationId],
+      );
+      const payment = paymentResult.rows[0];
+      if (!payment) throw new NotFoundException("Payment attempt not found.");
+      if (payment.status !== "verified")
+        throw new ConflictException(
+          "Only verified payments can be reconciled.",
+        );
+
+      let invoice: Record<string, unknown> | undefined;
+      if (input.invoiceId) {
+        const invoiceResult = await db.query(
+          `SELECT id, currency, total_minor_units, status FROM platform.invoices
+           WHERE id=$1 AND organization_id=$2 FOR UPDATE`,
+          [input.invoiceId, organizationId],
+        );
+        invoice = invoiceResult.rows[0];
+      }
+      const paymentAmount = Number(payment.amount_minor_units);
+      let status: ReconciliationStatus = "unmatched";
+      let mismatchReason: string | undefined;
+      let allocationId: string | undefined;
+      const requested = input.amountMinorUnits;
+      if (!invoice) mismatchReason = "Invoice was not found for this tenant.";
+      else if (
+        String(payment.currency) !== input.currency ||
+        invoice.currency !== input.currency
+      )
+        mismatchReason =
+          "Payment, reconciliation and invoice currencies must match.";
+      else {
+        const allocated = await db.query(
+          `SELECT COALESCE(SUM(amount_minor_units),0) AS amount FROM platform.payment_allocations
+           WHERE organization_id=$1 AND payment_attempt_id=$2`,
+          [organizationId, paymentId],
+        );
+        const available =
+          paymentAmount - Number(allocated.rows[0]?.amount ?? 0);
+        const invoiceAllocated = await db.query(
+          `SELECT COALESCE(SUM(a.amount_minor_units),0) AS amount FROM platform.payment_allocations a
+           JOIN platform.payment_attempts p ON p.id=a.payment_attempt_id AND p.organization_id=a.organization_id
+           WHERE a.organization_id=$1 AND a.invoice_id=$2 AND p.status='verified'`,
+          [organizationId, input.invoiceId],
+        );
+        const outstanding =
+          Number(invoice.total_minor_units) -
+          Number(invoiceAllocated.rows[0]?.amount ?? 0);
+        if (requested > available)
+          mismatchReason =
+            "Reconciliation exceeds the unapplied verified payment amount.";
+        else if (requested > outstanding)
+          mismatchReason =
+            "Reconciliation exceeds the invoice outstanding balance.";
+        else if (invoice.status === "void" || invoice.status === "refunded")
+          mismatchReason = "Invoice is not payable.";
+        else {
+          status = reconciliationStatus(requested, outstanding);
+          const event = await db.query(
+            `INSERT INTO platform.payment_events (id,organization_id,payment_attempt_id,event_type,amount_minor_units,metadata,actor_id)
+             VALUES ($1,$2,$3,'allocated',$4,$5::jsonb,$6) RETURNING id`,
+            [
+              `payment_event_${randomUUID()}`,
+              organizationId,
+              paymentId,
+              requested,
+              JSON.stringify({
+                invoiceId: input.invoiceId,
+                reconciliation: true,
+              }),
+              actorId,
+            ],
+          );
+          allocationId = `allocation_${randomUUID()}`;
+          const eventId = event.rows[0]?.id;
+          if (!eventId)
+            throw new ConflictException("Payment event was not recorded.");
+          await db.query(
+            `INSERT INTO platform.payment_allocations (id,organization_id,payment_attempt_id,invoice_id,amount_minor_units,event_id)
+             VALUES ($1,$2,$3,$4,$5,$6)`,
+            [
+              allocationId,
+              organizationId,
+              paymentId,
+              input.invoiceId,
+              requested,
+              eventId,
+            ],
+          );
+        }
+      }
+      const reconciliation = await db.query(
+        `INSERT INTO platform.payment_reconciliations
+         (id,organization_id,payment_attempt_id,invoice_id,allocation_id,idempotency_key,request_fingerprint,status,payment_amount_minor_units,matched_amount_minor_units,currency,mismatch_reason,correction_of,created_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+         RETURNING id, payment_attempt_id, invoice_id, allocation_id, idempotency_key, status, payment_amount_minor_units, matched_amount_minor_units, currency, mismatch_reason, correction_of, request_fingerprint, created_at`,
+        [
+          `reconciliation_${randomUUID()}`,
+          organizationId,
+          paymentId,
+          input.invoiceId ?? null,
+          allocationId ?? null,
+          input.idempotencyKey.trim(),
+          requestFingerprint,
+          status,
+          paymentAmount,
+          status === "unmatched" ? 0 : requested,
+          input.currency,
+          mismatchReason ?? null,
+          input.correctionOf ?? null,
+          actorId,
+        ],
+      );
+      await db.query(
+        `INSERT INTO platform.accounting_reconciliation_events (id,organization_id,source_kind,source_id,event_type,correction_of,metadata)
+         VALUES ($1,$2,'payment_reconciliation',$3,$4,$5,$6::jsonb)`,
+        [
+          `reconciliation_event_${randomUUID()}`,
+          organizationId,
+          reconciliation.rows[0]?.id,
+          input.correctionOf
+            ? "corrected"
+            : status === "unmatched"
+              ? "unmatched"
+              : "matched",
+          input.correctionOf ?? null,
+          JSON.stringify({
+            status,
+            paymentId,
+            invoiceId: input.invoiceId ?? null,
+            reason: input.reason ?? mismatchReason ?? null,
+          }),
+        ],
+      );
+      if (input.invoiceId && status !== "unmatched")
+        await this.refreshInvoice(input.invoiceId, organizationId, db);
+      return { data: reconciliation.rows[0], duplicate: false };
+    });
+  }
+
   public async compensate(
     paymentId: string,
     organizationId: string,
@@ -408,6 +619,17 @@ export class InvoiceService {
         actorId,
       ],
     );
+    await this.database.query(
+      `INSERT INTO platform.accounting_reconciliation_events (id,organization_id,source_kind,source_id,event_type,metadata)
+       VALUES ($1,$2,'payment_compensation',$3,$4,$5::jsonb)`,
+      [
+        `reconciliation_event_${randomUUID()}`,
+        organizationId,
+        paymentId,
+        eventType === "reversed" ? "reversed" : "corrected",
+        JSON.stringify({ paymentId, eventType, amountMinorUnits, reason }),
+      ],
+    );
     if (eventType === "refunded")
       await this.database.query(
         "UPDATE platform.invoices SET status='refunded', updated_at=now() WHERE organization_id=$1 AND status='paid' AND id IN (SELECT invoice_id FROM platform.payment_allocations WHERE payment_attempt_id=$2)",
@@ -421,15 +643,95 @@ export class InvoiceService {
     organizationId: string,
     actorId: string,
   ) {
-    const result = await this.database.query(
-      "INSERT INTO platform.payment_receipts (id,organization_id,payment_attempt_id,receipt_number,issued_by) SELECT $1,organization_id,id,'RCT-' || upper(substr(md5($1),1,10)),$3 FROM platform.payment_attempts WHERE id=$2 AND organization_id=$4 AND status='verified' ON CONFLICT (payment_attempt_id) DO NOTHING RETURNING id,receipt_number,issued_at",
-      [`receipt_${randomUUID()}`, paymentId, actorId, organizationId],
+    const payment = await this.database.query(
+      `SELECT id, amount_minor_units, currency, method, payment_reference, received_at, created_at
+       FROM platform.payment_attempts WHERE id=$1 AND organization_id=$2 AND status='verified'`,
+      [paymentId, organizationId],
     );
-    if (!result.rows[0])
-      throw new ConflictException(
-        "A verified payment is required and a receipt may already exist.",
+    if (!payment.rows[0])
+      throw new ConflictException("A verified payment is required.");
+    const current = await this.database.query(
+      `SELECT id, receipt_number, issued_at FROM platform.payment_receipts WHERE payment_attempt_id=$1 AND organization_id=$2`,
+      [paymentId, organizationId],
+    );
+    let receipt = current.rows[0];
+    if (!receipt) {
+      await this.database.query(
+        `INSERT INTO platform.payment_receipts (id,organization_id,payment_attempt_id,receipt_number,issued_by)
+         VALUES ($1,$2,$3,'RCT-' || upper(substr(md5($1),1,10)),$4)
+         ON CONFLICT (payment_attempt_id) DO NOTHING`,
+        [`receipt_${randomUUID()}`, organizationId, paymentId, actorId],
       );
-    return { data: result.rows[0] };
+      receipt = (
+        await this.database.query(
+          `SELECT id, receipt_number, issued_at FROM platform.payment_receipts WHERE payment_attempt_id=$1 AND organization_id=$2`,
+          [paymentId, organizationId],
+        )
+      ).rows[0];
+    }
+    if (!receipt) throw new ConflictException("Receipt could not be issued.");
+    const allocations = await this.database.query(
+      `SELECT i.number, a.amount_minor_units FROM platform.payment_allocations a JOIN platform.invoices i ON i.id=a.invoice_id AND i.organization_id=a.organization_id
+       WHERE a.organization_id=$1 AND a.payment_attempt_id=$2 ORDER BY a.created_at`,
+      [organizationId, paymentId],
+    );
+    const paymentReference =
+      typeof payment.rows[0].payment_reference === "string"
+        ? payment.rows[0].payment_reference
+        : undefined;
+    const issuedAt = new Date(
+      String(payment.rows[0].received_at ?? payment.rows[0].created_at),
+    ).toISOString();
+    const pdf = createCanonicalPdf({
+      title: "Payment receipt",
+      documentNumber: String(receipt.receipt_number),
+      currency: String(payment.rows[0].currency),
+      issuedAt,
+      lineItems:
+        allocations.rows.length > 0
+          ? allocations.rows.map((row) => ({
+              description: `Invoice ${String(row.number)}`,
+              quantity: 1,
+              unitPriceMinorUnits: Number(row.amount_minor_units),
+              totalMinorUnits: Number(row.amount_minor_units),
+            }))
+          : [
+              {
+                description: "Unmatched payment",
+                quantity: 1,
+                unitPriceMinorUnits: Number(payment.rows[0].amount_minor_units),
+                totalMinorUnits: Number(payment.rows[0].amount_minor_units),
+              },
+            ],
+      evidence: [
+        { label: "Payment attempt", value: paymentId },
+        { label: "Method", value: String(payment.rows[0].method) },
+        ...(paymentReference
+          ? [{ label: "Payment reference", value: paymentReference }]
+          : []),
+      ],
+    });
+    await this.artifacts.retainPaymentReceipt({
+      organizationId,
+      actorId,
+      receiptId: String(receipt.id),
+      paymentAttemptId: paymentId,
+      receiptNumber: String(receipt.receipt_number),
+      body: pdf.body,
+      checksumSha256: pdf.checksumSha256,
+    });
+    const access = await this.artifacts.signedPaymentReceiptAccess(
+      organizationId,
+      actorId,
+      String(receipt.id),
+    );
+    return {
+      data: {
+        ...receipt,
+        checksumSha256: pdf.checksumSha256,
+        signedAccess: access.data,
+      },
+    };
   }
 
   public async callback(
@@ -484,8 +786,12 @@ export class InvoiceService {
     if (!result.rows[0]) throw new NotFoundException("Invoice not found.");
     return result.rows[0];
   }
-  private async refreshInvoice(id: string, organizationId: string) {
-    await this.database.query(
+  private async refreshInvoice(
+    id: string,
+    organizationId: string,
+    database: Queryable = this.database,
+  ) {
+    await database.query(
       "UPDATE platform.invoices i SET status=CASE WHEN COALESCE((SELECT SUM(a.amount_minor_units) FROM platform.payment_allocations a JOIN platform.payment_attempts p ON p.id=a.payment_attempt_id WHERE a.invoice_id=i.id AND p.status='verified'),0) >= i.total_minor_units THEN 'paid' WHEN COALESCE((SELECT SUM(a.amount_minor_units) FROM platform.payment_allocations a JOIN platform.payment_attempts p ON p.id=a.payment_attempt_id WHERE a.invoice_id=i.id AND p.status='verified'),0) > 0 THEN 'partially_paid' ELSE i.status END, updated_at=now() WHERE i.id=$1 AND i.organization_id=$2 AND i.status NOT IN ('void','refunded')",
       [id, organizationId],
     );

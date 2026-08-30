@@ -100,4 +100,91 @@ export class CanonicalArtifactService {
     );
     return { data: access };
   }
+
+  public async retainPaymentReceipt(input: {
+    organizationId: string;
+    actorId: string;
+    receiptId: string;
+    paymentAttemptId: string;
+    receiptNumber: string;
+    body: Buffer;
+    checksumSha256: string;
+  }) {
+    const objectKey = `receipts/${input.paymentAttemptId}/${input.receiptNumber}.pdf`;
+    const existing = await this.database.query(
+      `SELECT id, storage_key, original_filename, content_type, size_bytes, checksum_sha256, access, created_at
+       FROM platform.payment_receipt_artifacts WHERE organization_id=$1 AND receipt_id=$2`,
+      [input.organizationId, input.receiptId],
+    );
+    if (existing.rows[0]) return { data: existing.rows[0] };
+    await this.storage.putObject({
+      organizationId: input.organizationId,
+      objectKey,
+      contentType: "application/pdf",
+      body: input.body,
+    });
+    const inserted = await this.database.query(
+      `INSERT INTO platform.payment_receipt_artifacts (id, organization_id, receipt_id, payment_attempt_id, storage_key, original_filename, content_type, size_bytes, checksum_sha256, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,'application/pdf',$7,$8,$9)
+       ON CONFLICT (organization_id, receipt_id) DO NOTHING
+       RETURNING id, storage_key, original_filename, content_type, size_bytes, checksum_sha256, access, created_at`,
+      [
+        `receipt_artifact_${randomUUID()}`,
+        input.organizationId,
+        input.receiptId,
+        input.paymentAttemptId,
+        objectKey,
+        `${input.receiptNumber}.pdf`,
+        input.body.byteLength,
+        input.checksumSha256,
+        input.actorId,
+      ],
+    );
+    if (inserted.rows[0]) return { data: inserted.rows[0] };
+    const retained = await this.database.query(
+      `SELECT id, storage_key, original_filename, content_type, size_bytes, checksum_sha256, access, created_at
+       FROM platform.payment_receipt_artifacts WHERE organization_id=$1 AND receipt_id=$2`,
+      [input.organizationId, input.receiptId],
+    );
+    return { data: retained.rows[0] };
+  }
+
+  public async signedPaymentReceiptAccess(
+    organizationId: string,
+    actorId: string,
+    receiptId: string,
+  ) {
+    const result = await this.database.query(
+      `SELECT storage_key FROM platform.payment_receipt_artifacts WHERE organization_id=$1 AND receipt_id=$2`,
+      [organizationId, receiptId],
+    );
+    if (!result.rows[0])
+      throw new NotFoundException("Receipt artifact not found.");
+    const access = await this.storage.createSignedAccess(
+      { organizationId, objectKey: String(result.rows[0].storage_key) },
+      300,
+    );
+    await this.database.query(
+      `INSERT INTO platform.payment_receipt_access_audits (id, organization_id, receipt_id, actor_id, signed_access_url, signed_access_expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6::timestamptz)`,
+      [
+        `receipt_access_${randomUUID()}`,
+        organizationId,
+        receiptId,
+        actorId,
+        access.url,
+        access.expiresAt,
+      ],
+    );
+    await this.database.query(
+      `INSERT INTO platform.audit_events (id, organization_id, actor_id, action, correlation_id, metadata) VALUES ($1,$2,$3,'commercial.payment_receipt_accessed','payment-receipt-access',$4::jsonb)`,
+      [
+        `audit_${randomUUID()}`,
+        organizationId,
+        actorId,
+        JSON.stringify({ receiptId, expiresAt: access.expiresAt }),
+      ],
+    );
+    return { data: access };
+  }
 }

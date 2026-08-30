@@ -125,8 +125,26 @@ export class InvoiceController {
     @Req() request: FastifyRequest,
     @Param("paymentId") id: string,
   ) {
-    const actor = await this.access.require(request, "crm:manage");
+    const actor = await this.access.require(request, "accounting:export");
     return this.invoices.receipt(id, actor.organizationId, actor.actorId);
+  }
+  @Post("payments/:paymentId/reconcile") async reconcile(
+    @Req() request: FastifyRequest,
+    @Param("paymentId") id: string,
+    @Body() body: Record<string, unknown>,
+  ) {
+    const actor = await this.access.require(request, "accounting:export");
+    const invoiceId = optionalString(body.invoiceId);
+    const correctionOf = optionalString(body.correctionOf);
+    const reason = optionalString(body.reason);
+    return this.invoices.reconcile(id, actor.organizationId, actor.actorId, {
+      ...(invoiceId ? { invoiceId } : {}),
+      amountMinorUnits: numberField(body, "amountMinorUnits"),
+      currency: stringField(body, "currency"),
+      idempotencyKey: stringField(body, "idempotencyKey"),
+      ...(correctionOf ? { correctionOf } : {}),
+      ...(reason ? { reason } : {}),
+    });
   }
   @Post("payments/:paymentId/compensate") async compensate(
     @Req() request: FastifyRequest,

@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module.js";
+import { PrivateFilesModule } from "../files/private-files.module.js";
 import { PlatformDatabaseModule } from "../platform-database.module.js";
 import { CrmAccessService } from "../crm/crm-access.service.js";
 import { TenantAccessService } from "../identity/tenant-access.service.js";
@@ -14,7 +15,7 @@ import {
 } from "./invoice.service.js";
 
 @Module({
-  imports: [AuthModule, PlatformDatabaseModule],
+  imports: [AuthModule, PlatformDatabaseModule, PrivateFilesModule],
   controllers: [InvoiceController, PaymentProviderController],
   providers: [
     TenantAccessService,
