@@ -97,9 +97,15 @@ export class CommunicationsService {
       [organizationId, input.recipientId, categoryFor(input.eventType)],
     );
     const enabled = preference.rows[0]?.enabled !== false;
+    const variables = input.variables ?? {};
+    const render = (value: string) =>
+      value.replace(
+        /{{\s*([A-Za-z0-9_.-]+)\s*}}/g,
+        (_, key: string) => variables[key] ?? "",
+      );
     const id = `communication_${randomUUID()}`;
     const result = await this.database.query(
-      "INSERT INTO platform.commercial_communications (id,organization_id,event_type,resource_id,recipient_id,template_id,template_version,delivery_state) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (organization_id,event_type,resource_id,recipient_id) DO UPDATE SET template_id=EXCLUDED.template_id,template_version=EXCLUDED.template_version RETURNING *",
+      "INSERT INTO platform.commercial_communications (id,organization_id,event_type,resource_id,recipient_id,template_id,template_version,variables,rendered_subject,rendered_body,delivery_state) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11) ON CONFLICT (organization_id,event_type,resource_id,recipient_id) DO UPDATE SET template_id=EXCLUDED.template_id,template_version=EXCLUDED.template_version,variables=EXCLUDED.variables,rendered_subject=EXCLUDED.rendered_subject,rendered_body=EXCLUDED.rendered_body,delivery_state=EXCLUDED.delivery_state RETURNING *",
       [
         id,
         organizationId,
@@ -108,6 +114,17 @@ export class CommunicationsService {
         input.recipientId,
         template.rows[0]?.id,
         template.rows[0]?.version,
+        JSON.stringify(variables),
+        render(
+          typeof template.rows[0]?.subject === "string"
+            ? template.rows[0].subject
+            : "",
+        ),
+        render(
+          typeof template.rows[0]?.body === "string"
+            ? template.rows[0].body
+            : "",
+        ),
         enabled ? "queued" : "not_requested",
       ],
     );
@@ -121,6 +138,15 @@ export class CommunicationsService {
           JSON.stringify({ communicationId: result.rows[0]?.id }),
         ],
       );
+    await this.database.query(
+      "INSERT INTO platform.communication_delivery_audits (id,organization_id,communication_id,action,metadata) VALUES ($1,$2,$3,'queued',$4::jsonb)",
+      [
+        `communication_audit_${randomUUID()}`,
+        organizationId,
+        String(result.rows[0]?.id),
+        JSON.stringify({ eventType: input.eventType }),
+      ],
+    );
     return { data: result.rows[0] };
   }
   public async resend(organizationId: string, _actorId: string, id: string) {
@@ -139,6 +165,29 @@ export class CommunicationsService {
         JSON.stringify({ communicationId: id, resend: true }),
       ],
     );
+    await this.database.query(
+      "INSERT INTO platform.communication_delivery_audits (id,organization_id,communication_id,action,actor_id,metadata) VALUES ($1,$2,$3,'resent',$4,$5::jsonb)",
+      [
+        `communication_audit_${randomUUID()}`,
+        organizationId,
+        id,
+        _actorId,
+        JSON.stringify({ resend: true }),
+      ],
+    );
     return { data: result.rows[0] };
+  }
+
+  public async produce(
+    organizationId: string,
+    actorId: string,
+    input: {
+      eventType: string;
+      resourceId: string;
+      recipientId: string;
+      variables?: Record<string, string>;
+    },
+  ) {
+    return this.send(organizationId, actorId, input);
   }
 }

@@ -73,6 +73,19 @@ export class ProvisioningController {
     const actor = await this.access.require(req, "provisioning:manage");
     return this.provisioning.retry(actor.organizationId, actor.actorId, id);
   }
+  @Post(":id/steps/:stepId/retry") public async retryStep(
+    @Req() req: FastifyRequest,
+    @Param("id") id: string,
+    @Param("stepId") stepId: string,
+  ) {
+    const actor = await this.access.require(req, "provisioning:manage");
+    return this.provisioning.retryStep(
+      actor.organizationId,
+      actor.actorId,
+      id,
+      stepId,
+    );
+  }
 }
 function text(body: Record<string, unknown>, key: string): string {
   const value = body[key];

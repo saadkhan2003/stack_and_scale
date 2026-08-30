@@ -18,4 +18,14 @@ describe("phase 14.7-14.9 migration", () => {
     expect(migration).toContain("prevent_private_download_audit_mutation");
     expect(migration).toContain("organization_id text NOT NULL");
   });
+
+  it("adds resumable execution and delivery audit state", async () => {
+    const migration = await readFile(
+      "migrations/0016_phase_14_gap_closure.sql",
+      "utf8",
+    );
+    expect(migration).toContain("communication_delivery_audits");
+    expect(migration).toContain("rendered_subject");
+    expect(migration).toContain("completed_at");
+  });
 });

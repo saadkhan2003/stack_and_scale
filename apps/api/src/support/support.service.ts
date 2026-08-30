@@ -54,6 +54,10 @@ export class SupportService {
       "SELECT started_at, ended_at FROM platform.support_ticket_pauses WHERE ticket_id=$1 AND organization_id=$2 ORDER BY started_at",
       [ticketId, organizationId],
     );
+    const comments = await this.database.query(
+      "SELECT id, ticket_id, author_id, body, created_at FROM platform.support_ticket_comments WHERE ticket_id=$1 AND organization_id=$2 AND visibility='public' ORDER BY created_at",
+      [ticketId, organizationId],
+    );
     const row = details.rows[0];
     const pauseIntervals = pauses.rows.map((pause) => ({
       startedAt: asIso(pause.started_at),
@@ -66,6 +70,7 @@ export class SupportService {
     return {
       data: {
         ...row,
+        comments: comments.rows,
         sla: {
           resolution: calculateSlaClock({
             startedAt,
@@ -82,6 +87,47 @@ export class SupportService {
         },
       },
     };
+  }
+
+  public async listForCustomer(organizationId: string, customerId: string) {
+    const result = await this.database.query(
+      "SELECT id, customer_id, subject, category, severity, priority, status, sla_target_seconds, first_response_at, resolved_at, created_at, updated_at FROM platform.support_tickets WHERE organization_id=$1 AND customer_id=$2 ORDER BY updated_at DESC LIMIT 200",
+      [organizationId, customerId],
+    );
+    return { data: result.rows };
+  }
+
+  public async getForCustomer(
+    organizationId: string,
+    customerId: string,
+    ticketId: string,
+  ) {
+    const result = await this.database.query(
+      "SELECT id, customer_id, subject, description, category, severity, priority, status, sla_target_seconds, first_response_at, resolved_at, created_at, updated_at FROM platform.support_tickets WHERE id=$1 AND organization_id=$2 AND customer_id=$3",
+      [ticketId, organizationId, customerId],
+    );
+    if (!result.rows[0])
+      throw new NotFoundException("Support ticket not found.");
+    const comments = await this.database.query(
+      "SELECT id, ticket_id, author_id, body, created_at FROM platform.support_ticket_comments WHERE ticket_id=$1 AND organization_id=$2 AND visibility='public' ORDER BY created_at",
+      [ticketId, organizationId],
+    );
+    return { data: { ...result.rows[0], comments: comments.rows } };
+  }
+
+  public async addClientComment(
+    organizationId: string,
+    customerId: string,
+    ticketId: string,
+    body: string,
+  ) {
+    const ticket = await this.database.query(
+      "SELECT id FROM platform.support_tickets WHERE id=$1 AND organization_id=$2 AND customer_id=$3",
+      [ticketId, organizationId, customerId],
+    );
+    if (!ticket.rows[0])
+      throw new NotFoundException("Support ticket not found.");
+    return this.comment(organizationId, customerId, ticketId, "public", body);
   }
 
   public async create(

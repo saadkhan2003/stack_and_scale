@@ -31,4 +31,30 @@ describe("support service", () => {
       ["ticket-b", "org-a"],
     );
   });
+
+  it("returns public comments only for a customer-scoped ticket", async () => {
+    const database = {
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({
+          rows: [{ id: "ticket-1", customer_id: "customer-1" }],
+        })
+        .mockResolvedValueOnce({
+          rows: [{ id: "comment-1", body: "Visible" }],
+        }),
+    };
+    const service = new SupportService(database as never);
+    const result = await service.getForCustomer(
+      "org-1",
+      "customer-1",
+      "ticket-1",
+    );
+    expect(result.data.comments).toEqual([
+      { id: "comment-1", body: "Visible" },
+    ]);
+    expect(database.query).toHaveBeenLastCalledWith(
+      expect.stringContaining("visibility='public'"),
+      ["ticket-1", "org-1"],
+    );
+  });
 });

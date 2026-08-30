@@ -23,6 +23,21 @@ export class SupportController {
     const actor = await this.access.require(request, "support:read");
     return this.support.list(actor.organizationId);
   }
+  @Get("client") public async clientList(@Req() request: FastifyRequest) {
+    const actor = await this.access.require(request, "support:read");
+    return this.support.listForCustomer(actor.organizationId, actor.actorId);
+  }
+  @Get("client/:ticketId") public async clientGet(
+    @Req() request: FastifyRequest,
+    @Param("ticketId") ticketId: string,
+  ) {
+    const actor = await this.access.require(request, "support:read");
+    return this.support.getForCustomer(
+      actor.organizationId,
+      actor.actorId,
+      ticketId,
+    );
+  }
   @Get(":ticketId") public async get(
     @Req() request: FastifyRequest,
     @Param("ticketId") ticketId: string,
@@ -58,6 +73,19 @@ export class SupportController {
       actor.actorId,
       ticketId,
       text(body, "visibility"),
+      text(body, "body"),
+    );
+  }
+  @Post("client/:ticketId/comments") public async clientComment(
+    @Req() request: FastifyRequest,
+    @Param("ticketId") ticketId: string,
+    @Body() body: Record<string, unknown>,
+  ) {
+    const actor = await this.access.require(request, "support:read");
+    return this.support.addClientComment(
+      actor.organizationId,
+      actor.actorId,
+      ticketId,
       text(body, "body"),
     );
   }

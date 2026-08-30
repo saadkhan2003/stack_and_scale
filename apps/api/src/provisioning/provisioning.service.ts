@@ -58,6 +58,32 @@ export class ProvisioningService {
       throw new ConflictException(
         "An accepted outcome, idempotency key and steps are required.",
       );
+    if (
+      input.sourceType === "proposal" ||
+      input.sourceType === "accepted_proposal"
+    ) {
+      const proposal = await this.database.query(
+        "SELECT id FROM platform.proposals WHERE id=$1 AND organization_id=$2 AND status='accepted'",
+        [input.sourceId, organizationId],
+      );
+      if (!proposal.rows[0])
+        throw new ConflictException(
+          "Provisioning requires an accepted proposal.",
+        );
+    }
+    if (
+      input.sourceType === "payment" ||
+      input.sourceType === "verified_payment"
+    ) {
+      const payment = await this.database.query(
+        "SELECT id FROM platform.payment_attempts WHERE id=$1 AND organization_id=$2 AND status='verified'",
+        [input.sourceId, organizationId],
+      );
+      if (!payment.rows[0])
+        throw new ConflictException(
+          "Provisioning requires a verified payment.",
+        );
+    }
     const existing = await this.database.query(
       "SELECT * FROM platform.provisioning_requests WHERE organization_id=$1 AND idempotency_key=$2",
       [organizationId, input.idempotencyKey],
@@ -146,6 +172,35 @@ export class ProvisioningService {
         actorId,
         `provisioning-${id}`,
         JSON.stringify({ requestId: id }),
+      ],
+    );
+    return { data: result.rows[0] };
+  }
+
+  public async retryStep(
+    organizationId: string,
+    actorId: string,
+    requestId: string,
+    stepId: string,
+  ) {
+    const result = await this.database.query(
+      "UPDATE platform.provisioning_steps SET status='pending', failure_reason=NULL, retry_at=NULL, retry_count=retry_count+1, updated_at=now() WHERE id=$1 AND request_id=$2 AND organization_id=$3 AND status='failed' RETURNING id,status,retry_count",
+      [stepId, requestId, organizationId],
+    );
+    if (!result.rows[0])
+      throw new ConflictException("Only failed steps can be retried.");
+    await this.database.query(
+      "UPDATE platform.provisioning_requests SET status='pending', failure_reason=NULL, updated_at=now() WHERE id=$1 AND organization_id=$2 AND status='failed'",
+      [requestId, organizationId],
+    );
+    await this.database.query(
+      "INSERT INTO platform.audit_events (id,organization_id,actor_id,action,correlation_id,metadata) VALUES ($1,$2,$3,'provisioning.step.retry',$4,$5::jsonb)",
+      [
+        `audit_${randomUUID()}`,
+        organizationId,
+        actorId,
+        `provisioning-${requestId}`,
+        JSON.stringify({ requestId, stepId }),
       ],
     );
     return { data: result.rows[0] };

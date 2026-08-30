@@ -128,7 +128,7 @@ async function deliverCommercialCommunication(
   const id = value(event.payload["communicationId"]);
   if (!id) throw new Error("Communication event is missing an ID.");
   const result = await database.query(
-    "SELECT c.id, c.delivery_state, t.subject, t.body, u.email FROM platform.commercial_communications c JOIN platform.communication_templates t ON t.id=c.template_id AND t.version=c.template_version JOIN identity.users u ON u.id=c.recipient_id WHERE c.id=$1",
+    "SELECT c.id, c.organization_id, c.delivery_state, COALESCE(c.rendered_subject, t.subject) AS subject, COALESCE(c.rendered_body, t.body) AS body, u.email FROM platform.commercial_communications c JOIN platform.communication_templates t ON t.id=c.template_id AND t.version=c.template_version JOIN identity.users u ON u.id=c.recipient_id WHERE c.id=$1",
     [id],
   );
   const communication = result.rows[0];
@@ -144,6 +144,15 @@ async function deliverCommercialCommunication(
       text: value(communication["body"]) ?? "",
     });
     await database.query(
+      "INSERT INTO platform.communication_delivery_audits (id,organization_id,communication_id,action,metadata) VALUES ($1,$2,$3,'delivered',$4::jsonb)",
+      [
+        `communication_audit_${event.id}`,
+        String(communication["organization_id"]),
+        id,
+        JSON.stringify({ outboxEventId: event.id }),
+      ],
+    );
+    await database.query(
       "UPDATE platform.commercial_communications SET delivery_state='delivered', delivered_at=now(), last_error=NULL WHERE id=$1",
       [id],
     );
@@ -151,6 +160,17 @@ async function deliverCommercialCommunication(
     await database.query(
       "UPDATE platform.commercial_communications SET delivery_state='failed', last_error=$2 WHERE id=$1",
       [id, error instanceof Error ? error.message : "delivery failed"],
+    );
+    await database.query(
+      "INSERT INTO platform.communication_delivery_audits (id,organization_id,communication_id,action,metadata) VALUES ($1,$2,$3,'failed',$4::jsonb) ON CONFLICT DO NOTHING",
+      [
+        `communication_audit_${event.id}`,
+        String(communication["organization_id"]),
+        id,
+        JSON.stringify({
+          error: error instanceof Error ? error.message : "delivery failed",
+        }),
+      ],
     );
     throw error;
   }
