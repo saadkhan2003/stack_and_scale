@@ -57,6 +57,9 @@ printf '%s' "${REGISTRY_READ_TOKEN}" | ssh "${remote}" "docker login $(printf '%
 previous_tag="$(ssh "${remote}" "test -f ${remote_root}/deployments/current.json && sed -n 's/.*\"imageTag\":\"\([a-f0-9]*\)\".*/\1/p' ${remote_root}/deployments/current.json" || true)"
 rollback_on_failure() {
   local status=$?
+  # Preserve the failed service's startup error in the protected workflow log
+  # before the rollback replaces the container.
+  ssh "${remote}" "docker inspect --format '{{.Name}} exit={{.State.ExitCode}} error={{.State.Error}}' stack-and-scale-production-api-1 2>&1 || true; docker logs --tail 100 stack-and-scale-production-api-1 2>&1 || true" || true
   if [[ -n "${previous_tag}" && "${previous_tag}" != "${image_tag}" ]]; then
     echo "Promotion check failed; restoring previous compatible image ${previous_tag}." >&2
     ssh "${remote}" "IMAGE_TAG=${previous_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production -f ${remote_root}/infra/compose.production.yaml up -d web api cms workers keycloak" || true

@@ -14,7 +14,8 @@ COPY . .
 RUN pnpm --filter @stack-and-scale/contracts build && pnpm --filter @stack-and-scale/database build && pnpm --filter @stack-and-scale/storage build && pnpm --filter @stack-and-scale/api build
 # The runtime image must contain only the API's production dependency closure.
 # Copying the entire workspace would ship test tooling and unrelated packages.
-RUN pnpm --filter @stack-and-scale/api --prod deploy --legacy /production-app
+RUN pnpm --filter @stack-and-scale/api --prod deploy --legacy /production-app \
+    && pnpm --filter @stack-and-scale/storage --prod deploy --legacy /production-storage
 
 FROM node:24.18.0-bookworm-slim AS runtime
 WORKDIR /workspace
@@ -34,8 +35,12 @@ COPY --from=build --chown=app:app /workspace/packages/database/package.json /wor
 # compiled migration runner and SQL files alongside the deployed app closure.
 COPY --from=build --chown=app:app /workspace/packages/database/dist /workspace/packages/database/dist
 COPY --from=build --chown=app:app /workspace/packages/database/migrations /workspace/packages/database/migrations
-COPY --from=build --chown=app:app /workspace/packages/storage/package.json /workspace/packages/storage/package.json
-COPY --from=build --chown=app:app /workspace/packages/storage/dist /workspace/packages/storage/dist
+# The API resolves this workspace package through the deployed workspace link.
+# Copy its production closure too: S3 support imports AWS SDK modules at API
+# startup even when the local-storage adapter is selected.
+COPY --from=build --chown=app:app /production-storage /workspace/packages/storage
+# Fail the image build if a workspace-linked package lacks a production module.
+RUN node -e "import('@stack-and-scale/storage')"
 USER app
 EXPOSE 3100
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD node -e "fetch('http://127.0.0.1:3100/ready').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
