@@ -28,7 +28,16 @@ export type StoredPrivateObject = Readonly<{
 export interface PrivateObjectStorage {
   putObject(input: PutPrivateObjectInput): Promise<StoredPrivateObject>;
   getObject(reference: PrivateObjectReference): Promise<Buffer>;
+  createSignedAccess(
+    reference: PrivateObjectReference,
+    expiresInSeconds: number,
+  ): Promise<SignedPrivateAccess>;
 }
+
+export type SignedPrivateAccess = Readonly<{
+  url: string;
+  expiresAt: string;
+}>;
 
 export type LocalPrivateStorageOptions = Readonly<{
   rootDirectory: string;
@@ -91,6 +100,27 @@ export class LocalPrivateStorage implements PrivateObjectStorage {
 
   public async getObject(reference: PrivateObjectReference): Promise<Buffer> {
     return readFile(this.resolvePrivatePath(this.createStorageKey(reference)));
+  }
+
+  public async createSignedAccess(
+    reference: PrivateObjectReference,
+    expiresInSeconds: number,
+  ): Promise<SignedPrivateAccess> {
+    if (
+      !Number.isSafeInteger(expiresInSeconds) ||
+      expiresInSeconds < 1 ||
+      expiresInSeconds > 900
+    )
+      throw new Error("signed access must expire within 15 minutes");
+    const storageKey = this.createStorageKey(reference);
+    await this.getObject(reference);
+    const expiresAt = new Date(
+      Date.now() + expiresInSeconds * 1000,
+    ).toISOString();
+    return {
+      url: `private://${encodeURIComponent(storageKey)}?expires=${encodeURIComponent(expiresAt)}`,
+      expiresAt,
+    };
   }
 
   private assertAllowedUpload(input: PutPrivateObjectInput): void {

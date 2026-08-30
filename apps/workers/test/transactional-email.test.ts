@@ -94,4 +94,41 @@ describe("lead transactional email", () => {
     ]);
     expect(queries.at(-1)).toContain("delivery_state = 'delivered'");
   });
+
+  it("delivers an approved commercial communication and records its state", async () => {
+    const email = new MemoryEmailAdapter();
+    const queries: string[] = [];
+    await deliverLeadEmail(
+      {
+        id: "event-communication-1",
+        eventType: "communication.email",
+        attempts: 1,
+        payload: { communicationId: "communication-1" },
+      },
+      {
+        query: (query) => {
+          queries.push(query);
+          return Promise.resolve({
+            rows: query.startsWith("SELECT")
+              ? [
+                  {
+                    subject: "Proposal ready",
+                    body: "Please review.",
+                    email: "customer@example.test",
+                  },
+                ]
+              : [],
+          });
+        },
+      },
+      email,
+      undefined,
+    );
+    expect(email.sent[0]).toEqual({
+      to: "customer@example.test",
+      subject: "Proposal ready",
+      text: "Please review.",
+    });
+    expect(queries.at(-1)).toContain("commercial_communications");
+  });
 });

@@ -79,6 +79,10 @@ export async function deliverLeadEmail(
     await deliverNotificationEmail(event, database, email);
     return;
   }
+  if (event.eventType === "communication.email") {
+    await deliverCommercialCommunication(event, database, email);
+    return;
+  }
   if (
     event.eventType !== "crm.lead.created" &&
     event.eventType !== "crm.booking.confirmed"
@@ -113,6 +117,42 @@ export async function deliverLeadEmail(
       subject: "Your Stack & Scale demo booking",
       text: `Hi ${name},\n\nYour requested demo time has been recorded. Our team will confirm the details shortly.\n\nStack & Scale`,
     });
+  }
+}
+
+async function deliverCommercialCommunication(
+  event: DeliverableOutboxEvent,
+  database: Queryable,
+  email: EmailAdapter,
+): Promise<void> {
+  const id = value(event.payload["communicationId"]);
+  if (!id) throw new Error("Communication event is missing an ID.");
+  const result = await database.query(
+    "SELECT c.id, c.delivery_state, t.subject, t.body, u.email FROM platform.commercial_communications c JOIN platform.communication_templates t ON t.id=c.template_id AND t.version=c.template_version JOIN identity.users u ON u.id=c.recipient_id WHERE c.id=$1",
+    [id],
+  );
+  const communication = result.rows[0];
+  if (!communication)
+    throw new Error("Communication referenced by event no longer exists.");
+  try {
+    const recipient = value(communication["email"]);
+    if (!recipient)
+      throw new Error("Communication recipient has no email address.");
+    await email.send({
+      to: recipient,
+      subject: value(communication["subject"]) ?? "Stack & Scale",
+      text: value(communication["body"]) ?? "",
+    });
+    await database.query(
+      "UPDATE platform.commercial_communications SET delivery_state='delivered', delivered_at=now(), last_error=NULL WHERE id=$1",
+      [id],
+    );
+  } catch (error) {
+    await database.query(
+      "UPDATE platform.commercial_communications SET delivery_state='failed', last_error=$2 WHERE id=$1",
+      [id, error instanceof Error ? error.message : "delivery failed"],
+    );
+    throw error;
   }
 }
 

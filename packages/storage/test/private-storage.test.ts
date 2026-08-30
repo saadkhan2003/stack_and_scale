@@ -121,4 +121,27 @@ describe("LocalPrivateStorage", () => {
     expect(stored).not.toHaveProperty("publicUrl");
     expect("createPublicUrl" in storage).toBe(false);
   });
+
+  it("issues only short-lived signed private access", async () => {
+    const storage = await createStorage();
+    await storage.putObject({
+      organizationId: "org-alpha",
+      objectKey: "contracts/statement.pdf",
+      contentType: "application/pdf",
+      body: Buffer.from("statement"),
+    });
+
+    await expect(
+      storage.createSignedAccess(
+        { organizationId: "org-alpha", objectKey: "contracts/statement.pdf" },
+        901,
+      ),
+    ).rejects.toThrow("15 minutes");
+    const access = await storage.createSignedAccess(
+      { organizationId: "org-alpha", objectKey: "contracts/statement.pdf" },
+      300,
+    );
+    expect(access.url).toContain("private://");
+    expect(Date.parse(access.expiresAt)).toBeGreaterThan(Date.now());
+  });
 });

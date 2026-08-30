@@ -23,7 +23,13 @@ export type Permission =
   | "accounting:read"
   | "accounting:export"
   | "support:read"
-  | "support:manage";
+  | "support:manage"
+  | "file:read"
+  | "file:manage"
+  | "provisioning:read"
+  | "provisioning:manage"
+  | "communication:read"
+  | "communication:manage";
 
 const staffRoles = new Set<StaffRole>(["owner", "admin", "manager", "member"]);
 
@@ -63,6 +69,12 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "accounting:export",
       "support:read",
       "support:manage",
+      "file:read",
+      "file:manage",
+      "provisioning:read",
+      "provisioning:manage",
+      "communication:read",
+      "communication:manage",
     ],
   },
   admin: {
@@ -90,6 +102,12 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "accounting:export",
       "support:read",
       "support:manage",
+      "file:read",
+      "file:manage",
+      "provisioning:read",
+      "provisioning:manage",
+      "communication:read",
+      "communication:manage",
     ],
   },
   manager: {
@@ -112,6 +130,12 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "accounting:read",
       "support:read",
       "support:manage",
+      "file:read",
+      "file:manage",
+      "provisioning:read",
+      "provisioning:manage",
+      "communication:read",
+      "communication:manage",
     ],
   },
   member: {
@@ -124,6 +148,9 @@ const rolePolicies: Readonly<Record<StaffRole, RolePolicy>> = {
       "knowledge:read",
       "report:read",
       "support:read",
+      "file:read",
+      "provisioning:read",
+      "communication:read",
     ],
   },
 };

@@ -9,6 +9,7 @@
     "@nestjs/platform-fastify": "11.2.1",
     "@stack-and-scale/contracts": "workspace:*",
     "@stack-and-scale/database": "workspace:*",
+    "@stack-and-scale/storage": "workspace:*",
     "fastify": "5.12.1",
     "pg": "8.16.3",
     "reflect-metadata": "0.2.2",

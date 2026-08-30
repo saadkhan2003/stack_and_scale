@@ -60,6 +60,9 @@ importers:
       '@stack-and-scale/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@stack-and-scale/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       fastify:
         specifier: 5.12.1
         version: 5.12.1

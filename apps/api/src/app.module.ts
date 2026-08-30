@@ -25,6 +25,9 @@ import { ContractModule } from "./contracts/contract.module.js";
 import { InvoiceModule } from "./invoices/invoice.module.js";
 import { AccountingModule } from "./accounting/accounting.module.js";
 import { SupportModule } from "./support/support.module.js";
+import { PrivateFilesModule } from "./files/private-files.module.js";
+import { ProvisioningModule } from "./provisioning/provisioning.module.js";
+import { CommunicationsModule } from "./communications/communications.module.js";
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { SupportModule } from "./support/support.module.js";
     InvoiceModule,
     AccountingModule,
     SupportModule,
+    PrivateFilesModule,
+    ProvisioningModule,
+    CommunicationsModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [
