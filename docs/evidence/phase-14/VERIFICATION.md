@@ -13,7 +13,8 @@ operational gates are resolved.
 - Tenant-scoped proposals with immutable versions, approvals, publication,
   public viewing and acceptance evidence.
 - Contract templates/versions, proposal-version binding, signer evidence, HMAC
-  callback authenticity/idempotency, retries and artifact metadata fallback.
+  callback authenticity/idempotency, retries, deterministic PDF artifacts and
+  artifact metadata fallback.
 - Invoice lifecycle, five explicit local payment methods, pending verification,
   duplicate proof/reference detection, allocation, reversal, refund and receipt
   records.
@@ -21,24 +22,26 @@ operational gates are resolved.
 - Support tickets, public/internal comments, SLA pause clocks, escalation and
   attachment metadata.
 - Private file metadata, versions, quotas, scan states, signed-access hooks and
-  download audits.
+  download audits, transactional quota reservation, legal holds, expiry,
+  quarantine, restore and compensation cleanup.
 - Idempotent resumable provisioning with approval gates and worker execution.
 - Template-controlled commercial communications, preferences, delivery state and
   resend auditing.
 
 ## Verification
 
-- API: 93 tests passed, 3 environment-gated tests skipped.
+- API: 100 tests passed, 3 environment-gated tests skipped.
 - Workers: 14 tests passed.
 - Contracts: 52 tests passed.
-- Storage: 5 tests passed.
+- Storage: 7 tests passed.
 - Lint, typecheck, builds, formatting and migration checks passed.
 
 ## Open exit gates
 
-1. Select and legally approve an e-sign provider; implement its adapter,
-   callbacks, signed artifact export and retention proof.
-2. Generate canonical branded PDFs and store/retrieve them through private
+1. Select and legally approve an e-sign provider; complete its adapter,
+   callbacks, signed artifact export and retention proof. The provider-neutral
+   boundary and local fallback are implemented.
+2. Apply branding and store/retrieve canonical PDFs through production private
    object storage.
 3. Configure real S3-compatible storage and malware scanning, then verify
    quotas, retention, restore references and signed-download expiry.
