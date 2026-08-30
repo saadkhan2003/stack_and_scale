@@ -76,6 +76,7 @@ if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "${compose} up -d prometheus loki promtail grafana node-exporter cadvisor"
 fi
 ssh "${remote}" "for attempt in \$(seq 1 12); do ${compose} exec -T api node -e \"fetch('http://127.0.0.1:3100/ready').then(r => process.exit(r.ok ? 0 : 1))\" && break; test \$attempt -eq 12 && exit 1; sleep 3; done"
+ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-web-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1))\""
 ssh "${remote}" "${compose} exec -T web node -e \"fetch('http://127.0.0.1:3000/api/demo-slots').then(r => process.exit(r.ok ? 0 : 1))\""
 # Keycloak and Payload can take longer than the API to warm up on a modest
