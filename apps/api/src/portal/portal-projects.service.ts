@@ -21,7 +21,7 @@ type MilestoneRow = {
   id: string;
   label: string;
   status: "planned" | "in_progress" | "completed" | "blocked";
-  due_on: string | null;
+  due_on: string | Date | null;
 };
 
 @Injectable()
@@ -66,11 +66,11 @@ export class PortalProjectsService {
          FROM portal.project_projections AS project
         WHERE project.client_organization_id = $1
           AND ($2 = 'client_admin' OR EXISTS (
-            SELECT 1 FROM portal.project_grants AS grant
-             WHERE grant.client_organization_id = project.client_organization_id
-               AND grant.project_id = project.id
-               AND grant.user_id = $3
-               AND grant.status = 'active'
+            SELECT 1 FROM portal.project_grants AS project_grant
+             WHERE project_grant.client_organization_id = project.client_organization_id
+               AND project_grant.project_id = project.id
+               AND project_grant.user_id = $3
+               AND project_grant.status = 'active'
           ))
         ORDER BY project.published_at DESC, project.id ASC
         LIMIT 50`,
@@ -100,12 +100,13 @@ export class PortalProjectsService {
       throw new ForbiddenException("You do not have access to this resource.");
     }
     const grantResult = await this.database.query(
-      `SELECT grant.user_id AS actor_id, grant.client_organization_id,
-              grant.project_id, grant.status
-         FROM portal.project_grants AS grant
-        WHERE grant.client_organization_id = $1
-          AND grant.project_id = $2
-          AND grant.user_id = $3`,
+      `SELECT project_grant.user_id AS actor_id,
+              project_grant.client_organization_id, project_grant.project_id,
+              project_grant.status
+         FROM portal.project_grants AS project_grant
+        WHERE project_grant.client_organization_id = $1
+          AND project_grant.project_id = $2
+          AND project_grant.user_id = $3`,
       [clientOrganizationId, projectId, principal.actorId],
     );
     const grant =
@@ -189,7 +190,6 @@ export class PortalProjectsService {
       scopeSummary: row.scope_summary,
       status: row.status,
       nextAction: row.next_action,
-      publishedAt: row.published_at,
     };
   }
 
@@ -198,7 +198,10 @@ export class PortalProjectsService {
       id: row.id,
       label: row.label,
       status: row.status,
-      dueOn: row.due_on,
+      dueOn:
+        row.due_on === null
+          ? null
+          : new Date(row.due_on).toISOString().slice(0, 10),
     };
   }
 }

@@ -16,6 +16,7 @@ const FOREIGN_ORG = "portal-access-foreign-org";
 const USER = "portal-access-user";
 const REVOKED_USER = "portal-access-foreign-user";
 const ADMIN = "portal-access-admin";
+const NEW_MEMBER = "portal-access-new-member";
 const CLIENT_ORG = "portal-client-org";
 const DISABLED_CLIENT_ORG = "portal-disabled-client-org";
 const PROJECT = "portal-project-a";
@@ -54,16 +55,17 @@ describe("portal access boundary", () => {
       `INSERT INTO identity.users (id, external_subject, email) VALUES
          ($1, $1, 'portal-user@example.test'),
          ($2, $2, 'portal-foreign@example.test'),
-         ($3, $3, 'portal-admin@example.test')
-       ON CONFLICT (id) DO NOTHING`,
-      [USER, REVOKED_USER, ADMIN],
+         ($3, $3, 'portal-admin@example.test'),
+         ($4, $4, 'portal-new-member@example.test')
+        ON CONFLICT (id) DO NOTHING`,
+      [USER, REVOKED_USER, ADMIN, NEW_MEMBER],
     );
     await pool.query(
       `INSERT INTO portal.client_organizations
          (id, organization_id, customer_id, portal_access_enabled,
-          portal_home_enabled, portal_projects_enabled, portal_support_enabled) VALUES
+           portal_home_enabled, portal_projects_enabled, portal_support_enabled) VALUES
          ($1, $2, 'customer-a', true, true, true, true),
-         ($3, $2, 'customer-b', false, false, false)
+         ($3, $2, 'customer-b', false, false, false, false)
        ON CONFLICT (id) DO UPDATE SET
          portal_access_enabled = EXCLUDED.portal_access_enabled,
          portal_home_enabled = EXCLUDED.portal_home_enabled,
@@ -113,8 +115,8 @@ describe("portal access boundary", () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await pool.end();
+    await app?.close();
+    await pool?.end();
   });
 
   it("requires authentication", async () => {
@@ -281,6 +283,7 @@ describe("portal access boundary", () => {
   });
 
   it("limits membership management to the client administrator and audits a revocation", async () => {
+    const testStartedAt = new Date();
     const memberDenied = await fastify.inject({
       method: "GET",
       url: `/api/v1/portal/client-organizations/${CLIENT_ORG}/members`,
@@ -292,17 +295,20 @@ describe("portal access boundary", () => {
       method: "POST",
       url: `/api/v1/portal/client-organizations/${CLIENT_ORG}/members`,
       headers: { "x-actor-id": ADMIN },
-      payload: { email: "portal-user@example.test", role: "client_admin" },
+      payload: {
+        email: "portal-new-member@example.test",
+        role: "client_admin",
+      },
     });
     expect(memberAdded.statusCode).toBe(201);
     expect(memberAdded.json()).toMatchObject({
-      member: { userId: USER, role: "client_admin", status: "active" },
+      member: { userId: NEW_MEMBER, role: "client_admin", status: "active" },
     });
 
     const active = await pool.query(
       `SELECT id FROM portal.client_memberships
         WHERE client_organization_id = $1 AND user_id = $2`,
-      [CLIENT_ORG, USER],
+      [CLIENT_ORG, NEW_MEMBER],
     );
     const membershipId = active.rows[0]?.["id"];
     if (typeof membershipId !== "string") {
@@ -316,8 +322,9 @@ describe("portal access boundary", () => {
     expect(revoked.statusCode).toBe(201);
     const events = await pool.query(
       `SELECT event_type FROM portal.membership_events
-        WHERE membership_id = $1 ORDER BY created_at ASC`,
-      [membershipId],
+        WHERE membership_id = $1 AND created_at >= $2
+        ORDER BY created_at ASC`,
+      [membershipId, testStartedAt],
     );
     expect(events.rows.map((row) => row["event_type"])).toEqual([
       "member_added",
