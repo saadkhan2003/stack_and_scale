@@ -318,6 +318,8 @@ export class OidcFlowService {
   } {
     const url = new URL(`${this.issuer()}/protocol/openid-connect/logout`);
     url.searchParams.set("post_logout_redirect_uri", this.postLogoutRedirect());
+    // Keycloak requires the client when no retained ID token is supplied.
+    url.searchParams.set("client_id", this.clientId());
     return {
       location: url.toString(),
       cookies: [

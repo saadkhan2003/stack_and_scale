@@ -379,6 +379,9 @@ describe("oidc browser flow", () => {
     expect(logout.headers.location).toContain(
       "/protocol/openid-connect/logout",
     );
+    expect(
+      new URL(logout.headers.location as string).searchParams.get("client_id"),
+    ).toBe(CLIENT_ID);
     const cleared = extractSetCookies(logout.headers);
     expect(cleared[SESSION_COOKIE]).toBe("");
 

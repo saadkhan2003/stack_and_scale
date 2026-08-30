@@ -28,6 +28,7 @@ import { SupportModule } from "./support/support.module.js";
 import { PrivateFilesModule } from "./files/private-files.module.js";
 import { ProvisioningModule } from "./provisioning/provisioning.module.js";
 import { CommunicationsModule } from "./communications/communications.module.js";
+import { PortalModule } from "./portal/portal.module.js";
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { CommunicationsModule } from "./communications/communications.module.js"
     PrivateFilesModule,
     ProvisioningModule,
     CommunicationsModule,
+    PortalModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [

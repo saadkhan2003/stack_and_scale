@@ -21,6 +21,7 @@ echo "== Starting API on http://127.0.0.1:3100 =="
   cd apps/api
   STACK_AND_SCALE_OIDC_ISSUER=http://localhost:8084/realms/stack-and-scale \
   STACK_AND_SCALE_OIDC_AUDIENCE=web \
+  STACK_AND_SCALE_OIDC_REDIRECT_URI=http://localhost:3000/api/auth/oidc/callback \
     ../../node_modules/.bin/tsx src/main.ts
 ) &
 

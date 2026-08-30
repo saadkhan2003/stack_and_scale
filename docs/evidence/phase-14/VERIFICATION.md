@@ -42,6 +42,27 @@ operational gates are resolved.
 
 ## Production smoke
 
+- Immutable delivery run `33319034757` completed successfully for release
+  `b34505d71d95a2adbb450fc5b26c68113f87cc82` after the API runtime-image
+  dependency fix.
+- Browser verification on 2026-08-30 confirmed the production homepage and
+  staff sign-in screen render without console or network errors; API readiness
+  reports application, database, migrations, outbox and privacy checks up; CMS
+  login renders; and unauthenticated invoice, support and private-file endpoints
+  reject access.
+- Local re-verification against PostgreSQL: API 113 passed (3 live-Keycloak
+  tests intentionally skipped), contracts 52 passed, storage 9 passed and
+  workers 14 passed.
+- Phase 14 infrastructure Compose verification: 3 passed, covering valid YAML,
+  absence of storage host ports, opt-in-only secret mounts and inactive ordinary
+  production provider defaults.
+- Local Browser MCP verification used the isolated Keycloak fixture only: a
+  real OIDC sign-in reached the authenticated commercial workspace and proposal
+  empty state; a confirmed identity-provider logout returned to the local site.
+  The fixture's temporary manager role and membership were restored afterward.
+- The browser run corrected the local development callback origin in
+  `scripts/dev.sh`; the focused OIDC flow suite passed 8 tests after adding the
+  client identifier required by Keycloak's end-session request.
 - Immutable delivery run `33304916000` completed successfully.
 - Production release `008c7f72a0682080d1af3b81e781755cb40b31c2` is running on
   OVH; migrations `0010` through `0019` applied successfully.

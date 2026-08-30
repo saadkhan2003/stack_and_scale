@@ -7,8 +7,8 @@ set of secrets. Two custodians are required before production secrets exist.
 
 | Custodian | Secrets in scope | Access method | Date appointed |
 |---|---|---|---|
-| _TBD — first custodian_ | All production application secrets | OVH VPS SSH + Bitwarden | _TBD_ |
-| _TBD — second custodian_ | Backup and recovery secrets | OVH VPS SSH + Bitwarden | _TBD_ |
+| Muhammad Saad Khan — Owner, CEO, Founder, Full Administrator | All production application, deployment, identity, and provider secrets | OVH VPS SSH + Bitwarden | 2026-08-30 |
+| Talha Shams — Co-Founder, Marketing Team Lead | Backup, recovery, and business-continuity secrets | OVH VPS SSH + Bitwarden | 2026-08-30 |
 
 ### Access rules
 
@@ -27,19 +27,19 @@ rotation date. The register is updated after every rotation event.
 
 | Secret | Rotation owner | Last rotated | Next review | Trigger conditions |
 |---|---|---|---|---|
-| `POSTGRES_PASSWORD` | _TBD_ | _TBD_ | _TBD_ | Compromise, staff departure, scheduled quarterly |
-| `PAYLOAD_SECRET` | _TBD_ | _TBD_ | _TBD_ | Compromise, staff departure, scheduled quarterly |
-| `CMS_PREVIEW_SECRET` | _TBD_ | _TBD_ | _TBD_ | Compromise, staff departure, scheduled quarterly |
-| `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` | _TBD_ | _TBD_ | _TBD_ | Compromise, staff departure, after initial bootstrap |
-| `RESEND_API_KEY` | _TBD_ | _TBD_ | _TBD_ | Provider rotation, compromise |
-| `METRICS_BEARER_TOKEN` | _TBD_ | _TBD_ | _TBD_ | Compromise, scheduled quarterly |
-| `GRAFANA_ADMIN_PASSWORD` | _TBD_ | _TBD_ | _TBD_ | Compromise, scheduled quarterly |
-| Cloudflare Origin Certificate | _TBD_ | _TBD_ | _TBD_ | Certificate expiry, compromise |
-| `DEPLOY_SSH_PRIVATE_KEY` | _TBD_ | _TBD_ | _TBD_ | Staff departure, compromise, scheduled quarterly |
-| `REGISTRY_READ_TOKEN` | _TBD_ | _TBD_ | _TBD_ | Staff departure, compromise, scheduled quarterly |
-| `RESTIC_PASSWORD` | _TBD_ | _TBD_ | _TBD_ | Compromise, scheduled quarterly |
-| `HCLOUD_TOKEN` | _TBD_ | _TBD_ | _TBD_ | Compromise, staff departure |
-| Keycloak admin password (via console) | _TBD_ | _TBD_ | _TBD_ | After initial bootstrap, compromise |
+| `POSTGRES_PASSWORD` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, staff departure, scheduled quarterly |
+| `PAYLOAD_SECRET` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, staff departure, scheduled quarterly |
+| `CMS_PREVIEW_SECRET` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, staff departure, scheduled quarterly |
+| `KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, staff departure, after initial bootstrap |
+| `RESEND_API_KEY` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Provider rotation, compromise |
+| `METRICS_BEARER_TOKEN` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, scheduled quarterly |
+| `GRAFANA_ADMIN_PASSWORD` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Compromise, scheduled quarterly |
+| Cloudflare Origin Certificate | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Certificate expiry, compromise |
+| `DEPLOY_SSH_PRIVATE_KEY` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Staff departure, compromise, scheduled quarterly |
+| `REGISTRY_READ_TOKEN` | Muhammad Saad Khan | _TBD_ | 2026-11-28 | Staff departure, compromise, scheduled quarterly |
+| `RESTIC_PASSWORD` | Talha Shams | _TBD_ | 2026-11-28 | Compromise, scheduled quarterly |
+| `HCLOUD_TOKEN` | Talha Shams | _TBD_ | 2026-11-28 | Compromise, staff departure |
+| Keycloak admin password (via console) | Muhammad Saad Khan | _TBD_ | 2026-11-28 | After initial bootstrap, compromise |
 
 ## Rotation procedure
 

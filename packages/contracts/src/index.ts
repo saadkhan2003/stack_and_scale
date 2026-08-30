@@ -27,6 +27,9 @@ export * from "./commercial.js";
 export * from "./contracts.js";
 export * from "./accounting.js";
 export * from "./support.js";
+export * from "./portal-authorization.js";
+export * from "./portal-project-authorization.js";
+export * from "./portal-review.js";
 
 export type EventEnvelope<TPayload = unknown> = Readonly<{
   eventId: string;

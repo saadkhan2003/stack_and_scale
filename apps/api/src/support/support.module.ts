@@ -10,5 +10,6 @@ import { SupportService } from "./support.service.js";
   imports: [AuthModule, PlatformDatabaseModule],
   controllers: [SupportController],
   providers: [TenantAccessService, CrmAccessService, SupportService],
+  exports: [SupportService],
 })
 export class SupportModule {}
