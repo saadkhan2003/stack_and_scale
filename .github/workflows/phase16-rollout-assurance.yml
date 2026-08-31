@@ -6,7 +6,7 @@ on:
       action:
         required: true
         type: choice
-        options: [seed-qa, disable-account, enable-account]
+        options: [provision-signing-key, seed-qa, disable-account, enable-account]
 
 permissions:
   contents: read
@@ -39,6 +39,24 @@ jobs:
           export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
           compose=(docker compose --env-file .env.production -f infra/compose.production.yaml)
           case "$action" in
+            provision-signing-key)
+              if ! grep -q '^PRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64=' .env.production; then
+                private_file="$(mktemp)"; public_file="$(mktemp)"
+                trap 'rm -f "$private_file" "$public_file"' EXIT
+                openssl genpkey -algorithm ED25519 -out "$private_file"
+                openssl pkey -in "$private_file" -pubout -out "$public_file"
+                private_b64="$(base64 -w0 < "$private_file")"
+                public_b64="$(base64 -w0 < "$public_file")"
+                umask 077
+                printf '\nPRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64=%s\nPRODUCT_ENTITLEMENT_SIGNING_KEY_ID=account-snapshot-v1\n' "$private_b64" >> .env.production
+                "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<SQL
+          INSERT INTO product.signing_key_metadata (id,key_id,algorithm,public_key,status,not_before,not_after)
+          VALUES ('account-snapshot-v1-metadata','account-snapshot-v1','Ed25519','$public_b64','active',now(),now() + interval '370 days')
+          ON CONFLICT (key_id) DO NOTHING;
+          SQL
+                "${compose[@]}" up -d --no-deps api
+              fi
+              ;;
             seed-qa)
               "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
           BEGIN;
