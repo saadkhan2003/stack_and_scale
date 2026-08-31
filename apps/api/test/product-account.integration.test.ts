@@ -54,7 +54,10 @@ describe("product account control plane", () => {
   it("records idempotent branch and membership workflows without cross-account writes", async () => {
     const branch = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches`, USER, "POST", { name: "Karachi", idempotencyKey: "phase16-branch-1" });
     expect(branch.statusCode).toBe(201);
-    const branchId = (branch.json() as { branchId: string }).branchId;
+    const branchPayload: unknown = JSON.parse(branch.body) as unknown;
+    const branchIdCandidate = typeof branchPayload === "object" && branchPayload !== null ? (branchPayload as Record<string, unknown>)["branchId"] : undefined;
+    if (typeof branchIdCandidate !== "string") throw new Error("Branch response is invalid.");
+    const branchId = branchIdCandidate;
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches`, USER, "POST", { name: "Karachi", idempotencyKey: "phase16-branch-1" })).json()).toMatchObject({ branchId, replayed: true });
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches/${branchId}/members/${USER}`, USER, "POST", { present: true, idempotencyKey: "phase16-branch-member-1" })).statusCode).toBe(201);
     const foreign = await request(`/api/v1/product-accounts/organizations/${FOREIGN}/branches/${branchId}/members/${FOREIGN_USER}`, FOREIGN_USER, "POST", { present: true, idempotencyKey: "phase16-foreign-write" });

@@ -263,6 +263,71 @@ export class ProductAccountService {
     return { planVersionId, addonId, assignedBy: actorId };
   }
 
+  public async setAccountFlags(actorId: string, accountOrganizationId: string, input: { accountEnabled?: boolean; billingEnabled?: boolean; downloadsEnabled?: boolean; licenseEnforcementEnabled?: boolean }) {
+    const values = Object.entries(input).filter(([, value]) => typeof value === "boolean");
+    if (!values.length) throw new BadRequestException("At least one account flag is required.");
+    const columns: Record<string, string> = { accountEnabled: "account_enabled", billingEnabled: "billing_enabled", downloadsEnabled: "downloads_enabled", licenseEnforcementEnabled: "license_enforcement_enabled" };
+    const clauses = values.map(([key], index) => `${columns[key]} = $${index + 1}`);
+    const result = await this.database.query(`UPDATE product.account_organizations SET ${clauses.join(", ")}, updated_at = now() WHERE id = $${values.length + 1} RETURNING id, account_enabled, billing_enabled, downloads_enabled, license_enforcement_enabled`, [...values.map(([, value]) => value), accountOrganizationId]);
+    if (!result.rows.length) throw new NotFoundException("Product account was not found.");
+    return { ...(result.rows[0] as object), changedBy: actorId };
+  }
+
+  public async grantLicense(actorId: string, input: { accountOrganizationId: string; productId: string; seatLimit: number }) {
+    if (!Number.isSafeInteger(input.seatLimit) || input.seatLimit < 1) throw new BadRequestException("Seat limit is invalid.");
+    const account = await this.database.query(`SELECT id FROM product.account_organizations WHERE id = $1 AND product_id = $2`, [input.accountOrganizationId, input.productId]);
+    if (!account.rows.length) throw new NotFoundException("Product account was not found.");
+    const id = `license_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.licenses (id,account_organization_id,product_id,status,seat_limit) VALUES ($1,$2,$3,'granted',$4)`, [id, input.accountOrganizationId, input.productId, input.seatLimit]);
+    return { id, accountOrganizationId: input.accountOrganizationId, status: "granted", grantedBy: actorId };
+  }
+
+  public async setInstallationStatus(actorId: string, installationId: string, status: string) {
+    if (!["active", "lease_expired", "revoked", "replaced"].includes(status)) throw new BadRequestException("Installation status is invalid.");
+    const updated = await this.database.query(`UPDATE product.installations SET status = $1, updated_at = now() WHERE id = $2 RETURNING id, account_organization_id, status`, [status, installationId]);
+    if (!updated.rows.length) throw new NotFoundException("Installation was not found.");
+    const row = updated.rows[0] as { id: string; account_organization_id: string; status: string };
+    await this.database.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'installation_status_changed',$4,$5)`, [randomUUID(), row.account_organization_id, actorId, `staff-installation-${installationId}-${status}`, { installationId, status }]);
+    return { installationId: row.id, status: row.status, changedBy: actorId };
+  }
+
+  public async registerSigningKey(actorId: string, input: { keyId: string; algorithm: string; publicKey: string; notBefore: string; notAfter: string }) {
+    const notBefore = new Date(input.notBefore); const notAfter = new Date(input.notAfter);
+    if (!input.keyId.trim() || !input.algorithm.trim() || !input.publicKey.trim() || Number.isNaN(notBefore.valueOf()) || Number.isNaN(notAfter.valueOf()) || notAfter <= notBefore) throw new BadRequestException("Signing-key metadata is invalid.");
+    const id = `signing_key_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.signing_key_metadata (id,key_id,algorithm,public_key,status,not_before,not_after) VALUES ($1,$2,$3,$4,'active',$5,$6)`, [id, input.keyId, input.algorithm, input.publicKey, notBefore, notAfter]);
+    return { id, keyId: input.keyId, registeredBy: actorId };
+  }
+
+  public async registerRelease(actorId: string, input: { productId: string; version: string; platform: string; checksumSha256: string; signature: string; keyId: string; storageReference: string }) {
+    if (!input.productId || !input.version.trim() || !input.platform.trim() || !/^[a-f0-9]{64}$/.test(input.checksumSha256) || !input.signature.trim() || !input.keyId.trim() || !input.storageReference.trim()) throw new BadRequestException("Release metadata is invalid.");
+    const key = await this.database.query(`SELECT key_id FROM product.signing_key_metadata WHERE key_id = $1 AND status = 'active' AND not_before <= now() AND not_after > now()`, [input.keyId]);
+    if (!key.rows.length) throw new ConflictException("An active signing key is required.");
+    const id = `release_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.releases (id,product_id,version,platform,checksum_sha256,signature,key_id,support_status,storage_reference) VALUES ($1,$2,$3,$4,$5,$6,$7,'supported',$8)`, [id, input.productId, input.version, input.platform, input.checksumSha256, input.signature, input.keyId, input.storageReference]);
+    return { id, productId: input.productId, version: input.version, registeredBy: actorId };
+  }
+
+  public async upsertBillingProjection(actorId: string, input: { accountOrganizationId: string; canonicalInvoiceId: string; sourceEventKey: string; status: string; currency: string; amountMinor: number; dueAt?: string; paymentInstruction?: string }) {
+    if (!input.accountOrganizationId || !input.canonicalInvoiceId || !input.sourceEventKey || !input.status || !/^[A-Z]{3}$/.test(input.currency) || !Number.isSafeInteger(input.amountMinor) || input.amountMinor < 0) throw new BadRequestException("Billing projection is invalid.");
+    const account = await this.database.query(`SELECT id FROM product.account_organizations WHERE id = $1`, [input.accountOrganizationId]);
+    if (!account.rows.length) throw new NotFoundException("Product account was not found.");
+    const dueAt = input.dueAt === undefined ? null : new Date(input.dueAt);
+    if (dueAt !== null && Number.isNaN(dueAt.valueOf())) throw new BadRequestException("Billing due date is invalid.");
+    const id = `billing_projection_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.billing_projections (id,account_organization_id,canonical_invoice_id,source_event_key,status,currency,amount_minor,due_at,payment_instruction) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT (account_organization_id,canonical_invoice_id) DO UPDATE SET status = EXCLUDED.status,currency = EXCLUDED.currency,amount_minor = EXCLUDED.amount_minor,due_at = EXCLUDED.due_at,payment_instruction = EXCLUDED.payment_instruction`, [id, input.accountOrganizationId, input.canonicalInvoiceId, input.sourceEventKey, input.status, input.currency, input.amountMinor, dueAt, input.paymentInstruction?.trim() || null]);
+    return { accountOrganizationId: input.accountOrganizationId, canonicalInvoiceId: input.canonicalInvoiceId, projectedBy: actorId };
+  }
+
+  public async upsertSupportProjection(actorId: string, input: { accountOrganizationId: string; productId: string; sourceEventKey: string; title: string; status: string; publicDetail: string }) {
+    if (!input.accountOrganizationId || !input.productId || !input.sourceEventKey || !input.title.trim() || !input.status.trim() || !input.publicDetail.trim()) throw new BadRequestException("Support projection is invalid.");
+    const account = await this.database.query(`SELECT id FROM product.account_organizations WHERE id = $1 AND product_id = $2`, [input.accountOrganizationId, input.productId]);
+    if (!account.rows.length) throw new NotFoundException("Product account was not found.");
+    const id = `support_projection_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.support_projections (id,account_organization_id,product_id,source_event_key,title,status,public_detail) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (account_organization_id,source_event_key) WHERE source_event_key IS NOT NULL DO UPDATE SET title = EXCLUDED.title,status = EXCLUDED.status,public_detail = EXCLUDED.public_detail`, [id, input.accountOrganizationId, input.productId, input.sourceEventKey, input.title.trim(), input.status.trim(), input.publicDetail.trim()]);
+    return { accountOrganizationId: input.accountOrganizationId, sourceEventKey: input.sourceEventKey, projectedBy: actorId };
+  }
+
   public async createAccountOrganization(actorId: string, input: { productId: string; displayName: string; ownerUserId: string }) {
     if (!input.displayName.trim() || !input.productId || !input.ownerUserId) throw new BadRequestException("Product, owner and display name are required.");
     const id = `account_${randomUUID()}`; const membershipId = `account_membership_${randomUUID()}`;
