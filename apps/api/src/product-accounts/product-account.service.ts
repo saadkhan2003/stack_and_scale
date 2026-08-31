@@ -29,6 +29,79 @@ export class ProductAccountService {
     return result.rows;
   }
 
+  public async listBranches(principal: ProductAccountPrincipal) {
+    return (await this.database.query(`SELECT id, name, status FROM product.account_branches WHERE account_organization_id = $1 ORDER BY created_at`, [principal.accountOrganizationId])).rows;
+  }
+
+  public async createBranch(principal: ProductAccountPrincipal, input: { name: string; idempotencyKey: string }) {
+    if (!input.name.trim() || !input.idempotencyKey) throw new BadRequestException("Branch name and idempotency key are required.");
+    return this.database.transaction(async (client) => {
+      const replay = await client.query(`SELECT detail FROM product.account_events WHERE account_organization_id = $1 AND idempotency_key = $2`, [principal.accountOrganizationId, input.idempotencyKey]);
+      if (replay.rows.length) return { ...(replay.rows[0] as { detail: object }).detail, replayed: true };
+      const id = `branch_${randomUUID()}`;
+      await client.query(`INSERT INTO product.account_branches (id,account_organization_id,name) VALUES ($1,$2,$3)`, [id, principal.accountOrganizationId, input.name.trim()]);
+      const detail = { branchId: id, name: input.name.trim() };
+      await client.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'branch_created',$4,$5)`, [randomUUID(), principal.accountOrganizationId, principal.actorId, input.idempotencyKey, detail]);
+      return { ...detail, replayed: false };
+    });
+  }
+
+  public async setMembership(principal: ProductAccountPrincipal, userId: string, input: { role: string; status: string; idempotencyKey: string }) {
+    const role = input.role as ProductAccountPrincipal["role"];
+    if (!input.idempotencyKey || !["owner", "admin", "member", "billing"].includes(role) || !["active", "suspended", "revoked"].includes(input.status)) throw new BadRequestException("Membership change is invalid.");
+    if (role === "owner" && principal.role !== "owner") throw new ForbiddenException("Only an owner can assign ownership.");
+    return this.database.transaction(async (client) => {
+      const replay = await client.query(`SELECT detail FROM product.account_events WHERE account_organization_id = $1 AND idempotency_key = $2`, [principal.accountOrganizationId, input.idempotencyKey]);
+      if (replay.rows.length) return { ...(replay.rows[0] as { detail: object }).detail, replayed: true };
+      const user = await client.query(`SELECT id FROM identity.users WHERE id = $1 AND status = 'active'`, [userId]);
+      if (!user.rows.length) throw new NotFoundException("User was not found.");
+      const current = await client.query(`SELECT id, role, status FROM product.account_memberships WHERE account_organization_id = $1 AND user_id = $2 FOR UPDATE`, [principal.accountOrganizationId, userId]);
+      const previous = current.rows[0] as { id: string; role: string; status: string } | undefined;
+      if (previous?.role === "owner" && (role !== "owner" || input.status !== "active")) {
+        const owners = await client.query(`SELECT count(*)::int AS count FROM product.account_memberships WHERE account_organization_id = $1 AND role = 'owner' AND status = 'active'`, [principal.accountOrganizationId]);
+        if (Number((owners.rows[0] as { count: number }).count) < 2) throw new ConflictException("An account must retain an active owner.");
+      }
+      const membershipId = previous?.id ?? `account_membership_${randomUUID()}`;
+      await client.query(`INSERT INTO product.account_memberships (id,account_organization_id,user_id,role,status) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (account_organization_id,user_id) DO UPDATE SET role = EXCLUDED.role,status = EXCLUDED.status,updated_at = now()`, [membershipId, principal.accountOrganizationId, userId, role, input.status]);
+      const detail = { membershipId, userId, role, status: input.status };
+      await client.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'membership_changed',$4,$5)`, [randomUUID(), principal.accountOrganizationId, principal.actorId, input.idempotencyKey, detail]);
+      return { ...detail, replayed: false };
+    });
+  }
+
+  public async setBranchMember(principal: ProductAccountPrincipal, branchId: string, userId: string, input: { present: boolean; idempotencyKey: string }) {
+    if (!input.idempotencyKey) throw new BadRequestException("An idempotency key is required.");
+    return this.database.transaction(async (client) => {
+      const branch = await client.query(`SELECT id FROM product.account_branches WHERE id = $1 AND account_organization_id = $2 AND status = 'active'`, [branchId, principal.accountOrganizationId]);
+      if (!branch.rows.length) throw new NotFoundException("Branch was not found.");
+      const member = await client.query(`SELECT id FROM product.account_memberships WHERE account_organization_id = $1 AND user_id = $2 AND status = 'active'`, [principal.accountOrganizationId, userId]);
+      if (!member.rows.length) throw new NotFoundException("Active account member was not found.");
+      const eventKey = `${input.idempotencyKey}:${branchId}`;
+      const replay = await client.query(`SELECT detail FROM product.account_events WHERE account_organization_id = $1 AND idempotency_key = $2`, [principal.accountOrganizationId, eventKey]);
+      if (replay.rows.length) return { ...(replay.rows[0] as { detail: object }).detail, replayed: true };
+      if (input.present) await client.query(`INSERT INTO product.branch_memberships (branch_id,user_id,account_membership_id) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`, [branchId, userId, (member.rows[0] as { id: string }).id]);
+      else await client.query(`DELETE FROM product.branch_memberships WHERE branch_id = $1 AND user_id = $2`, [branchId, userId]);
+      const detail = { branchId, userId, present: input.present };
+      await client.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'branch_membership_changed',$4,$5)`, [randomUUID(), principal.accountOrganizationId, principal.actorId, eventKey, detail]);
+      return { ...detail, replayed: false };
+    });
+  }
+
+  public async setEntitlementOverride(principal: ProductAccountPrincipal, input: { key: string; value: unknown; effectiveUntil?: string; idempotencyKey: string }) {
+    if (!/^[a-z][a-z0-9_.-]{0,80}$/.test(input.key) || !input.idempotencyKey) throw new BadRequestException("Entitlement override is invalid.");
+    const until = input.effectiveUntil === undefined ? null : new Date(input.effectiveUntil);
+    if (until !== null && (Number.isNaN(until.valueOf()) || until <= new Date())) throw new BadRequestException("Override expiry must be in the future.");
+    return this.database.transaction(async (client) => {
+      const replay = await client.query(`SELECT detail FROM product.account_events WHERE account_organization_id = $1 AND idempotency_key = $2`, [principal.accountOrganizationId, input.idempotencyKey]);
+      if (replay.rows.length) return { ...(replay.rows[0] as { detail: object }).detail, replayed: true };
+      const id = `entitlement_override_${randomUUID()}`;
+      await client.query(`INSERT INTO product.entitlement_overrides (id,account_organization_id,key,value,effective_from,effective_until,actor_id) VALUES ($1,$2,$3,$4,now(),$5,$6)`, [id, principal.accountOrganizationId, input.key, input.value, until, principal.actorId]);
+      const detail = { overrideId: id, key: input.key, effectiveUntil: until?.toISOString() ?? null };
+      await client.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'entitlement_override_issued',$4,$5)`, [randomUUID(), principal.accountOrganizationId, principal.actorId, input.idempotencyKey, detail]);
+      return { ...detail, replayed: false };
+    });
+  }
+
   public async transitionSubscription(principal: ProductAccountPrincipal, subscriptionId: string, input: { status: string; reason: string; idempotencyKey: string; effectiveAt?: string; overrideUntil?: string }) {
     if (!input.idempotencyKey || !input.reason || !legalTransitions[input.status]) throw new BadRequestException("A valid transition is required.");
     return this.database.transaction(async (client) => {
@@ -59,6 +132,22 @@ export class ProductAccountService {
     const subscription = result.rows[0] as { id: string; status: string; entitlements: Record<string, unknown>; override_until: Date | null } | undefined;
     const overrides = await this.database.query(`SELECT key, value FROM product.entitlement_overrides WHERE account_organization_id = $1 AND effective_from <= $2 AND (effective_until IS NULL OR effective_until > $2) ORDER BY created_at`, [principal.accountOrganizationId, at]);
     const values: Record<string, unknown> = { ...(subscription?.entitlements ?? {}) };
+    if (subscription !== undefined) {
+      const addons = await this.database.query(
+        `SELECT DISTINCT addon.entitlements, addon.code
+           FROM product.subscriptions subscription
+           JOIN product.plan_version_addons included ON included.plan_version_id = subscription.plan_version_id
+           JOIN product.addons addon ON addon.id = included.addon_id AND addon.status = 'active'
+          WHERE subscription.id = $1
+         UNION
+         SELECT DISTINCT addon.entitlements, addon.code
+           FROM product.subscription_addons assignment
+           JOIN product.addons addon ON addon.id = assignment.addon_id AND addon.status = 'active'
+          WHERE assignment.subscription_id = $1 AND assignment.effective_from <= $2 AND (assignment.effective_until IS NULL OR assignment.effective_until > $2)
+         ORDER BY code`, [subscription.id, at],
+      );
+      for (const row of addons.rows as Array<{ entitlements: Record<string, unknown> }>) Object.assign(values, row.entitlements);
+    }
     for (const row of overrides.rows as Array<{ key: string; value: unknown }>) values[row.key] = row.value;
     const latest = await this.database.query(`SELECT COALESCE(MAX(sequence), 0) AS sequence FROM product.entitlement_snapshots WHERE account_organization_id = $1 AND subject_id = $2`, [principal.accountOrganizationId, subjectId]);
     const sequence = Number((latest.rows[0] as { sequence: string }).sequence) + 1;
@@ -121,6 +210,57 @@ export class ProductAccountService {
     const id = `product_${randomUUID()}`;
     await this.database.query(`INSERT INTO product.catalog_products (id,code,name,status) VALUES ($1,$2,$3,'draft')`, [id, input.code, input.name.trim()]);
     return { id, code: input.code, createdBy: actorId };
+  }
+
+  public async setCatalogProductStatus(actorId: string, productId: string, status: string) {
+    if (!["draft", "active", "retired"].includes(status)) throw new BadRequestException("Product status is invalid.");
+    const changed = await this.database.query(`UPDATE product.catalog_products SET status = $1, updated_at = now() WHERE id = $2 RETURNING id, code, status`, [status, productId]);
+    if (!changed.rows.length) throw new NotFoundException("Product was not found.");
+    return { ...(changed.rows[0] as object), changedBy: actorId };
+  }
+
+  public async createEdition(actorId: string, input: { productId: string; code: string; name: string }) {
+    if (!input.productId || !/^[a-z0-9][a-z0-9_-]{1,62}$/.test(input.code) || !input.name.trim()) throw new BadRequestException("Edition is invalid.");
+    const product = await this.database.query(`SELECT id FROM product.catalog_products WHERE id = $1 AND status != 'retired'`, [input.productId]);
+    if (!product.rows.length) throw new NotFoundException("Product was not found.");
+    const id = `edition_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.editions (id,product_id,code,name) VALUES ($1,$2,$3,$4)`, [id, input.productId, input.code, input.name.trim()]);
+    return { id, productId: input.productId, code: input.code, createdBy: actorId };
+  }
+
+  public async createPlan(actorId: string, input: { editionId: string; code: string; name: string }) {
+    if (!input.editionId || !/^[a-z0-9][a-z0-9_-]{1,62}$/.test(input.code) || !input.name.trim()) throw new BadRequestException("Plan is invalid.");
+    const edition = await this.database.query(`SELECT id FROM product.editions WHERE id = $1 AND status = 'active'`, [input.editionId]);
+    if (!edition.rows.length) throw new NotFoundException("Edition was not found.");
+    const id = `plan_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.plans (id,edition_id,code,name,status) VALUES ($1,$2,$3,$4,'draft')`, [id, input.editionId, input.code, input.name.trim()]);
+    return { id, editionId: input.editionId, code: input.code, createdBy: actorId };
+  }
+
+  public async createPlanVersion(actorId: string, input: { planId: string; version: number; effectiveFrom: string; priceCurrency: string; priceMinor: number; entitlements: unknown }) {
+    const effectiveFrom = new Date(input.effectiveFrom);
+    if (!Number.isSafeInteger(input.version) || input.version < 1 || Number.isNaN(effectiveFrom.valueOf()) || !/^[A-Z]{3}$/.test(input.priceCurrency) || !Number.isSafeInteger(input.priceMinor) || input.priceMinor < 0 || typeof input.entitlements !== "object" || input.entitlements === null || Array.isArray(input.entitlements)) throw new BadRequestException("Plan version is invalid.");
+    const plan = await this.database.query(`SELECT id FROM product.plans WHERE id = $1 AND status != 'retired'`, [input.planId]);
+    if (!plan.rows.length) throw new NotFoundException("Plan was not found.");
+    const id = `plan_version_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.plan_versions (id,plan_id,version,effective_from,price_currency,price_minor,entitlements) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [id, input.planId, input.version, effectiveFrom, input.priceCurrency, input.priceMinor, input.entitlements]);
+    return { id, planId: input.planId, version: input.version, createdBy: actorId };
+  }
+
+  public async createAddon(actorId: string, input: { productId: string; code: string; name: string; entitlements: unknown }) {
+    if (!input.productId || !/^[a-z0-9][a-z0-9_-]{1,62}$/.test(input.code) || !input.name.trim() || typeof input.entitlements !== "object" || input.entitlements === null || Array.isArray(input.entitlements)) throw new BadRequestException("Add-on is invalid.");
+    const product = await this.database.query(`SELECT id FROM product.catalog_products WHERE id = $1 AND status != 'retired'`, [input.productId]);
+    if (!product.rows.length) throw new NotFoundException("Product was not found.");
+    const id = `addon_${randomUUID()}`;
+    await this.database.query(`INSERT INTO product.addons (id,product_id,code,name,entitlements) VALUES ($1,$2,$3,$4,$5)`, [id, input.productId, input.code, input.name.trim(), input.entitlements]);
+    return { id, productId: input.productId, code: input.code, createdBy: actorId };
+  }
+
+  public async assignPlanAddon(actorId: string, planVersionId: string, addonId: string) {
+    const check = await this.database.query(`SELECT version.id FROM product.plan_versions version JOIN product.plans plan ON plan.id = version.plan_id JOIN product.editions edition ON edition.id = plan.edition_id JOIN product.addons addon ON addon.id = $2 AND addon.product_id = edition.product_id WHERE version.id = $1`, [planVersionId, addonId]);
+    if (!check.rows.length) throw new NotFoundException("Plan version or compatible add-on was not found.");
+    await this.database.query(`INSERT INTO product.plan_version_addons (plan_version_id,addon_id) VALUES ($1,$2) ON CONFLICT DO NOTHING`, [planVersionId, addonId]);
+    return { planVersionId, addonId, assignedBy: actorId };
   }
 
   public async createAccountOrganization(actorId: string, input: { productId: string; displayName: string; ownerUserId: string }) {

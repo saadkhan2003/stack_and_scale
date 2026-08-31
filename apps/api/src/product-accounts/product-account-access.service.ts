@@ -2,6 +2,7 @@ import { ForbiddenException, Inject, Injectable, UnauthorizedException } from "@
 import type { FastifyRequest } from "fastify";
 
 import { ActorResolverService } from "../auth/actor-resolver.service.js";
+import { parseCookies, SESSION_COOKIE } from "../auth/oidc-flow.service.js";
 import { PlatformDatabaseService } from "../platform-database.service.js";
 
 export type ProductAccountPrincipal = {
@@ -39,5 +40,20 @@ export class ProductAccountAccessService {
     if (principal.role !== "owner" && principal.role !== "admin") {
       throw new ForbiddenException("Administrator access is required.");
     }
+  }
+
+  /** Financial, recovery and download actions require a live MFA-backed session. */
+  public async requireSensitiveSession(request: FastifyRequest, principal: ProductAccountPrincipal): Promise<void> {
+    if (process.env["NODE_ENV"] !== "production" && request.headers["x-actor-id"] === principal.actorId) return;
+    const cookieHeader = request.headers.cookie;
+    const cookie = Array.isArray(cookieHeader) ? undefined : cookieHeader;
+    const sessionId = parseCookies(cookie)[SESSION_COOKIE];
+    if (sessionId === undefined) throw new ForbiddenException("A fresh MFA-backed session is required.");
+    const result = await this.database.query(
+      `SELECT 1 FROM identity.sessions
+        WHERE id = $1 AND user_id = $2 AND status = 'active' AND mfa_satisfied = true AND expires_at > now()`,
+      [sessionId, principal.actorId],
+    );
+    if (!result.rows.length) throw new ForbiddenException("A fresh MFA-backed session is required.");
   }
 }

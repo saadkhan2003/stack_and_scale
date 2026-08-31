@@ -19,6 +19,8 @@ describe("product account control plane", () => {
     await pool.query(`INSERT INTO product.editions (id,product_id,code,name) VALUES ('phase16-edition',$1,'standard','Standard') ON CONFLICT DO NOTHING`, [PRODUCT]);
     await pool.query(`INSERT INTO product.plans (id,edition_id,code,name,status) VALUES ('phase16-plan','phase16-edition','core','Core','active') ON CONFLICT DO NOTHING`);
     await pool.query(`INSERT INTO product.plan_versions (id,plan_id,version,effective_from,price_currency,price_minor,entitlements) VALUES ('phase16-plan-v1','phase16-plan',1,'2020-01-01','USD',1000,'{"reports":true}') ON CONFLICT DO NOTHING`);
+    await pool.query(`INSERT INTO product.addons (id,product_id,code,name,entitlements) VALUES ('phase16-addon',$1,'export','Export','{"exports":true}') ON CONFLICT DO NOTHING`, [PRODUCT]);
+    await pool.query(`INSERT INTO product.plan_version_addons (plan_version_id,addon_id) VALUES ('phase16-plan-v1','phase16-addon') ON CONFLICT DO NOTHING`);
     await pool.query(`INSERT INTO product.account_organizations (id,product_id,display_name,status,account_enabled,license_enforcement_enabled,canonical_organization_id) VALUES ($1,$3,'Account','active',true,true,'phase16-org'),($2,$3,'Foreign','active',true,true,'phase16-org') ON CONFLICT (id) DO UPDATE SET account_enabled = true,status = 'active'`, [ACCOUNT, FOREIGN, PRODUCT]);
     await pool.query(`INSERT INTO product.account_memberships (id,account_organization_id,user_id,role,status) VALUES ('phase16-member',$1,$3,'admin','active'),('phase16-foreign-member',$2,$4,'member','active') ON CONFLICT DO NOTHING`, [ACCOUNT, FOREIGN, USER, FOREIGN_USER]);
     await pool.query(`INSERT INTO product.subscriptions (id,account_organization_id,plan_version_id,status,effective_at) VALUES ($1,$2,'phase16-plan-v1','active','2020-01-01') ON CONFLICT (id) DO UPDATE SET status = 'active', effective_at = EXCLUDED.effective_at, override_until = NULL`, [SUBSCRIPTION, ACCOUNT]);
@@ -45,8 +47,25 @@ describe("product account control plane", () => {
   });
   it("issues increasing bounded entitlement snapshots and rejects stale leases", async () => {
     const snapshot = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlements/${USER}`);
-    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "past_due" });
+    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "past_due", entitlements: { reports: true, exports: true } });
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(201);
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(409);
+  });
+  it("records idempotent branch and membership workflows without cross-account writes", async () => {
+    const branch = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches`, USER, "POST", { name: "Karachi", idempotencyKey: "phase16-branch-1" });
+    expect(branch.statusCode).toBe(201);
+    const branchId = (branch.json() as { branchId: string }).branchId;
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches`, USER, "POST", { name: "Karachi", idempotencyKey: "phase16-branch-1" })).json()).toMatchObject({ branchId, replayed: true });
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/branches/${branchId}/members/${USER}`, USER, "POST", { present: true, idempotencyKey: "phase16-branch-member-1" })).statusCode).toBe(201);
+    const foreign = await request(`/api/v1/product-accounts/organizations/${FOREIGN}/branches/${branchId}/members/${FOREIGN_USER}`, FOREIGN_USER, "POST", { present: true, idempotencyKey: "phase16-foreign-write" });
+    expect(foreign.statusCode).toBe(403);
+  });
+  it("enforces entitlement override expiry and preserves an active owner", async () => {
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlement-overrides`, USER, "POST", { key: "priority", value: true, effectiveUntil: "2000-01-01T00:00:00.000Z", idempotencyKey: "phase16-expired-override" })).statusCode).toBe(400);
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlement-overrides`, USER, "POST", { key: "priority", value: true, idempotencyKey: "phase16-override" })).statusCode).toBe(201);
+    await pool.query(`UPDATE product.account_memberships SET role = 'owner' WHERE id = 'phase16-member'`);
+    const removeLastOwner = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/members/${USER}`, USER, "POST", { role: "admin", status: "active", idempotencyKey: "phase16-last-owner" });
+    expect(removeLastOwner.statusCode).toBe(409);
+    await pool.query(`UPDATE product.account_memberships SET role = 'admin' WHERE id = 'phase16-member'`);
   });
 });
