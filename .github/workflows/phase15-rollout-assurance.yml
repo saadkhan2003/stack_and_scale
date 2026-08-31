@@ -76,7 +76,29 @@ jobs:
               ;;
             capture-capacity)
               output="docs/evidence/phase-15/capacity-$(date -u +%Y%m%dT%H%M%SZ).txt"
-              bash scripts/measure-capacity.sh "$output"
+              mkdir -p "$(dirname "$output")"
+              {
+                echo "captured_at=$(date -u +%FT%TZ)"
+                echo "image_tag=$IMAGE_TAG"
+                echo
+                echo "== docker compose services =="
+                "${compose[@]}" ps 2>&1 || true
+                echo
+                echo "== docker resource usage =="
+                docker stats --no-stream 2>&1 || true
+                echo
+                echo "== host filesystem =="
+                df -h 2>&1 || true
+                echo
+                echo "== database connections and size =="
+                docker exec stack-and-scale-production-postgres-1 \
+                  sh -c 'exec psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c
+                    "SELECT count(*) AS connections FROM pg_stat_activity;
+                     SELECT pg_size_pretty(pg_database_size(current_database())) AS database_size;"' 2>&1 || true
+                echo
+                echo "== docker disk usage =="
+                docker system df -v 2>&1 || true
+              } > "$output"
               test -s "$output"
               echo "Capacity snapshot recorded on the protected host."
               ;;
