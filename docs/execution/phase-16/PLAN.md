@@ -74,3 +74,10 @@ Each step records non-sensitive evidence in
 `docs/evidence/phase-16/<step-id>/`. Merge only in the listed order. A later
 step may consume a frozen prior contract but may not alter it; amendments are a
 new serialized `16.0` revision with product and security review.
+
+## Completion record
+
+Phase 16 was delivered and production-verified on 2026-08-31. The frozen
+contract evidence is in `16.0-contracts`; deployment, isolated browser QA,
+account-flag rollback/recovery and post-release capacity evidence are in
+`16.8-assurance-capacity`.
