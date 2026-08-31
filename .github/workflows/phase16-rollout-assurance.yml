@@ -1,0 +1,65 @@
+name: Phase 16 rollout assurance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        required: true
+        type: choice
+        options: [seed-qa, disable-account, enable-account]
+
+permissions:
+  contents: read
+
+jobs:
+  assurance:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      ASSURANCE_ACTION: ${{ inputs.action }}
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ env.DEPLOY_SSH_PRIVATE_KEY }}
+      - run: printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+      - name: Run isolated product-account operation
+        env:
+          REMOTE: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+        run: |
+          ssh "$REMOTE" bash -s -- "$ASSURANCE_ACTION" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          action="$1"
+          cd /opt/stack-and-scale
+          export IMAGE_TAG="$(sed -n 's/.*"imageTag":"\([a-f0-9]*\)".*/\1/p' deployments/current.json)"
+          export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
+          compose=(docker compose --env-file .env.production -f infra/compose.production.yaml)
+          case "$action" in
+            seed-qa)
+              "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
+          BEGIN;
+          INSERT INTO product.catalog_products (id,code,name,status) VALUES ('phase16-qa-product','phase16-qa','Phase 16 QA product','active') ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.editions (id,product_id,code,name) VALUES ('phase16-qa-edition','phase16-qa-product','standard','Standard') ON CONFLICT (id) DO NOTHING;
+          INSERT INTO product.plans (id,edition_id,code,name,status) VALUES ('phase16-qa-plan','phase16-qa-edition','core','Core','active') ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.plan_versions (id,plan_id,version,effective_from,price_currency,price_minor,entitlements) VALUES ('phase16-qa-plan-v1','phase16-qa-plan',1,'2020-01-01','USD',0,'{"phase16_qa":true}') ON CONFLICT (id) DO NOTHING;
+          INSERT INTO product.account_organizations (id,product_id,display_name,status,account_enabled,downloads_enabled,license_enforcement_enabled) VALUES ('phase16-qa-account','phase16-qa-product','Phase 16 QA account','active',true,false,true) ON CONFLICT (id) DO UPDATE SET status = 'active',account_enabled = true;
+          INSERT INTO product.account_memberships (id,account_organization_id,user_id,role,status) SELECT 'phase16-qa-membership','phase16-qa-account',user_id,'owner','active' FROM portal.client_memberships WHERE id = 'phase15-qa-admin-membership' ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.subscriptions (id,account_organization_id,plan_version_id,status,effective_at) VALUES ('phase16-qa-subscription','phase16-qa-account','phase16-qa-plan-v1','active',now()) ON CONFLICT (id) DO UPDATE SET status = 'active',effective_at = now();
+          INSERT INTO product.licenses (id,account_organization_id,product_id,status,seat_limit) VALUES ('phase16-qa-license','phase16-qa-account','phase16-qa-product','active',1) ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.installations (id,license_id,account_organization_id,installation_key_hash,status,last_sequence) VALUES ('phase16-qa-installation','phase16-qa-license','phase16-qa-account',repeat('a',64),'active',0) ON CONFLICT (id) DO UPDATE SET status = 'active',last_sequence = 0;
+          COMMIT;
+          SQL
+              ;;
+            disable-account|enable-account)
+              if [ "$action" = disable-account ]; then enabled=false; else enabled=true; fi
+              "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<SQL
+          UPDATE product.account_organizations SET account_enabled = $enabled, updated_at = now() WHERE id = 'phase16-qa-account';
+          SQL
+              ;;
+            *) exit 64 ;;
+          esac
+          REMOTE_SCRIPT
