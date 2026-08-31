@@ -10,5 +10,6 @@ import { CrmService } from "./crm.service.js";
   imports: [AuthModule, PlatformDatabaseModule],
   controllers: [CrmController, CrmSummaryController],
   providers: [TenantAccessService, CrmAccessService, CrmService],
+  exports: [CrmAccessService],
 })
 export class CrmModule {}
