@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { randomUUID, createHash } from "node:crypto";
+import { randomUUID, createHash, createPrivateKey, sign } from "node:crypto";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import type { ProductAccountPrincipal } from "./product-account-access.service.js";
@@ -13,6 +13,16 @@ const legalTransitions: Record<string, readonly string[]> = {
 @Injectable()
 export class ProductAccountService {
   public constructor(@Inject(PlatformDatabaseService) private readonly database: PlatformDatabaseService) {}
+
+  private snapshotSigningKey() {
+    const encoded = process.env["PRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64"];
+    if (!encoded?.trim()) throw new ConflictException("Entitlement signing is not configured.");
+    try {
+      return createPrivateKey({ key: Buffer.from(encoded, "base64").toString("utf8"), format: "pem", type: "pkcs8" });
+    } catch {
+      throw new ConflictException("Entitlement signing key is invalid.");
+    }
+  }
 
   public async home(principal: ProductAccountPrincipal) {
     const [account, subscriptions, licenses, releases] = await Promise.all([
@@ -153,8 +163,10 @@ export class ProductAccountService {
     const sequence = Number((latest.rows[0] as { sequence: string }).sequence) + 1;
     const issuedAt = new Date(); const expiresAt = new Date(issuedAt.valueOf() + 15 * 60_000);
     const payload = { contractVersion: "0.1", accountOrganizationId: principal.accountOrganizationId, subjectId, sequence, subscriptionStatus: subscription?.status ?? "inactive", entitlements: values, issuedAt: issuedAt.toISOString(), expiresAt: expiresAt.toISOString() };
-    await this.database.query(`INSERT INTO product.entitlement_snapshots (id,account_organization_id,subject_id,sequence,contract_version,payload,key_id,issued_at,expires_at) VALUES ($1,$2,$3,$4,'0.1',$5,'unsigned-metadata',$6,$7)`, [randomUUID(), principal.accountOrganizationId, subjectId, sequence, payload, issuedAt, expiresAt]);
-    return payload;
+    const keyId = process.env["PRODUCT_ENTITLEMENT_SIGNING_KEY_ID"]?.trim() || "account-snapshot-v1";
+    const signature = sign(null, Buffer.from(JSON.stringify(payload)), this.snapshotSigningKey()).toString("base64url");
+    await this.database.query(`INSERT INTO product.entitlement_snapshots (id,account_organization_id,subject_id,sequence,contract_version,payload,key_id,signature,issued_at,expires_at) VALUES ($1,$2,$3,$4,'0.1',$5,$6,$7,$8,$9)`, [randomUUID(), principal.accountOrganizationId, subjectId, sequence, payload, keyId, signature, issuedAt, expiresAt]);
+    return { ...payload, keyId, signatureAlgorithm: "ed25519", signature };
   }
 
   public async issueLease(principal: ProductAccountPrincipal, installationId: string, sequence: number) {

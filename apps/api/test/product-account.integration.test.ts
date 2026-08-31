@@ -3,11 +3,15 @@ import { FastifyAdapter } from "@nestjs/platform-fastify";
 import type { INestApplication } from "@nestjs/common";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { generateKeyPairSync, verify } from "node:crypto";
 import { createPostgresPoolFromEnv, runMigrations, type DatabasePool } from "@stack-and-scale/database";
 import { AppModule } from "../src/app.module.js";
 
 const ACCOUNT = "phase16-test-account"; const FOREIGN = "phase16-foreign-account"; const PRODUCT = "phase16-test-product";
 const USER = "phase16-test-user"; const FOREIGN_USER = "phase16-foreign-user"; const SUBSCRIPTION = "phase16-test-subscription"; const INSTALLATION = "phase16-test-installation";
+const snapshotKeyPair = generateKeyPairSync("ed25519");
+process.env["PRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64"] = Buffer.from(snapshotKeyPair.privateKey.export({ format: "pem", type: "pkcs8" }).toString()).toString("base64");
+process.env["PRODUCT_ENTITLEMENT_SIGNING_KEY_ID"] = "phase16-test-signing-key";
 
 describe("product account control plane", () => {
   let app: INestApplication; let fastify: FastifyInstance; let pool: DatabasePool;
@@ -47,7 +51,11 @@ describe("product account control plane", () => {
   });
   it("issues increasing bounded entitlement snapshots and rejects stale leases", async () => {
     const snapshot = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlements/${USER}`);
-    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "past_due", entitlements: { reports: true, exports: true } });
+    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "past_due", keyId: "phase16-test-signing-key", signatureAlgorithm: "ed25519", entitlements: { reports: true, exports: true } });
+    expect(snapshot.body).toContain('"signature":"');
+    const snapshotPayload = JSON.parse(snapshot.body) as Record<string, unknown>;
+    const signedPayload = { contractVersion: snapshotPayload["contractVersion"], accountOrganizationId: snapshotPayload["accountOrganizationId"], subjectId: snapshotPayload["subjectId"], sequence: snapshotPayload["sequence"], subscriptionStatus: snapshotPayload["subscriptionStatus"], entitlements: snapshotPayload["entitlements"], issuedAt: snapshotPayload["issuedAt"], expiresAt: snapshotPayload["expiresAt"] };
+    expect(verify(null, Buffer.from(JSON.stringify(signedPayload)), snapshotKeyPair.publicKey, Buffer.from(String(snapshotPayload["signature"]), "base64url"))).toBe(true);
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(201);
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(409);
   });
