@@ -10,10 +10,12 @@ and support projections, release metadata/download audit, and per-user
 notification preferences. Product-account access is explicit, active
 membership only, and organization-scoped.
 
-The immutable production delivery for commit `f10197f872f2193098c9228b088c061e652c09ba`
-completed successfully in run `33425813330` on 2026-08-31. It ran the database
-migrations, full API test suite, web build, image builds, critical/high image
-scans, protected-environment promotion, and deployment health checks.
+The final immutable production delivery for runtime commit
+`55056c8` completed successfully in run `33428884948` on 2026-09-01. It ran
+the database migrations, full API test suite, web build, image builds,
+critical/high image scans, protected-environment promotion, and deployment
+health checks. The subsequent test-and-evidence closeout is delivered by the
+same protected workflow before Phase 16 is marked complete.
 
 ## Isolated production QA
 
@@ -27,11 +29,11 @@ All production mutations used the protected
   `phase16-qa-account`, including its active subscription, active one-seat
   license and notification preferences. No releases or support records were
   exposed because none were seeded.
-- Run `33426914522` disabled only that account. A browser refresh returned the
+- Run `33429986002` disabled only that account. A browser refresh returned the
   generic product-account authorization boundary. The staff lead workspace
   continued to render, showing that the account flag did not disable staff
   routes.
-- Run `33426967880` re-enabled only that account. The same authenticated browser
+- Run `33430048423` re-enabled only that account. The same authenticated browser
   session immediately recovered its product-account view.
 
 The browser QA did not create customer records, publish a release, issue a
@@ -40,7 +42,7 @@ credential.
 
 ## Capacity and rollback evidence
 
-- Run `33427015007` completed the protected production capacity capture after
+- Run `33430841242` completed the protected production capacity capture after
   the Phase 16 release. Raw host measurements remain on the protected host;
   they are intentionally not copied to source control.
 - The account-flag disable/enable drill above is the controlled rollback and
@@ -49,8 +51,12 @@ credential.
 ## Automated verification
 
 - PostgreSQL-backed product-account integration tests cover organization
-  isolation, subscription idempotency and invalid transitions, entitlement
-  snapshots, and stale installation lease replay rejection.
+  isolation, every documented subscription transition, idempotency, signed
+  entitlement snapshots, signing-key revocation, stale installation lease
+  replay rejection, bounded billing/support projections, notification
+  preferences, and release-download auditing.
+- The focused suite passed 7/7 tests locally during final verification; API
+  typecheck/lint and web typecheck/lint passed, and the web suite passed 31/31.
 - The immutable delivery run completed the repository API test suite and web
   production build before promotion.
 - All four container images passed the delivery workflow's critical/high

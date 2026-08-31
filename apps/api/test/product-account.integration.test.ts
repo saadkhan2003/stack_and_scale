@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { generateKeyPairSync, verify } from "node:crypto";
 import { createPostgresPoolFromEnv, runMigrations, type DatabasePool } from "@stack-and-scale/database";
 import { AppModule } from "../src/app.module.js";
+import { ProductAccountService } from "../src/product-accounts/product-account.service.js";
 
 const ACCOUNT = "phase16-test-account"; const FOREIGN = "phase16-foreign-account"; const PRODUCT = "phase16-test-product";
 const USER = "phase16-test-user"; const FOREIGN_USER = "phase16-foreign-user"; const SUBSCRIPTION = "phase16-test-subscription"; const INSTALLATION = "phase16-test-installation";
@@ -35,6 +36,9 @@ describe("product account control plane", () => {
     await pool.query(`DELETE FROM product.subscription_events WHERE subscription_id LIKE 'phase16-transition-%' OR subscription_id = 'phase16-illegal-state'`);
     await pool.query(`DELETE FROM product.subscriptions WHERE id LIKE 'phase16-transition-%' OR id = 'phase16-illegal-state'`);
     await pool.query(`DELETE FROM product.entitlement_snapshots WHERE account_organization_id = $1`, [ACCOUNT]);
+    await pool.query(`DELETE FROM product.download_audit_events WHERE release_id IN (SELECT id FROM product.releases WHERE product_id = $1 AND version = '1.0.0' AND platform = 'linux-amd64')`, [PRODUCT]);
+    await pool.query(`DELETE FROM product.releases WHERE product_id = $1 AND version = '1.0.0' AND platform = 'linux-amd64'`, [PRODUCT]);
+    await pool.query(`DELETE FROM product.signing_key_metadata WHERE key_id = 'phase16-release-key'`);
     const module = await Test.createTestingModule({ imports: [AppModule] }).compile(); app = module.createNestApplication(new FastifyAdapter()); await app.init(); fastify = (app.getHttpAdapter() as FastifyAdapter).getInstance();
   });
   afterAll(async () => { await app?.close(); await pool?.end(); });
@@ -102,5 +106,28 @@ describe("product account control plane", () => {
     const removeLastOwner = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/members/${USER}`, USER, "POST", { role: "admin", status: "active", idempotencyKey: "phase16-last-owner" });
     expect(removeLastOwner.statusCode).toBe(409);
     await pool.query(`UPDATE product.account_memberships SET role = 'admin' WHERE id = 'phase16-member'`);
+  });
+  it("projects billing and support safely, and audits only authorized signed releases", async () => {
+    const accounts = app.get(ProductAccountService);
+    await accounts.setAccountFlags(USER, ACCOUNT, { billingEnabled: true, downloadsEnabled: true, licenseEnforcementEnabled: true });
+    await accounts.upsertBillingProjection(USER, { accountOrganizationId: ACCOUNT, canonicalInvoiceId: "phase16-invoice", sourceEventKey: "phase16-invoice-event", status: "open", currency: "USD", amountMinor: 1200, paymentInstruction: "Pay by approved bank transfer." });
+    await accounts.upsertBillingProjection(USER, { accountOrganizationId: ACCOUNT, canonicalInvoiceId: "phase16-invoice", sourceEventKey: "phase16-invoice-event", status: "open", currency: "USD", amountMinor: 1200, paymentInstruction: "Pay by approved bank transfer." });
+    await accounts.upsertSupportProjection(USER, { accountOrganizationId: ACCOUNT, productId: PRODUCT, sourceEventKey: "phase16-support-event", title: "QA service status", status: "open", publicDetail: "Public status only." });
+    await accounts.upsertSupportProjection(USER, { accountOrganizationId: ACCOUNT, productId: PRODUCT, sourceEventKey: "phase16-support-event", title: "QA service status", status: "open", publicDetail: "Public status only." });
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/billing`)).json()).toMatchObject({ invoices: [expect.objectContaining({ canonical_invoice_id: "phase16-invoice", amount_minor: 1200 })] });
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/support`)).json()).toMatchObject({ support: [expect.objectContaining({ title: "QA service status", public_detail: "Public status only." })] });
+    expect(Number((await pool.query(`SELECT count(*)::int AS count FROM product.billing_projections WHERE account_organization_id = $1 AND canonical_invoice_id = 'phase16-invoice'`, [ACCOUNT])).rows[0]?.["count"])).toBe(1);
+    expect(Number((await pool.query(`SELECT count(*)::int AS count FROM product.support_projections WHERE account_organization_id = $1 AND source_event_key = 'phase16-support-event'`, [ACCOUNT])).rows[0]?.["count"])).toBe(1);
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/notification-preferences`)).json()).toMatchObject({ preferences: expect.arrayContaining([expect.objectContaining({ category: "security", enabled: true })]) });
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/notification-preferences/billing`, USER, "POST", { enabled: false })).json()).toMatchObject({ category: "billing", enabled: false });
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/notification-preferences/security`, USER, "POST", { enabled: false })).statusCode).toBe(400);
+    await accounts.registerSigningKey(USER, { keyId: "phase16-release-key", algorithm: "Ed25519", publicKey: "public-test-key", notBefore: "2020-01-01T00:00:00.000Z", notAfter: "2099-01-01T00:00:00.000Z" });
+    const release = await accounts.registerRelease(USER, { productId: PRODUCT, version: "1.0.0", platform: "linux-amd64", checksumSha256: "b".repeat(64), signature: "test-signature", keyId: "phase16-release-key", storageReference: "private://phase16/1.0.0/linux-amd64" });
+    const download = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/releases/${release.id}/download`, USER, "POST", {});
+    expect(download.statusCode).toBe(201);
+    expect(download.json()).toMatchObject({ release: { id: release.id, checksum_sha256: "b".repeat(64) }, capability: null });
+    expect(Number((await pool.query(`SELECT count(*)::int AS count FROM product.download_audit_events WHERE release_id = $1`, [release.id])).rows[0]?.["count"])).toBe(1);
+    await accounts.setSigningKeyStatus(USER, "phase16-release-key", "revoked");
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/releases/${release.id}/download`, USER, "POST", {})).statusCode).toBe(404);
   });
 });
