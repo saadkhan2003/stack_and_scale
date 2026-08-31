@@ -23,6 +23,7 @@ describe("product account control plane", () => {
     await pool.query(`INSERT INTO product.editions (id,product_id,code,name) VALUES ('phase16-edition',$1,'standard','Standard') ON CONFLICT DO NOTHING`, [PRODUCT]);
     await pool.query(`INSERT INTO product.plans (id,edition_id,code,name,status) VALUES ('phase16-plan','phase16-edition','core','Core','active') ON CONFLICT DO NOTHING`);
     await pool.query(`INSERT INTO product.plan_versions (id,plan_id,version,effective_from,price_currency,price_minor,entitlements) VALUES ('phase16-plan-v1','phase16-plan',1,'2020-01-01','USD',1000,'{"reports":true}') ON CONFLICT DO NOTHING`);
+    await pool.query(`INSERT INTO product.signing_key_metadata (id,key_id,algorithm,public_key,status,not_before,not_after) VALUES ('phase16-test-signing-key-metadata','phase16-test-signing-key','Ed25519',$1,'active','2020-01-01','2099-01-01') ON CONFLICT (key_id) DO UPDATE SET status = 'active'`, [snapshotKeyPair.publicKey.export({ format: "pem", type: "spki" }).toString()]);
     await pool.query(`INSERT INTO product.addons (id,product_id,code,name,entitlements) VALUES ('phase16-addon',$1,'export','Export','{"exports":true}') ON CONFLICT DO NOTHING`, [PRODUCT]);
     await pool.query(`INSERT INTO product.plan_version_addons (plan_version_id,addon_id) VALUES ('phase16-plan-v1','phase16-addon') ON CONFLICT DO NOTHING`);
     await pool.query(`INSERT INTO product.account_organizations (id,product_id,display_name,status,account_enabled,license_enforcement_enabled,canonical_organization_id) VALUES ($1,$3,'Account','active',true,true,'phase16-org'),($2,$3,'Foreign','active',true,true,'phase16-org') ON CONFLICT (id) DO UPDATE SET account_enabled = true,status = 'active'`, [ACCOUNT, FOREIGN, PRODUCT]);
@@ -76,6 +77,9 @@ describe("product account control plane", () => {
     const snapshotPayload = JSON.parse(snapshot.body) as Record<string, unknown>;
     const signedPayload = { contractVersion: snapshotPayload["contractVersion"], accountOrganizationId: snapshotPayload["accountOrganizationId"], subjectId: snapshotPayload["subjectId"], sequence: snapshotPayload["sequence"], subscriptionStatus: snapshotPayload["subscriptionStatus"], entitlements: snapshotPayload["entitlements"], issuedAt: snapshotPayload["issuedAt"], expiresAt: snapshotPayload["expiresAt"] };
     expect(verify(null, Buffer.from(JSON.stringify(signedPayload)), snapshotKeyPair.publicKey, Buffer.from(String(snapshotPayload["signature"]), "base64url"))).toBe(true);
+    await pool.query(`UPDATE product.signing_key_metadata SET status = 'revoked' WHERE key_id = 'phase16-test-signing-key'`);
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlements/${USER}`)).statusCode).toBe(409);
+    await pool.query(`UPDATE product.signing_key_metadata SET status = 'active' WHERE key_id = 'phase16-test-signing-key'`);
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(201);
     expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/installations/${INSTALLATION}/leases`, USER, "POST", { sequence: 1 })).statusCode).toBe(409);
   });

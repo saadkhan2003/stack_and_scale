@@ -164,6 +164,8 @@ export class ProductAccountService {
     const issuedAt = new Date(); const expiresAt = new Date(issuedAt.valueOf() + 15 * 60_000);
     const payload = { contractVersion: "0.1", accountOrganizationId: principal.accountOrganizationId, subjectId, sequence, subscriptionStatus: subscription?.status ?? "inactive", entitlements: values, issuedAt: issuedAt.toISOString(), expiresAt: expiresAt.toISOString() };
     const keyId = process.env["PRODUCT_ENTITLEMENT_SIGNING_KEY_ID"]?.trim() || "account-snapshot-v1";
+    const signingKey = await this.database.query(`SELECT 1 FROM product.signing_key_metadata WHERE key_id = $1 AND status = 'active' AND not_before <= $2 AND not_after > $2`, [keyId, issuedAt]);
+    if (!signingKey.rows.length) throw new ConflictException("No active entitlement signing key is available.");
     const signature = sign(null, Buffer.from(JSON.stringify(payload)), this.snapshotSigningKey()).toString("base64url");
     await this.database.query(`INSERT INTO product.entitlement_snapshots (id,account_organization_id,subject_id,sequence,contract_version,payload,key_id,signature,issued_at,expires_at) VALUES ($1,$2,$3,$4,'0.1',$5,$6,$7,$8,$9)`, [randomUUID(), principal.accountOrganizationId, subjectId, sequence, payload, keyId, signature, issuedAt, expiresAt]);
     return { ...payload, keyId, signatureAlgorithm: "ed25519", signature };
@@ -194,8 +196,8 @@ export class ProductAccountService {
     if ((enabled.rows[0] as { downloads_enabled?: boolean } | undefined)?.downloads_enabled !== true) throw new ForbiddenException("Downloads are not enabled.");
     const entitlement = await this.database.query(`SELECT 1 FROM product.subscriptions WHERE account_organization_id = $1 AND status IN ('trial','active') AND effective_at <= now() AND (ends_at IS NULL OR ends_at > now()) LIMIT 1`, [principal.accountOrganizationId]);
     if (!entitlement.rows.length) throw new ForbiddenException("An active entitlement is required.");
-    const release = await this.database.query(`SELECT id, version, platform, checksum_sha256, signature, key_id, support_status FROM product.releases WHERE id = $1 AND product_id = $2`, [releaseId, principal.productId]);
-    if (!release.rows.length || (release.rows[0] as { support_status: string }).support_status !== "supported") throw new NotFoundException("Release was not found.");
+    const release = await this.database.query(`SELECT release.id, release.version, release.platform, release.checksum_sha256, release.signature, release.key_id, release.support_status, key.status AS key_status FROM product.releases release JOIN product.signing_key_metadata key ON key.key_id = release.key_id WHERE release.id = $1 AND release.product_id = $2`, [releaseId, principal.productId]);
+    if (!release.rows.length || (release.rows[0] as { support_status: string; key_status: string }).support_status !== "supported" || (release.rows[0] as { key_status: string }).key_status === "revoked") throw new NotFoundException("Release was not found.");
     await this.database.query(`INSERT INTO product.download_audit_events (id,account_organization_id,release_id,actor_id) VALUES ($1,$2,$3,$4)`, [randomUUID(), principal.accountOrganizationId, releaseId, principal.actorId]);
     return { release: release.rows[0], capability: null, message: "Download capability requires separately verified private storage." };
   }
@@ -309,6 +311,13 @@ export class ProductAccountService {
     const id = `signing_key_${randomUUID()}`;
     await this.database.query(`INSERT INTO product.signing_key_metadata (id,key_id,algorithm,public_key,status,not_before,not_after) VALUES ($1,$2,$3,$4,'active',$5,$6)`, [id, input.keyId, input.algorithm, input.publicKey, notBefore, notAfter]);
     return { id, keyId: input.keyId, registeredBy: actorId };
+  }
+
+  public async setSigningKeyStatus(actorId: string, keyId: string, status: string) {
+    if (!["active", "retiring", "revoked"].includes(status)) throw new BadRequestException("Signing-key status is invalid.");
+    const result = await this.database.query(`UPDATE product.signing_key_metadata SET status = $1 WHERE key_id = $2 RETURNING key_id, status`, [status, keyId]);
+    if (!result.rows.length) throw new NotFoundException("Signing key was not found.");
+    return { ...(result.rows[0] as object), changedBy: actorId };
   }
 
   public async registerRelease(actorId: string, input: { productId: string; version: string; platform: string; checksumSha256: string; signature: string; keyId: string; storageReference: string }) {

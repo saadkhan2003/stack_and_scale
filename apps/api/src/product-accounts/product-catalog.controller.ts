@@ -51,6 +51,10 @@ export class ProductCatalogController {
   public async signingKey(@Req() request: FastifyRequest, @Body() body: Record<string, unknown>) {
     const actor = await this.access.require(request, "org:manage"); return this.accounts.registerSigningKey(actor.actorId, { keyId: text(body, "keyId"), algorithm: text(body, "algorithm"), publicKey: text(body, "publicKey"), notBefore: text(body, "notBefore"), notAfter: text(body, "notAfter") });
   }
+  @Post("signing-keys/:keyId/status")
+  public async signingKeyStatus(@Req() request: FastifyRequest, @Param("keyId") keyId: string, @Body() body: Record<string, unknown>) {
+    const actor = await this.access.require(request, "org:manage"); return this.accounts.setSigningKeyStatus(actor.actorId, keyId, text(body, "status"));
+  }
   @Post("releases")
   public async release(@Req() request: FastifyRequest, @Body() body: Record<string, unknown>) {
     const actor = await this.access.require(request, "org:manage"); return this.accounts.registerRelease(actor.actorId, { productId: text(body, "productId"), version: text(body, "version"), platform: text(body, "platform"), checksumSha256: text(body, "checksumSha256"), signature: text(body, "signature"), keyId: text(body, "keyId"), storageReference: text(body, "storageReference") });
