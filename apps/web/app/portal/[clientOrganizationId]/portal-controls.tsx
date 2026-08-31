@@ -124,14 +124,15 @@ export function PortalControls({
           onSubmit={(event) => {
             void (async () => {
               event.preventDefault();
-              const form = new FormData(event.currentTarget);
+              const formElement = event.currentTarget;
+              const form = new FormData(formElement);
               try {
                 await send("support/tickets", {
                   subject: form.get("subject"),
                   description: form.get("description"),
                   category: form.get("category"),
                 });
-                event.currentTarget.reset();
+                formElement.reset();
                 setMessage("Your support request has been created.");
               } catch (error) {
                 setMessage(
@@ -170,12 +171,13 @@ export function PortalControls({
                 onSubmit={(event) => {
                   void (async () => {
                     event.preventDefault();
-                    const form = new FormData(event.currentTarget);
+                    const formElement = event.currentTarget;
+                    const form = new FormData(formElement);
                     try {
                       await send(`support/tickets/${ticket.id}/comments`, {
                         body: form.get("body"),
                       });
-                      event.currentTarget.reset();
+                      formElement.reset();
                       setMessage(
                         "Your reply has been added. Refresh to see the updated ticket.",
                       );
