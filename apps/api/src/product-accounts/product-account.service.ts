@@ -299,7 +299,7 @@ export class ProductAccountService {
     const updated = await this.database.query(`UPDATE product.installations SET status = $1, updated_at = now() WHERE id = $2 RETURNING id, account_organization_id, status`, [status, installationId]);
     if (!updated.rows.length) throw new NotFoundException("Installation was not found.");
     const row = updated.rows[0] as { id: string; account_organization_id: string; status: string };
-    await this.database.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'installation_status_changed',$4,$5)`, [randomUUID(), row.account_organization_id, actorId, `staff-installation-${installationId}-${status}`, { installationId, status }]);
+    await this.database.query(`INSERT INTO product.account_events (id,account_organization_id,actor_id,event_type,idempotency_key,detail) VALUES ($1,$2,$3,'installation_status_changed',$4,$5) ON CONFLICT (account_organization_id,idempotency_key) DO NOTHING`, [randomUUID(), row.account_organization_id, actorId, `staff-installation-${installationId}-${status}`, { installationId, status }]);
     return { installationId: row.id, status: row.status, changedBy: actorId };
   }
 

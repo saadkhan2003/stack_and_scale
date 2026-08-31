@@ -31,6 +31,8 @@ describe("product account control plane", () => {
     await pool.query(`INSERT INTO product.licenses (id,account_organization_id,product_id,status) VALUES ('phase16-license',$1,$2,'active') ON CONFLICT DO NOTHING`, [ACCOUNT, PRODUCT]);
     await pool.query(`INSERT INTO product.installations (id,license_id,account_organization_id,installation_key_hash,last_sequence,status) VALUES ($1,'phase16-license',$2,'${"a".repeat(64)}',0,'active') ON CONFLICT (id) DO UPDATE SET last_sequence = 0, status = 'active'`, [INSTALLATION, ACCOUNT]);
     await pool.query(`DELETE FROM product.subscription_events WHERE subscription_id = $1`, [SUBSCRIPTION]);
+    await pool.query(`DELETE FROM product.subscription_events WHERE subscription_id LIKE 'phase16-transition-%' OR subscription_id = 'phase16-illegal-state'`);
+    await pool.query(`DELETE FROM product.subscriptions WHERE id LIKE 'phase16-transition-%' OR id = 'phase16-illegal-state'`);
     await pool.query(`DELETE FROM product.entitlement_snapshots WHERE account_organization_id = $1`, [ACCOUNT]);
     const module = await Test.createTestingModule({ imports: [AppModule] }).compile(); app = module.createNestApplication(new FastifyAdapter()); await app.init(); fastify = (app.getHttpAdapter() as FastifyAdapter).getInstance();
   });
@@ -49,9 +51,27 @@ describe("product account control plane", () => {
     const illegal = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/subscriptions/${SUBSCRIPTION}/transitions`, USER, "POST", { status: "trial", reason: "illegal", idempotencyKey: "phase16-transition-2" });
     expect(illegal.statusCode).toBe(409);
   });
+  it("accepts every documented subscription transition and rejects an illegal edge", async () => {
+    const transitions: Record<string, readonly string[]> = {
+      pending: ["trial", "active", "cancelled"], trial: ["active", "expired", "cancelled"], active: ["past_due", "cancelled", "suspended"], past_due: ["active", "suspended"], suspended: ["active", "terminated"], cancelled: ["expired"], expired: ["active"], terminated: [],
+    };
+    let number = 0;
+    for (const [from, targets] of Object.entries(transitions)) {
+      for (const target of targets) {
+        number += 1; const id = `phase16-transition-${number}`;
+        await pool.query(`INSERT INTO product.subscriptions (id,account_organization_id,plan_version_id,status,effective_at) VALUES ($1,$2,'phase16-plan-v1',$3,'2020-01-01')`, [id, ACCOUNT, from]);
+        const response = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/subscriptions/${id}/transitions`, USER, "POST", { status: target, reason: "state-machine-test", idempotencyKey: `phase16-state-${number}` });
+        expect(response.statusCode).toBe(201);
+      }
+    }
+    const id = "phase16-illegal-state";
+    await pool.query(`INSERT INTO product.subscriptions (id,account_organization_id,plan_version_id,status,effective_at) VALUES ($1,$2,'phase16-plan-v1','terminated','2020-01-01') ON CONFLICT DO NOTHING`, [id, ACCOUNT]);
+    expect((await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/subscriptions/${id}/transitions`, USER, "POST", { status: "active", reason: "illegal", idempotencyKey: "phase16-illegal-state" })).statusCode).toBe(409);
+  });
   it("issues increasing bounded entitlement snapshots and rejects stale leases", async () => {
+    await pool.query(`UPDATE product.subscriptions SET status = 'active', updated_at = now() WHERE id = $1`, [SUBSCRIPTION]);
     const snapshot = await request(`/api/v1/product-accounts/organizations/${ACCOUNT}/entitlements/${USER}`);
-    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "past_due", keyId: "phase16-test-signing-key", signatureAlgorithm: "ed25519", entitlements: { reports: true, exports: true } });
+    expect(snapshot.json()).toMatchObject({ contractVersion: "0.1", subscriptionStatus: "active", keyId: "phase16-test-signing-key", signatureAlgorithm: "ed25519", entitlements: { reports: true, exports: true } });
     expect(snapshot.body).toContain('"signature":"');
     const snapshotPayload = JSON.parse(snapshot.body) as Record<string, unknown>;
     const signedPayload = { contractVersion: snapshotPayload["contractVersion"], accountOrganizationId: snapshotPayload["accountOrganizationId"], subjectId: snapshotPayload["subjectId"], sequence: snapshotPayload["sequence"], subscriptionStatus: snapshotPayload["subscriptionStatus"], entitlements: snapshotPayload["entitlements"], issuedAt: snapshotPayload["issuedAt"], expiresAt: snapshotPayload["expiresAt"] };
