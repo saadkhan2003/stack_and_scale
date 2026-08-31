@@ -1,0 +1,105 @@
+name: Phase 15 rollout assurance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Controlled Phase 15 assurance operation.
+        required: true
+        type: choice
+        options: [seed-review, capture-capacity, disable-portal, enable-portal]
+      client_organization_id:
+        description: Client organization identifier for the isolated QA tenant.
+        required: true
+        default: phase15-qa-client-org
+
+permissions:
+  contents: read
+
+jobs:
+  assurance:
+    name: Run protected portal assurance operation
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      ASSURANCE_ACTION: ${{ inputs.action }}
+      CLIENT_ORGANIZATION_ID: ${{ inputs.client_organization_id }}
+    steps:
+      - name: Configure deploy access
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ env.DEPLOY_SSH_PRIVATE_KEY }}
+      - name: Pin deployment host key
+        run: printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+      - name: Run reversible host assurance operation
+        env:
+          REMOTE: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+        run: |
+          case "$CLIENT_ORGANIZATION_ID" in
+            ''|*[!a-zA-Z0-9_-]*)
+              echo "Client organization identifier must be an ASCII identifier." >&2
+              exit 64
+              ;;
+          esac
+          ssh "$REMOTE" bash -s -- "$ASSURANCE_ACTION" "$CLIENT_ORGANIZATION_ID" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          action="$1"
+          client_organization_id="$2"
+          cd /opt/stack-and-scale
+          export IMAGE_TAG="$(sed -n 's/.*"imageTag":"\([a-f0-9]*\)".*/\1/p' deployments/current.json)"
+          export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
+          compose=(docker compose --env-file .env.production -f infra/compose.production.yaml)
+
+          case "$action" in
+            seed-review)
+              "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<SQL
+          BEGIN;
+          INSERT INTO portal.project_projections
+            (id, client_organization_id, source_project_id, title, scope_summary, status, next_action)
+          VALUES
+            ('phase15-qa-project', '$client_organization_id', 'phase15-qa-source-project', 'Phase 15 QA project', 'Synthetic rollout-validation projection only.', 'active', 'Record review decision.')
+          ON CONFLICT (id) DO NOTHING;
+          INSERT INTO portal.review_requests
+            (id, client_organization_id, project_id, target_type, target_id, target_version, rendered_checksum_sha256, assigned_user_id, expires_at)
+          SELECT
+            'phase15-qa-review', '$client_organization_id', 'phase15-qa-project', 'proposal', 'phase15-qa-target', 'v1', repeat('0', 64), membership.user_id, now() + interval '1 day'
+          FROM portal.client_memberships AS membership
+          WHERE membership.id = 'phase15-qa-admin-membership'
+          ON CONFLICT (id) DO NOTHING;
+          COMMIT;
+          SQL
+              ;;
+            capture-capacity)
+              output="docs/evidence/phase-15/capacity-$(date -u +%Y%m%dT%H%M%SZ).txt"
+              bash scripts/measure-capacity.sh "$output"
+              test -s "$output"
+              echo "Capacity snapshot recorded on the protected host."
+              ;;
+            disable-portal|enable-portal)
+              if [ "$action" = disable-portal ]; then enabled=false; else enabled=true; fi
+              "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<SQL
+          BEGIN;
+          DO \$\$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM portal.client_organizations WHERE id = '$client_organization_id') THEN
+              RAISE EXCEPTION 'Client organization not found';
+            END IF;
+            UPDATE portal.client_organizations
+               SET portal_access_enabled = $enabled, updated_at = now()
+             WHERE id = '$client_organization_id';
+          END \$\$;
+          COMMIT;
+          SQL
+              echo "Portal access flag set to $enabled for the isolated QA tenant."
+              ;;
+            *)
+              echo "Unsupported assurance action." >&2
+              exit 64
+              ;;
+          esac
+          REMOTE_SCRIPT
