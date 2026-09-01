@@ -1,0 +1,117 @@
+name: Phase 17 integration rollout assurance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Protected operation against the isolated synthetic installation.
+        required: true
+        type: choice
+        options:
+          [
+            provision-signing-key,
+            seed-and-verify,
+            disable-integration,
+            enable-integration,
+          ]
+
+permissions:
+  contents: read
+
+jobs:
+  assurance:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      ASSURANCE_ACTION: ${{ inputs.action }}
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ env.DEPLOY_SSH_PRIVATE_KEY }}
+      - run: printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+      - name: Exercise the isolated product-integration protocol
+        env:
+          REMOTE: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+        run: |
+          ssh "$REMOTE" bash -s -- "$ASSURANCE_ACTION" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          action="$1"
+          cd /opt/stack-and-scale
+          export IMAGE_TAG="$(sed -n 's/.*"imageTag":"\([a-f0-9]*\)".*/\1/p' deployments/current.json)"
+          export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
+          compose=(docker compose --env-file .env.production -f infra/compose.production.yaml)
+
+          psql() {
+            "${compose[@]}" exec -T postgres sh -c 'exec psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+          }
+
+          case "$action" in
+            provision-signing-key)
+              if ! grep -q '^PRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64=' .env.production; then
+                private_file="$(mktemp)"; public_file="$(mktemp)"
+                trap 'rm -f "$private_file" "$public_file"' EXIT
+                openssl genpkey -algorithm ED25519 -out "$private_file"
+                openssl pkey -in "$private_file" -pubout -out "$public_file"
+                private_b64="$(base64 -w0 < "$private_file")"
+                public_b64="$(base64 -w0 < "$public_file")"
+                umask 077
+                printf '\nPRODUCT_ENTITLEMENT_SIGNING_PRIVATE_KEY_B64=%s\nPRODUCT_ENTITLEMENT_SIGNING_KEY_ID=account-snapshot-v1\n' "$private_b64" >> .env.production
+                psql <<SQL
+          INSERT INTO product.signing_key_metadata (id,key_id,algorithm,public_key,status,not_before,not_after)
+          VALUES ('account-snapshot-v1-metadata','account-snapshot-v1','Ed25519','$public_b64','active',now(),now() + interval '370 days')
+          ON CONFLICT (key_id) DO NOTHING;
+          SQL
+                "${compose[@]}" up -d --no-deps api
+              fi
+              ;;
+            seed-and-verify)
+              credential="$(openssl rand -base64 48 | tr -d '=+/\n' | cut -c1-48)"
+              credential_hash="$(printf %s "$credential" | sha256sum | cut -d' ' -f1)"
+              psql <<SQL
+          BEGIN;
+          INSERT INTO product.catalog_products (id,code,name,status) VALUES ('phase17-qa-product','phase17-qa','Phase 17 QA product','active') ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.editions (id,product_id,code,name) VALUES ('phase17-qa-edition','phase17-qa-product','standard','Standard') ON CONFLICT (id) DO NOTHING;
+          INSERT INTO product.plans (id,edition_id,code,name,status) VALUES ('phase17-qa-plan','phase17-qa-edition','core','Core','active') ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.plan_versions (id,plan_id,version,effective_from,price_currency,price_minor,entitlements) VALUES ('phase17-qa-plan-v1','phase17-qa-plan',1,'2020-01-01','USD',0,'{"phase17_qa":true}') ON CONFLICT (id) DO NOTHING;
+          INSERT INTO product.account_organizations (id,product_id,display_name,status,account_enabled,integration_enabled,telemetry_enabled,sync_enabled) VALUES ('phase17-qa-account','phase17-qa-product','Phase 17 QA account','active',true,true,true,true) ON CONFLICT (id) DO UPDATE SET status = 'active',account_enabled = true,integration_enabled = true,telemetry_enabled = true,sync_enabled = true;
+          INSERT INTO product.subscriptions (id,account_organization_id,plan_version_id,status,effective_at) VALUES ('phase17-qa-subscription','phase17-qa-account','phase17-qa-plan-v1','active',now()) ON CONFLICT (id) DO UPDATE SET status = 'active',effective_at = now();
+          INSERT INTO product.licenses (id,account_organization_id,product_id,status,seat_limit) VALUES ('phase17-qa-license','phase17-qa-account','phase17-qa-product','active',1) ON CONFLICT (id) DO UPDATE SET status = 'active';
+          INSERT INTO product.installations (id,license_id,account_organization_id,installation_key_hash,status,last_sequence) VALUES ('phase17-qa-installation','phase17-qa-license','phase17-qa-account',repeat('b',64),'active',0) ON CONFLICT (id) DO UPDATE SET status = 'active';
+          DELETE FROM product.installation_credentials WHERE installation_id = 'phase17-qa-installation';
+          INSERT INTO product.installation_credentials (id,installation_id,credential_hash,status,expires_at) VALUES ('phase17-qa-credential','phase17-qa-installation','$credential_hash','active',now() + interval '30 minutes');
+          COMMIT;
+          SQL
+              "${compose[@]}" exec -T -e PHASE17_QA_CREDENTIAL="$credential" api node - <<'NODE'
+          const credential = process.env.PHASE17_QA_CREDENTIAL;
+          const headers = { 'content-type': 'application/json', 'x-product-installation-credential': credential };
+          const request = async (path, init = {}) => {
+            const response = await fetch(`http://127.0.0.1:3100/api/v1/product-integrations${path}`, { ...init, headers: { ...headers, ...(init.headers ?? {}) } });
+            if (!response.ok) throw new Error(`${path} returned ${response.status}: ${await response.text()}`);
+            return response.json();
+          };
+          const lease = await request('/lease', { method: 'POST' });
+          if (!Number.isInteger(lease.sequence) || lease.sequence < 1 || !lease.signature) throw new Error('lease was not signed and sequenced');
+          const keys = await request('/verification-keys');
+          if (!Array.isArray(keys.keys) || keys.keys.length === 0) throw new Error('verification key is unavailable');
+          await request('/heartbeat', { method: 'POST', body: JSON.stringify({ softwareVersion: 'phase17-qa', leaseState: 'valid', syncCursor: 0, syncStatus: 'idle' }) });
+          const sync = await request('/sync', { method: 'POST', body: JSON.stringify({ mutations: [{ id: 'phase17-qa-mutation-1', localSequence: 1, entityKind: 'operational_note', payload: { message: 'synthetic rollout verification' } }] }) });
+          if (!['accepted', 'duplicate'].includes(sync.outcomes?.[0]?.outcome)) throw new Error('sync mutation was not accepted idempotently');
+          const events = await request('/events?limit=10');
+          if (!Array.isArray(events.events) || events.events.length === 0) throw new Error('signed event was not delivered');
+          await request(`/events/${events.events[0].id}/ack`, { method: 'POST' });
+          NODE
+              ;;
+            disable-integration|enable-integration)
+              if [ "$action" = disable-integration ]; then enabled=false; else enabled=true; fi
+              psql <<SQL
+          UPDATE product.account_organizations SET integration_enabled = $enabled, updated_at = now() WHERE id = 'phase17-qa-account';
+          SQL
+              ;;
+            *) exit 64 ;;
+          esac
+          REMOTE_SCRIPT

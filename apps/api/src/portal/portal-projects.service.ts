@@ -198,10 +198,22 @@ export class PortalProjectsService {
       id: row.id,
       label: row.label,
       status: row.status,
-      dueOn:
-        row.due_on === null
-          ? null
-          : new Date(row.due_on).toISOString().slice(0, 10),
+      dueOn: toCalendarDate(row.due_on),
     };
   }
+}
+
+/**
+ * PostgreSQL `date` represents a calendar day, not an instant.  The driver can
+ * materialize it as a local-midnight Date, so converting through UTC changes
+ * the displayed day for timezones east of Greenwich.
+ */
+function toCalendarDate(value: string | Date | null): string | null {
+  if (value === null) return null;
+  if (typeof value === "string") return value.slice(0, 10);
+  return [value.getFullYear(), value.getMonth() + 1, value.getDate()]
+    .map((part, index) =>
+      index === 0 ? String(part) : String(part).padStart(2, "0"),
+    )
+    .join("-");
 }
