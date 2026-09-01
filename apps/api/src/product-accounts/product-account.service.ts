@@ -277,12 +277,12 @@ export class ProductAccountService {
     return { planVersionId, addonId, assignedBy: actorId };
   }
 
-  public async setAccountFlags(actorId: string, accountOrganizationId: string, input: { accountEnabled?: boolean; billingEnabled?: boolean; downloadsEnabled?: boolean; licenseEnforcementEnabled?: boolean }) {
+  public async setAccountFlags(actorId: string, accountOrganizationId: string, input: { accountEnabled?: boolean; billingEnabled?: boolean; downloadsEnabled?: boolean; licenseEnforcementEnabled?: boolean; integrationEnabled?: boolean; telemetryEnabled?: boolean; syncEnabled?: boolean }) {
     const values = Object.entries(input).filter(([, value]) => typeof value === "boolean");
     if (!values.length) throw new BadRequestException("At least one account flag is required.");
-    const columns: Record<string, string> = { accountEnabled: "account_enabled", billingEnabled: "billing_enabled", downloadsEnabled: "downloads_enabled", licenseEnforcementEnabled: "license_enforcement_enabled" };
+    const columns: Record<string, string> = { accountEnabled: "account_enabled", billingEnabled: "billing_enabled", downloadsEnabled: "downloads_enabled", licenseEnforcementEnabled: "license_enforcement_enabled", integrationEnabled: "integration_enabled", telemetryEnabled: "telemetry_enabled", syncEnabled: "sync_enabled" };
     const clauses = values.map(([key], index) => `${columns[key]} = $${index + 1}`);
-    const result = await this.database.query(`UPDATE product.account_organizations SET ${clauses.join(", ")}, updated_at = now() WHERE id = $${values.length + 1} RETURNING id, account_enabled, billing_enabled, downloads_enabled, license_enforcement_enabled`, [...values.map(([, value]) => value), accountOrganizationId]);
+    const result = await this.database.query(`UPDATE product.account_organizations SET ${clauses.join(", ")}, updated_at = now() WHERE id = $${values.length + 1} RETURNING id, account_enabled, billing_enabled, downloads_enabled, license_enforcement_enabled, integration_enabled, telemetry_enabled, sync_enabled`, [...values.map(([, value]) => value), accountOrganizationId]);
     if (!result.rows.length) throw new NotFoundException("Product account was not found.");
     return { ...(result.rows[0] as object), changedBy: actorId };
   }
