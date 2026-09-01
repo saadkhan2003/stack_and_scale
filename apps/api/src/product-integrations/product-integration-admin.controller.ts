@@ -21,4 +21,10 @@ export class ProductIntegrationAdminController {
     const actor = await this.access.require(request, "org:manage");
     return this.integrations.revokeCredentials(actor.actorId, installationId);
   }
+
+  @Post("events/:eventId/installations/:installationId/replay")
+  public async replay(@Req() request: FastifyRequest, @Param("eventId") eventId: string, @Param("installationId") installationId: string) {
+    const actor = await this.access.require(request, "org:manage");
+    return this.integrations.replayEvent(actor.actorId, eventId, installationId);
+  }
 }

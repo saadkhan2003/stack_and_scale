@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { createHash, createPrivateKey, randomBytes, randomUUID, sign } from "node:crypto";
-import { canonicalProductIntegrationJson, PRODUCT_INTEGRATION_CONTRACT_VERSION, type SyncMutation, unsignedEntitlementLease } from "@stack-and-scale/contracts";
+import { canonicalProductIntegrationJson, PRODUCT_INTEGRATION_CONTRACT_VERSION, type SyncMutation, unsignedEntitlementLease, unsignedIntegrationEvent } from "@stack-and-scale/contracts";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
 import type { ProductInstallationPrincipal } from "./product-integration-access.service.js";
@@ -40,7 +40,7 @@ export class ProductIntegrationService {
   }
 
   public async issueLease(principal: ProductInstallationPrincipal) {
-    return this.database.transaction(async (client) => {
+    const issued = await this.database.transaction(async (client) => {
       const state = await client.query(`SELECT installation.last_sequence, installation.status AS installation_status, license.status AS license_status, subscription.status AS subscription_status, version.entitlements
         FROM product.installations installation JOIN product.licenses license ON license.id = installation.license_id
         JOIN product.account_organizations account ON account.id = installation.account_organization_id
@@ -61,6 +61,50 @@ export class ProductIntegrationService {
       await client.query(`INSERT INTO product.integration_leases (id,installation_id,account_organization_id,sequence,contract_version,key_id,payload,signature,issued_at,expires_at,grace_until) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [`integration_lease_${randomUUID()}`, principal.installationId, principal.accountOrganizationId, sequence, PRODUCT_INTEGRATION_CONTRACT_VERSION, keyId, lease, signature, issuedAt, expiresAt, graceUntil]);
       return { ...lease, signature };
     });
+    await this.publishEvent(principal, "entitlement.lease_issued", { sequence: issued.sequence, expiresAt: issued.expiresAt, graceUntil: issued.graceUntil });
+    return issued;
+  }
+
+  public async publishEvent(principal: ProductInstallationPrincipal, type: string, payload: Record<string, unknown>) {
+    if (!/^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*)+$/.test(type)) throw new BadRequestException("Event type is invalid.");
+    const occurredAt = new Date(); const keyId = process.env["PRODUCT_ENTITLEMENT_SIGNING_KEY_ID"]?.trim() || "account-snapshot-v1";
+    const key = await this.database.query(`SELECT 1 FROM product.signing_key_metadata WHERE key_id = $1 AND status = 'active' AND not_before <= $2 AND not_after > $2`, [keyId, occurredAt]);
+    if (!key.rows.length) throw new ConflictException("No active event signing key is available.");
+    const event = unsignedIntegrationEvent({ contractVersion: PRODUCT_INTEGRATION_CONTRACT_VERSION, eventId: `integration_event_${randomUUID()}`, type, source: "platform", subject: { kind: "installation", id: principal.installationId }, occurredAt: occurredAt.toISOString(), payloadVersion: 1, payload, keyId });
+    const signature = sign(null, Buffer.from(canonicalProductIntegrationJson(event)), this.signingKey()).toString("base64url");
+    await this.database.transaction(async (client) => {
+      await client.query(`INSERT INTO product.integration_events (id,account_organization_id,product_id,installation_id,event_type,source,subject_kind,subject_id,occurred_at,payload_version,payload,contract_version,key_id,signature) VALUES ($1,$2,$3,$4,$5,'platform','installation',$4,$6,1,$7,$8,$9,$10)`, [event.eventId, principal.accountOrganizationId, principal.productId, principal.installationId, event.type, occurredAt, event.payload, PRODUCT_INTEGRATION_CONTRACT_VERSION, keyId, signature]);
+      await client.query(`INSERT INTO product.integration_event_deliveries (id,event_id,recipient_installation_id,status) VALUES ($1,$2,$3,'pending')`, [`event_delivery_${randomUUID()}`, event.eventId, principal.installationId]);
+    });
+    return { ...event, signature };
+  }
+
+  public async events(principal: ProductInstallationPrincipal, limit = 50) {
+    const bounded = Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50;
+    const result = await this.database.query(`SELECT event.id, event.event_type, event.source, event.subject_kind, event.subject_id, event.occurred_at, event.payload_version, event.payload, event.contract_version, event.key_id, event.signature
+      FROM product.integration_event_deliveries delivery JOIN product.integration_events event ON event.id = delivery.event_id
+      WHERE delivery.recipient_installation_id = $1 AND delivery.status = 'pending' AND delivery.next_attempt_at <= now()
+      ORDER BY event.created_at, event.id LIMIT $2`, [principal.installationId, bounded]);
+    return (result.rows as Array<{ id: string; event_type: string; source: "platform"; subject_kind: "installation" | "account"; subject_id: string; occurred_at: Date; payload_version: number; payload: Record<string, unknown>; contract_version: "1.0"; key_id: string; signature: string }>).map((event) => ({ contractVersion: event.contract_version, eventId: event.id, type: event.event_type, source: event.source, subject: { kind: event.subject_kind, id: event.subject_id }, occurredAt: event.occurred_at.toISOString(), payloadVersion: event.payload_version, payload: event.payload, keyId: event.key_id, signature: event.signature }));
+  }
+
+  public async acknowledgeEvent(principal: ProductInstallationPrincipal, eventId: string) {
+    const updated = await this.database.query(`UPDATE product.integration_event_deliveries SET status = 'delivered', delivered_at = COALESCE(delivered_at, now()), last_attempt_at = now() WHERE event_id = $1 AND recipient_installation_id = $2 AND status IN ('pending','delivered') RETURNING status`, [eventId, principal.installationId]);
+    if (!updated.rows.length) throw new NotFoundException("Event delivery was not found.");
+    return { eventId, acknowledged: true };
+  }
+
+  public async recordEventFailure(principal: ProductInstallationPrincipal, eventId: string, errorCode: string) {
+    if (!/^[a-z][a-z0-9_.-]{1,80}$/.test(errorCode)) throw new BadRequestException("Event failure code is invalid.");
+    const updated = await this.database.query(`UPDATE product.integration_event_deliveries SET attempt_count = attempt_count + 1, last_attempt_at = now(), last_error_code = $3, status = CASE WHEN attempt_count + 1 >= 5 THEN 'dead_letter' ELSE 'pending' END, next_attempt_at = CASE WHEN attempt_count + 1 >= 5 THEN now() ELSE now() + make_interval(secs => (1 << LEAST(attempt_count, 8))) END WHERE event_id = $1 AND recipient_installation_id = $2 AND status = 'pending' RETURNING status, attempt_count`, [eventId, principal.installationId, errorCode]);
+    if (!updated.rows.length) throw new NotFoundException("Pending event delivery was not found.");
+    return { eventId, ...(updated.rows[0] as object) };
+  }
+
+  public async replayEvent(actorId: string, eventId: string, installationId: string) {
+    const updated = await this.database.query(`UPDATE product.integration_event_deliveries SET status = 'pending', attempt_count = 0, next_attempt_at = now(), last_error_code = NULL WHERE event_id = $1 AND recipient_installation_id = $2 AND status IN ('dead_letter','paused') RETURNING id`, [eventId, installationId]);
+    if (!updated.rows.length) throw new NotFoundException("Replayable event delivery was not found.");
+    return { eventId, installationId, replayedBy: actorId };
   }
 
   public async heartbeat(principal: ProductInstallationPrincipal, input: { softwareVersion: string; leaseState: string; syncCursor: number; syncStatus: string }) {

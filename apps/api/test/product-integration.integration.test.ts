@@ -51,6 +51,13 @@ describe("product integration protocol", () => {
     expect(typeof signature).toBe("string");
     expect(verify(null, Buffer.from(canonicalProductIntegrationJson(lease)), pair.publicKey, Buffer.from(String(signature), "base64url"))).toBe(true);
     expect(lease).toMatchObject({ installationId: INSTALLATION, accountOrganizationId: ACCOUNT, sequence: 1, entitlements: { offline: true } });
+    const eventsPayload = JSON.parse((await request("/api/v1/product-integrations/events")).body) as { events: Array<Record<string, unknown>> };
+    const event = eventsPayload.events[0];
+    if (!event || typeof event["eventId"] !== "string" || typeof event["signature"] !== "string") throw new Error("Signed event was not delivered.");
+    const eventSignature = event["signature"]; delete event["signature"];
+    expect(verify(null, Buffer.from(canonicalProductIntegrationJson(event)), pair.publicKey, Buffer.from(eventSignature, "base64url"))).toBe(true);
+    expect((await request(`/api/v1/product-integrations/events/${event["eventId"]}/ack`, "POST")).json()).toMatchObject({ acknowledged: true });
+    expect((JSON.parse((await request("/api/v1/product-integrations/events")).body) as { events: unknown[] }).events).toHaveLength(0);
   });
 
   it("rate-limits privacy-minimized heartbeats and preserves safe sync outcomes", async () => {
@@ -61,5 +68,15 @@ describe("product integration protocol", () => {
     expect((await request("/api/v1/product-integrations/sync", "POST", { mutations })).json()).toMatchObject({ cursor: 2, outcomes: [expect.objectContaining({ mutationId: "phase17-note-1", outcome: "accepted" }), expect.objectContaining({ mutationId: "phase17-inventory-1", outcome: "conflicted" })] });
     expect((await request("/api/v1/product-integrations/sync", "POST", { mutations: [mutations[0]] })).json()).toMatchObject({ outcomes: [expect.objectContaining({ mutationId: "phase17-note-1", replayed: true })] });
     expect(Number((await pool.query(`SELECT count(*)::int AS count FROM product.integration_conflicts WHERE installation_id = $1 AND mutation_id = 'phase17-inventory-1'`, [INSTALLATION])).rows[0]?.["count"])).toBe(1);
+  });
+
+  it("backs off failed event delivery, dead-letters it, and permits audited replay", async () => {
+    await request("/api/v1/product-integrations/lease", "POST");
+    const event = (JSON.parse((await request("/api/v1/product-integrations/events")).body) as { events: Array<{ eventId: string }> }).events[0];
+    if (!event) throw new Error("Lease event was not delivered.");
+    expect((await request(`/api/v1/product-integrations/events/${event.eventId}/failure`, "POST", { errorCode: "network.timeout" })).json()).toMatchObject({ status: "pending", attempt_count: 1 });
+    await pool.query(`UPDATE product.integration_event_deliveries SET status = 'dead_letter' WHERE event_id = $1 AND recipient_installation_id = $2`, [event.eventId, INSTALLATION]);
+    expect(await integrations.replayEvent("phase17-staff", event.eventId, INSTALLATION)).toMatchObject({ eventId: event.eventId, installationId: INSTALLATION });
+    expect((JSON.parse((await request("/api/v1/product-integrations/events")).body) as { events: Array<{ eventId: string }> }).events).toEqual(expect.arrayContaining([expect.objectContaining({ eventId: event.eventId })]));
   });
 });
