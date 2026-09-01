@@ -30,6 +30,7 @@ import { ProvisioningModule } from "./provisioning/provisioning.module.js";
 import { CommunicationsModule } from "./communications/communications.module.js";
 import { PortalModule } from "./portal/portal.module.js";
 import { ProductAccountModule } from "./product-accounts/product-account.module.js";
+import { ProductIntegrationModule } from "./product-integrations/product-integration.module.js";
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { ProductAccountModule } from "./product-accounts/product-account.module.
     CommunicationsModule,
     PortalModule,
     ProductAccountModule,
+    ProductIntegrationModule,
   ],
   controllers: [AppController, IdentityController],
   providers: [
