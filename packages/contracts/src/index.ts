@@ -30,6 +30,7 @@ export * from "./support.js";
 export * from "./portal-authorization.js";
 export * from "./portal-project-authorization.js";
 export * from "./portal-review.js";
+export * from "./product-integration.js";
 
 export type EventEnvelope<TPayload = unknown> = Readonly<{
   eventId: string;
