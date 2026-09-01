@@ -183,6 +183,12 @@ importers:
         specifier: 8.15.5
         version: 8.15.5
 
+  packages/product-integration-sdk:
+    dependencies:
+      '@stack-and-scale/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
   packages/storage:
     dependencies:
       '@aws-sdk/client-s3':
