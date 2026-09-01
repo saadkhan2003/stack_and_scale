@@ -14,8 +14,9 @@ The final immutable production delivery for runtime commit
 `55056c8` completed successfully in run `33428884948` on 2026-09-01. It ran
 the database migrations, full API test suite, web build, image builds,
 critical/high image scans, protected-environment promotion, and deployment
-health checks. The subsequent test-and-evidence closeout is delivered by the
-same protected workflow before Phase 16 is marked complete.
+health checks. The final assurance commit `e0f5895` then passed the same
+protected delivery in run `33431436813`, including production promotion and
+health checks.
 
 ## Isolated production QA
 
