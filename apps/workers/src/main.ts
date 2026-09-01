@@ -7,6 +7,7 @@ import { runOutboxDeliveryCycle } from "./outbox-worker.js";
 import { runReportExportCycle } from "./report-export-worker.js";
 import { createEmailAdapter, deliverLeadEmail } from "./transactional-email.js";
 import { runProvisioningCycle } from "./provisioning-worker.js";
+import { runProductIntegrationRetentionCycle } from "./product-integration-worker.js";
 
 const pool = createPostgresPoolFromEnv();
 const repository = new PostgresOutboxRepository(pool);
@@ -24,6 +25,7 @@ try {
   while (!stopping) {
     await runReportExportCycle(pool);
     await runProvisioningCycle(pool, { execute: () => Promise.resolve() });
+    await runProductIntegrationRetentionCycle(pool);
     const result = await runOutboxDeliveryCycle(repository, (event) =>
       deliverLeadEmail(
         event,
