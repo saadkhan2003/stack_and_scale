@@ -26,6 +26,9 @@ export class ProductIntegrationController {
   @Get("events")
   public async events(@Req() request: FastifyRequest, @Query("limit") limit?: string) { return { events: await this.integrations.events(await this.access.requireInstallation(request), limit === undefined ? 50 : Number(limit)) }; }
 
+  @Get("verification-keys")
+  public async verificationKeys(@Req() request: FastifyRequest) { return { keys: await this.integrations.verificationKeys(await this.access.requireInstallation(request)) }; }
+
   @Post("events/:eventId/ack")
   public async acknowledge(@Req() request: FastifyRequest, @Param("eventId") eventId: string) { return this.integrations.acknowledgeEvent(await this.access.requireInstallation(request), eventId); }
 

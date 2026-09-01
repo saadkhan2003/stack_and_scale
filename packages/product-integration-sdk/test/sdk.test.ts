@@ -14,6 +14,7 @@ describe("product integration SDK", () => {
     expect(store.status(new Date("2026-09-02T12:00:00.000Z"))).toBe("grace");
     expect(store.entitlements(new Date("2026-09-03T12:00:00.000Z"))).toEqual({});
     expect(() => store.accept(lease(1), publicKeys)).toThrow("advance");
+    expect(() => new OfflineLeaseStore().accept(lease(3), { "key-1": { publicKey: publicKeys["key-1"], status: "revoked" } })).toThrow("revoked");
   });
 
   it("verifies and deduplicates signed unordered events", () => {

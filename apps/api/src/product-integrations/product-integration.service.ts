@@ -88,6 +88,11 @@ export class ProductIntegrationService {
     return (result.rows as Array<{ id: string; event_type: string; source: "platform"; subject_kind: "installation" | "account"; subject_id: string; occurred_at: Date; payload_version: number; payload: Record<string, unknown>; contract_version: "1.0"; key_id: string; signature: string }>).map((event) => ({ contractVersion: event.contract_version, eventId: event.id, type: event.event_type, source: event.source, subject: { kind: event.subject_kind, id: event.subject_id }, occurredAt: event.occurred_at.toISOString(), payloadVersion: event.payload_version, payload: event.payload, keyId: event.key_id, signature: event.signature }));
   }
 
+  public async verificationKeys(principal: ProductInstallationPrincipal) {
+    void principal;
+    return (await this.database.query(`SELECT key_id, algorithm, public_key, status, not_before, not_after FROM product.signing_key_metadata WHERE algorithm = 'Ed25519' AND not_after > now() - interval '30 days' ORDER BY not_before DESC`)).rows;
+  }
+
   public async acknowledgeEvent(principal: ProductInstallationPrincipal, eventId: string) {
     const updated = await this.database.query(`UPDATE product.integration_event_deliveries SET status = 'delivered', delivered_at = COALESCE(delivered_at, now()), last_attempt_at = now() WHERE event_id = $1 AND recipient_installation_id = $2 AND status IN ('pending','delivered') RETURNING status`, [eventId, principal.installationId]);
     if (!updated.rows.length) throw new NotFoundException("Event delivery was not found.");

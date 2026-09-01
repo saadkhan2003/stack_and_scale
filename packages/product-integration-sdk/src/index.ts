@@ -2,15 +2,16 @@ import { verify } from "node:crypto";
 import { canonicalProductIntegrationJson, type EntitlementLease, type ProductIntegrationEvent } from "@stack-and-scale/contracts";
 
 export type LeaseState = "valid" | "grace" | "expired" | "revoked";
-export type VerificationKeys = Readonly<Record<string, string>>;
+export type VerificationKeys = Readonly<Record<string, Readonly<{ publicKey: string; status: "active" | "retiring" | "revoked" }> | string>>;
 
 export class OfflineLeaseStore {
   private lastSequence = 0;
   private current: EntitlementLease | undefined;
 
   public accept(lease: EntitlementLease, verificationKeys: VerificationKeys): void {
-    const publicKey = verificationKeys[lease.keyId];
+    const entry = verificationKeys[lease.keyId]; const publicKey = typeof entry === "string" ? entry : entry?.publicKey;
     if (!publicKey) throw new Error("No verification key is available for this lease.");
+    if (typeof entry === "object" && entry.status === "revoked") throw new Error("Lease signing key is revoked.");
     const { signature, ...unsigned } = lease;
     if (!verify(null, Buffer.from(canonicalProductIntegrationJson(unsigned)), publicKey, Buffer.from(signature, "base64url"))) throw new Error("Lease signature is invalid.");
     if (lease.sequence <= this.lastSequence) throw new Error("Lease sequence must advance.");
@@ -35,8 +36,9 @@ export class OfflineLeaseStore {
 export class EventDeduplicator {
   private readonly ids = new Set<string>();
   public accept(event: ProductIntegrationEvent, verificationKeys: VerificationKeys): boolean {
-    const publicKey = verificationKeys[event.keyId];
+    const entry = verificationKeys[event.keyId]; const publicKey = typeof entry === "string" ? entry : entry?.publicKey;
     if (!publicKey) throw new Error("No verification key is available for this event.");
+    if (typeof entry === "object" && entry.status === "revoked") throw new Error("Event signing key is revoked.");
     const { signature, ...unsigned } = event;
     if (!verify(null, Buffer.from(canonicalProductIntegrationJson(unsigned)), publicKey, Buffer.from(signature, "base64url"))) throw new Error("Event signature is invalid.");
     if (this.ids.has(event.eventId)) return false;
