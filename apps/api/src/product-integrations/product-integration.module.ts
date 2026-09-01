@@ -8,5 +8,16 @@ import { ProductIntegrationAdminController } from "./product-integration-admin.c
 import { ProductIntegrationController } from "./product-integration.controller.js";
 import { ProductIntegrationService } from "./product-integration.service.js";
 
-@Module({ imports: [AuthModule, CrmModule], controllers: [ProductIntegrationController, ProductIntegrationAdminController], providers: [PlatformDatabaseService, ProductIntegrationAccessService, ProductIntegrationService] })
+@Module({
+  imports: [AuthModule, CrmModule],
+  controllers: [
+    ProductIntegrationController,
+    ProductIntegrationAdminController,
+  ],
+  providers: [
+    PlatformDatabaseService,
+    ProductIntegrationAccessService,
+    ProductIntegrationService,
+  ],
+})
 export class ProductIntegrationModule {}

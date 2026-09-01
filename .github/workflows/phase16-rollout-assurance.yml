@@ -6,7 +6,8 @@ on:
       action:
         required: true
         type: choice
-        options: [provision-signing-key, seed-qa, disable-account, enable-account]
+        options:
+          [provision-signing-key, seed-qa, disable-account, enable-account]
 
 permissions:
   contents: read

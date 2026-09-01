@@ -6,25 +6,49 @@ import { ProductIntegrationService } from "./product-integration.service.js";
 
 @Controller("api/v1/product-integrations/admin")
 export class ProductIntegrationAdminController {
-  public constructor(@Inject(CrmAccessService) private readonly access: CrmAccessService, @Inject(ProductIntegrationService) private readonly integrations: ProductIntegrationService) {}
+  public constructor(
+    @Inject(CrmAccessService) private readonly access: CrmAccessService,
+    @Inject(ProductIntegrationService)
+    private readonly integrations: ProductIntegrationService,
+  ) {}
 
   @Post("installations/:installationId/credentials")
-  public async credential(@Req() request: FastifyRequest, @Param("installationId") installationId: string, @Body() body: Record<string, unknown>) {
+  public async credential(
+    @Req() request: FastifyRequest,
+    @Param("installationId") installationId: string,
+    @Body() body: Record<string, unknown>,
+  ) {
     const actor = await this.access.require(request, "org:manage");
     const expiresAt = body["expiresAt"];
-    if (typeof expiresAt !== "string") throw new Error("expiresAt is required.");
-    return this.integrations.provisionCredential(actor.actorId, installationId, expiresAt);
+    if (typeof expiresAt !== "string")
+      throw new Error("expiresAt is required.");
+    return this.integrations.provisionCredential(
+      actor.actorId,
+      installationId,
+      expiresAt,
+    );
   }
 
   @Post("installations/:installationId/credentials/revoke")
-  public async revoke(@Req() request: FastifyRequest, @Param("installationId") installationId: string) {
+  public async revoke(
+    @Req() request: FastifyRequest,
+    @Param("installationId") installationId: string,
+  ) {
     const actor = await this.access.require(request, "org:manage");
     return this.integrations.revokeCredentials(actor.actorId, installationId);
   }
 
   @Post("events/:eventId/installations/:installationId/replay")
-  public async replay(@Req() request: FastifyRequest, @Param("eventId") eventId: string, @Param("installationId") installationId: string) {
+  public async replay(
+    @Req() request: FastifyRequest,
+    @Param("eventId") eventId: string,
+    @Param("installationId") installationId: string,
+  ) {
     const actor = await this.access.require(request, "org:manage");
-    return this.integrations.replayEvent(actor.actorId, eventId, installationId);
+    return this.integrations.replayEvent(
+      actor.actorId,
+      eventId,
+      installationId,
+    );
   }
 }

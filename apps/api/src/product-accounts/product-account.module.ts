@@ -10,6 +10,10 @@ import { ProductAccountService } from "./product-account.service.js";
 @Module({
   imports: [AuthModule, CrmModule],
   controllers: [ProductAccountController, ProductCatalogController],
-  providers: [PlatformDatabaseService, ProductAccountAccessService, ProductAccountService],
+  providers: [
+    PlatformDatabaseService,
+    ProductAccountAccessService,
+    ProductAccountService,
+  ],
 })
 export class ProductAccountModule {}
