@@ -34,6 +34,8 @@ describe("product integration protocol", () => {
     await pool.query(`DELETE FROM product.integration_sync_mutations WHERE installation_id = $1`, [INSTALLATION]);
     await pool.query(`DELETE FROM product.integration_conflicts WHERE installation_id = $1`, [INSTALLATION]);
     await pool.query(`DELETE FROM product.installation_heartbeats WHERE installation_id = $1`, [INSTALLATION]);
+    await pool.query(`DELETE FROM product.integration_event_deliveries WHERE recipient_installation_id = $1`, [INSTALLATION]);
+    await pool.query(`DELETE FROM product.integration_events WHERE account_organization_id = $1`, [ACCOUNT]);
     const module = await Test.createTestingModule({ imports: [AppModule] }).compile(); app = module.createNestApplication(new FastifyAdapter()); await app.init(); fastify = (app.getHttpAdapter() as FastifyAdapter).getInstance(); integrations = app.get(ProductIntegrationService);
     credential = (await integrations.provisionCredential("phase17-staff", INSTALLATION, "2099-01-01T00:00:00.000Z")).credential;
   });
@@ -78,5 +80,15 @@ describe("product integration protocol", () => {
     await pool.query(`UPDATE product.integration_event_deliveries SET status = 'dead_letter' WHERE event_id = $1 AND recipient_installation_id = $2`, [event.eventId, INSTALLATION]);
     expect(await integrations.replayEvent("phase17-staff", event.eventId, INSTALLATION)).toMatchObject({ eventId: event.eventId, installationId: INSTALLATION });
     expect((JSON.parse((await request("/api/v1/product-integrations/events")).body) as { events: Array<{ eventId: string }> }).events).toEqual(expect.arrayContaining([expect.objectContaining({ eventId: event.eventId })]));
+  });
+
+  it("rejects revoked credentials and prevents new leases from a revoked signing key", async () => {
+    await pool.query(`UPDATE product.signing_key_metadata SET status = 'revoked' WHERE key_id = 'phase17-test-key'`);
+    expect((await request("/api/v1/product-integrations/lease", "POST")).statusCode).toBe(409);
+    await pool.query(`UPDATE product.signing_key_metadata SET status = 'active' WHERE key_id = 'phase17-test-key'`);
+    await integrations.revokeCredentials("phase17-staff", INSTALLATION);
+    expect((await request("/api/v1/product-integrations/status")).statusCode).toBe(403);
+    credential = (await integrations.provisionCredential("phase17-staff", INSTALLATION, "2099-01-01T00:00:00.000Z")).credential;
+    expect((await request("/api/v1/product-integrations/verification-keys")).statusCode).toBe(200);
   });
 });

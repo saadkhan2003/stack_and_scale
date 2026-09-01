@@ -21,6 +21,9 @@ describe("product integration SDK", () => {
     const unsigned = { contractVersion: PRODUCT_INTEGRATION_CONTRACT_VERSION, eventId: "event-1", type: "entitlement.lease_issued", source: "platform" as const, subject: { kind: "installation" as const, id: "installation-1" }, occurredAt: "2026-09-01T00:00:00.000Z", payloadVersion: 1 as const, payload: {}, keyId: "key-1" };
     const event: ProductIntegrationEvent = { ...unsigned, signature: sign(null, Buffer.from(canonicalProductIntegrationJson(unsigned)), pair.privateKey).toString("base64url") };
     const deduplicator = new EventDeduplicator(); expect(deduplicator.accept(event, publicKeys)).toBe(true); expect(deduplicator.accept(event, publicKeys)).toBe(false);
+    const reordered: ProductIntegrationEvent = { ...event, eventId: "event-0", signature: sign(null, Buffer.from(canonicalProductIntegrationJson({ ...unsigned, eventId: "event-0" })), pair.privateKey).toString("base64url") };
+    expect(deduplicator.accept(reordered, publicKeys)).toBe(true);
+    expect(() => new EventDeduplicator().accept({ ...event, signature: "tampered" }, publicKeys)).toThrow("invalid");
   });
 
   it("retries transport failures without embedding credentials", async () => {
