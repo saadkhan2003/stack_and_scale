@@ -60,3 +60,15 @@ aggregate capacity record per day and has no API, customer-data, or
 application-service mutation path. A meaningful evidence window requires time
 and representative production operation; no advanced Phase 18 child is
 authorized until that window identifies a measured bottleneck.
+
+## Window-review verification
+
+The protected `review` action completed in [run
+33661556913](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33661556913).
+It validated every retained record and returned only aggregate maturity:
+`2` samples across `1` distinct day, with state `collecting`. This confirms
+that repeated same-day manual captures cannot be misrepresented as a
+meaningful production window. The review will report
+`ready_for_child_proposal` only after at least 28 valid samples across 21
+distinct calendar days; even then, a measured bottleneck and explicit child
+approval remain required.
