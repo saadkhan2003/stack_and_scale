@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { Button } from "@/components/ui/button";
+
 import { playStaffCue } from "../../src/staff-sfx";
 
 export default function StaffError({
@@ -17,9 +19,9 @@ export default function StaffError({
       <p className="staff-loading">
         The route failed before it could load. No CRM data was changed.
       </p>
-      <button className="button button-primary" onClick={reset} type="button">
+      <Button onClick={reset} type="button">
         Try again
-      </button>
+      </Button>
     </section>
   );
 }

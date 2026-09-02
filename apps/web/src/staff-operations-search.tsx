@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 import { playStaffCue } from "./staff-sfx";
 
 type SearchResult = {
@@ -73,11 +78,11 @@ export function StaffOperationsSearch() {
         className="staff-search-form"
         onSubmit={(event) => void search(event)}
       >
-        <label htmlFor="operations-query">
+        <Label htmlFor="operations-query">
           Search leads, tasks, content, or documents
-        </label>
+        </Label>
         <div>
-          <input
+          <Input
             id="operations-query"
             maxLength={100}
             minLength={2}
@@ -86,13 +91,12 @@ export function StaffOperationsSearch() {
             type="search"
             value={query}
           />
-          <button
-            className="button button-primary"
+          <Button
             disabled={busy}
             type="submit"
           >
             {busy ? "Searching..." : "Search"}
-          </button>
+          </Button>
         </div>
       </form>
       <p aria-live="polite" role="status">
@@ -101,7 +105,7 @@ export function StaffOperationsSearch() {
       <ul className="staff-search-records">
         {results.map((result) => (
           <li key={`${result.resource_type}-${result.id}`}>
-            <span className="staff-record-id">{result.resource_type}</span>
+            <Badge className="staff-record-id" variant="outline">{result.resource_type}</Badge>
             <strong>{result.title}</strong>
             {result.excerpt ? <small>{result.excerpt}</small> : null}
           </li>

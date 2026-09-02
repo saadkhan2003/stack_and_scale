@@ -2,6 +2,19 @@
 
 import { useEffect, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 import { playStaffCue } from "./staff-sfx";
 
 type Lead = {
@@ -247,12 +260,12 @@ export function StaffLeadInbox() {
           <ul className="staff-lead-list">
             {leads.map((lead) => (
               <li key={lead.id}>
-                <button type="button" onClick={() => void open(lead.id)}>
+                <Button type="button" variant="ghost" onClick={() => void open(lead.id)}>
                   <strong>{lead.name ?? lead.email}</strong>
                   <span>
                     {lead.intakeType} · {lead.stage}
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -264,7 +277,7 @@ export function StaffLeadInbox() {
                 <p className="eyebrow">360 lead record</p>
                 <h2>{selected.name ?? selected.email}</h2>
               </div>
-              <span className="staff-record-id">{selected.intakeType}</span>
+              <Badge className="staff-record-id" variant="outline">{selected.intakeType}</Badge>
             </header>
             <section
               className="staff-sensitive"
@@ -312,57 +325,60 @@ export function StaffLeadInbox() {
               ) : null}
             </section>
             <form action={(form) => void update(form)}>
-              <label>
+              <Label>
                 Owner ID
-                <input defaultValue={selected.ownerId ?? ""} name="ownerId" />
-              </label>
-              <label>
+                <Input defaultValue={selected.ownerId ?? ""} name="ownerId" />
+              </Label>
+              <Label>
                 Stage
-                <select defaultValue={selected.stage} name="stage">
-                  <option value="new">New</option>
-                  <option value="qualified">Qualified</option>
-                  <option value="proposal">Proposal</option>
-                  <option value="won">Won</option>
-                  <option value="lost">Lost</option>
-                </select>
-              </label>
-              <label>
+                <Select defaultValue={selected.stage} name="stage">
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="qualified">Qualified</SelectItem>
+                    <SelectItem value="proposal">Proposal</SelectItem>
+                    <SelectItem value="won">Won</SelectItem>
+                    <SelectItem value="lost">Lost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Label>
+              <Label>
                 Probability
-                <input
+                <Input
                   defaultValue={selected.probability ?? 0}
                   max="100"
                   min="0"
                   name="probability"
                   type="number"
                 />
-              </label>
-              <label>
+              </Label>
+              <Label>
                 Estimated value
-                <input
+                <Input
                   defaultValue={selected.estimatedValue ?? ""}
                   min="0"
                   name="estimatedValue"
                   type="number"
                 />
-              </label>
-              <label>
+              </Label>
+              <Label>
                 Next action
-                <input
+                <Input
                   defaultValue={selected.nextActionAt?.slice(0, 16) ?? ""}
                   name="nextActionAt"
                   type="datetime-local"
                 />
-              </label>
-              <label>
+              </Label>
+              <Label>
                 Lost reason
-                <input
+                <Input
                   defaultValue={selected.lostReason ?? ""}
                   name="lostReason"
                 />
-              </label>
-              <button className="button button-primary" type="submit">
+              </Label>
+              <Button type="submit">
                 Save lead
-              </button>
+              </Button>
             </form>
             <section aria-labelledby="follow-up-heading">
               <h3 id="follow-up-heading">Follow-up tasks</h3>
@@ -387,14 +403,14 @@ export function StaffLeadInbox() {
                       </span>
                     </div>
                     {item.status !== "completed" ? (
-                      <button
+                      <Button
                         aria-label={`Complete ${item.title}`}
                         disabled={busyTask === item.id}
                         onClick={() => void completeTask(item.id)}
                         type="button"
                       >
                         {busyTask === item.id ? "Saving..." : "Complete"}
-                      </button>
+                      </Button>
                     ) : (
                       <span aria-label="Completed">
                         Completed {formatDate(item.completed_at)}
@@ -404,21 +420,21 @@ export function StaffLeadInbox() {
                 ))}
               </ul>
               <form action={(form) => void task(form)}>
-                <label>
+                <Label>
                   New follow-up task
-                  <input name="title" required />
-                </label>
-                <label>
+                  <Input name="title" required />
+                </Label>
+                <Label>
                   Assignee ID
-                  <input name="assigneeId" />
-                </label>
-                <label>
+                  <Input name="assigneeId" />
+                </Label>
+                <Label>
                   Due date
-                  <input name="dueAt" type="datetime-local" />
-                </label>
-                <button className="button button-secondary" type="submit">
+                  <Input name="dueAt" type="datetime-local" />
+                </Label>
+                <Button type="submit" variant="secondary">
                   Create task
-                </button>
+                </Button>
               </form>
             </section>
             <section aria-labelledby="timeline-heading">
@@ -450,13 +466,13 @@ export function StaffLeadInbox() {
                 ))}
               </ul>
               <form action={(form) => void note(form)}>
-                <label>
+                <Label>
                   Add note
-                  <textarea name="body" required rows={3} />
-                </label>
-                <button className="button button-secondary" type="submit">
+                  <Textarea name="body" required rows={3} />
+                </Label>
+                <Button type="submit" variant="secondary">
                   Add note
-                </button>
+                </Button>
               </form>
             </section>
           </article>

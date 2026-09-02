@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { playStaffCue } from "./staff-sfx";
 
 type Article = {
@@ -133,8 +138,7 @@ export function StaffKnowledge() {
       {notice ? <p role="status">{notice}</p> : null}
       <div className="staff-knowledge-grid">
         <div>
-          <button
-            className="button button-primary"
+          <Button
             onClick={() => {
               setSelected(null);
               setForm({
@@ -147,17 +151,17 @@ export function StaffKnowledge() {
             type="button"
           >
             New article
-          </button>
+          </Button>
           <ul className="staff-knowledge-list">
             {items.map((item) => (
               <li key={item.id}>
-                <button onClick={() => void open(item.id)} type="button">
+                <Button variant="ghost" onClick={() => void open(item.id)} type="button">
                   <strong>{item.title}</strong>
                   <span>
                     {item.content_type} · review{" "}
                     {new Date(item.review_at).toLocaleDateString()}
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -167,9 +171,9 @@ export function StaffKnowledge() {
           onSubmit={(event) => void save(event)}
         >
           <h2>{selected ? "Edit article" : "Create article"}</h2>
-          <label>
+          <Label>
             Title
-            <input
+            <Input
               required
               maxLength={200}
               value={form.title}
@@ -177,24 +181,25 @@ export function StaffKnowledge() {
                 setForm({ ...form, title: event.target.value })
               }
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Type
-            <select
+            <Select
               value={form.contentType}
-              onChange={(event) =>
-                setForm({ ...form, contentType: event.target.value })
-              }
+              onValueChange={(value) => setForm({ ...form, contentType: value ?? "procedure" })}
             >
-              <option value="procedure">Procedure</option>
-              <option value="script">Script</option>
-              <option value="faq">FAQ</option>
-              <option value="onboarding">Onboarding</option>
-            </select>
-          </label>
-          <label>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="procedure">Procedure</SelectItem>
+                <SelectItem value="script">Script</SelectItem>
+                <SelectItem value="faq">FAQ</SelectItem>
+                <SelectItem value="onboarding">Onboarding</SelectItem>
+              </SelectContent>
+            </Select>
+          </Label>
+          <Label>
             Owner ID
-            <input
+            <Input
               maxLength={200}
               placeholder="Leave blank to assign yourself"
               value={form.ownerId}
@@ -202,10 +207,10 @@ export function StaffKnowledge() {
                 setForm({ ...form, ownerId: event.target.value })
               }
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Review date
-            <input
+            <Input
               required
               type="date"
               value={form.reviewAt}
@@ -213,23 +218,24 @@ export function StaffKnowledge() {
                 setForm({ ...form, reviewAt: event.target.value })
               }
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Status
-            <select
+            <Select
               value={form.status}
-              onChange={(event) =>
-                setForm({ ...form, status: event.target.value })
-              }
+              onValueChange={(value) => setForm({ ...form, status: value ?? "published" })}
             >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-              <option value="archived">Archived</option>
-            </select>
-          </label>
-          <label>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </Label>
+          <Label>
             Visible roles (comma separated)
-            <input
+            <Input
               value={form.allowedRoles.join(", ")}
               onChange={(event) =>
                 setForm({
@@ -241,10 +247,10 @@ export function StaffKnowledge() {
                 })
               }
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Context tags (comma separated)
-            <input
+            <Input
               value={form.contextTags.join(", ")}
               onChange={(event) =>
                 setForm({
@@ -256,10 +262,10 @@ export function StaffKnowledge() {
                 })
               }
             />
-          </label>
-          <label>
+          </Label>
+          <Label>
             Body
-            <textarea
+            <Textarea
               required
               maxLength={20000}
               rows={12}
@@ -268,18 +274,18 @@ export function StaffKnowledge() {
                 setForm({ ...form, body: event.target.value })
               }
             />
-          </label>
-          <button className="button button-primary" type="submit">
+          </Label>
+          <Button type="submit">
             Save article
-          </button>
+          </Button>
           {selected ? (
-            <button
-              className="button button-secondary"
+            <Button
+              variant="destructive"
               onClick={() => void remove()}
               type="button"
             >
               Delete article
-            </button>
+            </Button>
           ) : null}
         </form>
       </div>

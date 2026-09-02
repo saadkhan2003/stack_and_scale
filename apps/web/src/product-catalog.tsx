@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
 import type { PublicEntry } from "./public-content";
 
 export function ProductCatalog({
@@ -21,15 +25,15 @@ export function ProductCatalog({
 
   return (
     <>
-      <label className="catalog-filter">
+      <Label className="catalog-filter">
         <span>Find a product</span>
-        <input
+        <Input
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search products"
           type="search"
           value={query}
         />
-      </label>
+      </Label>
       <div className="content-grid product-catalog" aria-live="polite">
         {visibleEntries.map((entry) => (
           <article className="content-card" key={entry.id}>
@@ -44,9 +48,9 @@ export function ProductCatalog({
         {visibleEntries.length === 0 ? (
           <p className="empty-catalog">
             No product matches that search.{" "}
-            <button onClick={() => setQuery("")} type="button">
+            <Button onClick={() => setQuery("")} size="sm" type="button" variant="link">
               Clear search
-            </button>
+            </Button>
           </p>
         ) : null}
       </div>

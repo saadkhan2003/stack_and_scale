@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { playStaffCue } from "./staff-sfx";
 
 const reportTypes = [
@@ -92,35 +95,35 @@ export function StaffReports() {
         {notice}
       </p>
       <div className="staff-report-controls">
-        <label>
+        <Label>
           Report
-          <select
+          <Select
             value={type}
-            onChange={(event) =>
-              setType(event.target.value as (typeof reportTypes)[number])
-            }
+            onValueChange={(value) => setType((value ?? "funnel") as (typeof reportTypes)[number])}
           >
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
             {reportTypes.map((item) => (
-              <option key={item} value={item}>
+              <SelectItem key={item} value={item}>
                 {item}
-              </option>
+              </SelectItem>
             ))}
-          </select>
-        </label>
-        <button
-          className="button button-primary"
+            </SelectContent>
+          </Select>
+        </Label>
+        <Button
           onClick={() => void download("json")}
           type="button"
         >
           Download JSON
-        </button>
-        <button
-          className="button button-secondary"
+        </Button>
+        <Button
+          variant="secondary"
           onClick={() => void download("csv")}
           type="button"
         >
           Download CSV
-        </button>
+        </Button>
       </div>
     </section>
   );

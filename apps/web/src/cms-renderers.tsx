@@ -1,5 +1,13 @@
 import type { CmsDocument } from "./cms-content";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+
 type UnknownRecord = Record<string, unknown>;
 
 function record(value: unknown): UnknownRecord | null {
@@ -223,12 +231,11 @@ export function CmsPageBlocks({
             <section className="cms-cta" key={index}>
               <h2>{stringValue(block, "heading")}</h2>
               <p>{stringValue(block, "body")}</p>
-              <a
-                className="button button-primary"
-                href={stringValue(block, "buttonUrl") ?? "/contact"}
+              <Button
+                render={<a href={stringValue(block, "buttonUrl") ?? "/contact"} />}
               >
                 {stringValue(block, "buttonLabel") ?? "Contact us"}
-              </a>
+              </Button>
             </section>
           );
         if (type === "faqBlock") {
@@ -245,12 +252,14 @@ export function CmsPageBlocks({
               <h2>
                 {stringValue(block, "heading") ?? "Frequently asked questions"}
               </h2>
-              {faqs.map((faq) => (
-                <details key={faq.question}>
-                  <summary>{faq.question}</summary>
-                  <p>{faq.answer}</p>
-                </details>
-              ))}
+              <Accordion>
+                {faqs.map((faq) => (
+                  <AccordionItem key={faq.question} value={faq.question}>
+                    <AccordionTrigger>{faq.question}</AccordionTrigger>
+                    <AccordionContent><p>{faq.answer}</p></AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </section>
           ) : null;
         }

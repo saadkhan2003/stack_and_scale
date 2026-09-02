@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 type Consent = "granted" | "denied" | null;
 
 const consentKey = "stack-and-scale-analytics-consent";
@@ -58,16 +60,15 @@ export function AnalyticsController() {
         content is tracked.
       </p>
       <div>
-        <button onClick={() => decide("denied")} type="button">
+        <Button onClick={() => decide("denied")} type="button" variant="outline">
           Decline
-        </button>
-        <button
-          className="button button-primary"
+        </Button>
+        <Button
           onClick={() => decide("granted")}
           type="button"
         >
           Allow analytics
-        </button>
+        </Button>
       </div>
       <a href="/cookies">Cookie details</a>
     </aside>
