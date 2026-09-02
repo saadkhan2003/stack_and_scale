@@ -8,7 +8,7 @@ current system has an on-demand capacity view and one-off protected snapshots,
 but no comparable retained series of aggregate production measurements.
 
 The approved child capability is therefore **production-baseline collection**:
-a protected manual capture that stores only host/database aggregate capacity
+a protected daily or manual capture that stores only host/database aggregate capacity
 measurements. It creates no customer-facing behavior, new data store,
 third-party account, canonical business record, or usage-priced service.
 
@@ -29,8 +29,9 @@ third-party account, canonical business record, or usage-priced service.
 
 GitHub environments can protect jobs, gate access to environment secrets, and
 record deployment/workflow history. `workflow_dispatch` supplies typed manual
-inputs from the default branch. These support a protected explicit capture
-without exposing production SSH material to ordinary CI. Sources: [GitHub
+inputs from the default branch, while scheduled workflows run from the default
+branch. These support a protected, bounded evidence series without exposing
+production SSH material to ordinary CI. Sources: [GitHub
 deployment environments](https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments),
 [workflow dispatch syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 and [deployment controls](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments).
@@ -39,7 +40,8 @@ and [deployment controls](https://docs.github.com/en/actions/how-tos/deploy/conf
 
 The workflow will:
 
-1. require the existing `production` environment and its approval/secrets;
+1. run daily at 03:17 UTC or on a protected manual dispatch, using the existing
+   `production` environment and its approval/secrets;
 2. allow only one capture at a time through a production-specific concurrency
    group;
 3. write a restrictive-permission JSON record on the protected host under
@@ -68,7 +70,8 @@ any individual-level telemetry.
 
 ## Non-goals
 
-- This is not a warehouse, analytics product, observability vendor, scheduled
-  background agent, customer telemetry system, or scale upgrade.
+- This is not a warehouse, analytics product, observability vendor, customer
+  telemetry system, or scale upgrade. Its single daily scheduled capture is a
+  bounded evidence collector, not an application background agent.
 - It does not satisfy the Phase 18 meaningful-evidence window by itself; it
   makes that later evidence possible.

@@ -1,6 +1,9 @@
 name: Phase 18 production baseline capture
 
 on:
+  schedule:
+    # Daily UTC sample; GitHub runs scheduled workflows from the default branch.
+    - cron: "17 3 * * *"
   workflow_dispatch:
     inputs:
       reason:
@@ -26,7 +29,7 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-      CAPTURE_REASON: ${{ inputs.reason }}
+      CAPTURE_REASON: ${{ github.event_name == 'schedule' && 'routine' || inputs.reason }}
     steps:
       - uses: webfactory/ssh-agent@v0.9.1
         with:

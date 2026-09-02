@@ -4,8 +4,8 @@
 
 ## Outcome
 
-Record a comparable, privacy-minimized capacity baseline on the protected host
-without changing application behavior or creating a new paid service.
+Record a comparable, privacy-minimized daily capacity baseline on the protected
+host without changing application behavior or creating a new paid service.
 
 ## Requirement map
 
