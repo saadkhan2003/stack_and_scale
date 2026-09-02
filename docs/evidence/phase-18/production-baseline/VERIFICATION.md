@@ -72,3 +72,29 @@ meaningful production window. The review will report
 `ready_for_child_proposal` only after at least 28 valid samples across 21
 distinct calendar days; even then, a measured bottleneck and explicit child
 approval remain required.
+
+## Aggregate operational coverage
+
+Commit `fb4e55c` expanded future records to schema `1.1`. It adds only
+aggregate 24-hour completed-request, server-failure and mean-duration values
+from the existing Prometheus service, plus pending/processing/dead-letter
+counts and oldest-undelivered age from the durable outbox. It retains neither
+Prometheus labels nor routes, and it never queries outbox payloads or IDs.
+Legacy `1.0` records remain accepted by review.
+
+The first protected attempt ([run
+33667260565](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33667260565))
+failed before writing a record because the API container deliberately lacks
+access to the monitoring network. The workflow was corrected to query
+Prometheus over loopback from its own container and parse only the scalar JSON
+result. The corrected capture ([run
+33667366455](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33667366455))
+passed and recorded a redacted summary: 14 services, 9 PostgreSQL connections,
+0 completed requests in the preceding 24 hours and 0 pending outbox events.
+
+The compatibility review ([run
+33667417697](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33667417697))
+accepted the two `1.0` records and the new `1.1` record. Its aggregate result
+was `3` samples across `1` distinct day, still `collecting`. The zeros are a
+valid observed result, not a reason to invent activity or to activate an
+advanced Phase 18 capability.
