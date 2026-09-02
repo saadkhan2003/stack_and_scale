@@ -2,6 +2,21 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 type FormStatus = "idle" | "sending" | "success" | "error";
 const whatsappNumber =
   process.env["NEXT_PUBLIC_WHATSAPP_BUSINESS_NUMBER"]?.replace(/\D/g, "") ?? "";
@@ -117,51 +132,59 @@ export function LeadForm() {
 
   if (status === "success")
     return (
-      <section className="lead-success" aria-live="polite">
-        <h2>Thank you — your request is with us.</h2>
-        <p>
-          We will reply using the email address you provided. If it is urgent,
-          include that in your message.
-        </p>
-        <button
-          className="button button-secondary"
+      <Card className="lead-success" aria-live="polite">
+        <CardHeader>
+          <CardTitle>Thank you — your request is with us.</CardTitle>
+          <CardDescription>
+            We will reply using the email address you provided. If it is urgent,
+            include that in your message.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+          variant="secondary"
           onClick={() => setStatus("idle")}
           type="button"
         >
           Send another request
-        </button>
-      </section>
+          </Button>
+        </CardContent>
+      </Card>
     );
   return (
     <form className="lead-form" onSubmit={(event) => void submit(event)}>
       <div className="form-grid">
-        <label>
+        <Label htmlFor="lead-name">
           Name
-          <input autoComplete="name" name="name" required />
-        </label>
-        <label>
+          <Input autoComplete="name" id="lead-name" name="name" required />
+        </Label>
+        <Label htmlFor="lead-email">
           Email
-          <input autoComplete="email" name="email" required type="email" />
-        </label>
-        <label>
+          <Input autoComplete="email" id="lead-email" name="email" required type="email" />
+        </Label>
+        <Label htmlFor="lead-phone">
           Phone <span>(optional)</span>
-          <input autoComplete="tel" name="phone" type="tel" />
-        </label>
-        <label>
+          <Input autoComplete="tel" id="lead-phone" name="phone" type="tel" />
+        </Label>
+        <Label htmlFor="lead-intake-type">
           How can we help?
-          <select
+          <Select
+            id="lead-intake-type"
             name="intakeType"
-            onChange={(event) => setIntakeType(event.target.value)}
+            onValueChange={(value) => setIntakeType(value ?? "project")}
             value={intakeType}
           >
-            <option value="demo">Book a product demo</option>
-            <option value="project">Discuss a custom project</option>
-            <option value="contact">General contact</option>
+            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="demo">Book a product demo</SelectItem>
+              <SelectItem value="project">Discuss a custom project</SelectItem>
+              <SelectItem value="contact">General contact</SelectItem>
             {whatsappNumber ? (
-              <option value="whatsapp">Continue on WhatsApp</option>
+                <SelectItem value="whatsapp">Continue on WhatsApp</SelectItem>
             ) : null}
-          </select>
-        </label>
+            </SelectContent>
+          </Select>
+        </Label>
       </div>
       {intakeType === "demo" ? (
         <fieldset className="demo-request">
@@ -169,57 +192,60 @@ export function LeadForm() {
             Book a product demo <span>(optional)</span>
           </legend>
           {slots.length > 0 ? (
-            <label>
+            <Label htmlFor="demo-starts-at">
               Available time
-              <select defaultValue="" name="demoStartsAt">
-                <option value="">Choose a time</option>
+              <Select name="demoStartsAt">
+                <SelectTrigger className="w-full" id="demo-starts-at"><SelectValue placeholder="Choose a time" /></SelectTrigger>
+                <SelectContent>
                 {slots.map((slot) => (
-                  <option key={slot} value={slot}>
+                    <SelectItem key={slot} value={slot}>
                     {new Date(slot).toLocaleString()}
-                  </option>
+                    </SelectItem>
                 ))}
-              </select>
-            </label>
+                </SelectContent>
+              </Select>
+            </Label>
           ) : (
             <p>
               No public slots are currently listed. Send an alternate time and
               our team will confirm it.
             </p>
           )}
-          <label>
+          <Label htmlFor="alternate-request">
             Alternative time or notes
-            <textarea name="alternateRequest" rows={3} />
-          </label>
+            <Textarea id="alternate-request" name="alternateRequest" rows={3} />
+          </Label>
         </fieldset>
       ) : null}
-      <label>
+      <Label htmlFor="lead-message">
         What would you like to improve?
-        <textarea name="message" rows={5} />
-      </label>
+        <Textarea id="lead-message" name="message" rows={5} />
+      </Label>
       <label className="honeypot" aria-hidden="true">
         Company
-        <input autoComplete="off" name="company" tabIndex={-1} />
+        <Input autoComplete="off" name="company" tabIndex={-1} />
       </label>
-      <label className="consent-check">
-        <input name="consent" required type="checkbox" />{" "}
+      <Label className="consent-check" htmlFor="lead-consent">
+        <Checkbox id="lead-consent" name="consent" required />
         <span>
           I agree that Stack &amp; Scale may use these details to respond to
           this request. <a href="/privacy">Privacy details</a>.
         </span>
-      </label>
+      </Label>
       {status === "error" ? (
-        <p className="form-error" role="alert">
+        <Alert className="form-error" variant="destructive">
+          <AlertDescription>
           {error} Your details are still in this form. You can try again
           shortly.
-        </p>
+          </AlertDescription>
+        </Alert>
       ) : null}
-      <button
-        className="button button-primary"
+      <Button
         disabled={status === "sending"}
         type="submit"
       >
         {status === "sending" ? "Sending…" : "Send request"}
-      </button>
+      </Button>
     </form>
   );
 }

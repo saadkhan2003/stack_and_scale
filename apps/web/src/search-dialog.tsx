@@ -1,6 +1,17 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import type { SearchEntry } from "./public-search";
 
@@ -10,7 +21,6 @@ export function SearchDialog({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const descriptionId = useId();
   const results = useMemo(() => {
     const words = query.trim().toLocaleLowerCase();
     return words.length === 0
@@ -42,48 +52,30 @@ export function SearchDialog({
 
   return (
     <>
-      <button
-        aria-haspopup="dialog"
-        className="search-trigger"
-        onClick={() => setOpen(true)}
-        type="button"
-      >
-        Search <kbd>Ctrl K</kbd>
-      </button>
-      {open ? (
-        <div
-          className="search-backdrop"
-          onMouseDown={() => setOpen(false)}
-          role="presentation"
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger
+          render={
+            <Button className="search-trigger" size="sm" variant="outline" />
+          }
         >
-          <section
-            aria-describedby={descriptionId}
-            aria-label="Public site search"
-            aria-modal="true"
-            className="search-dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-            role="dialog"
-          >
-            <div className="search-dialog-top">
-              <label htmlFor="public-search">
-                Search products, services, work and resources
-              </label>
-              <button onClick={() => setOpen(false)} type="button">
-                Close
-              </button>
-            </div>
-            <p id={descriptionId}>
+          Search <kbd>Ctrl K</kbd>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl gap-3 p-5 sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Search Stack &amp; Scale</DialogTitle>
+            <DialogDescription>
               Only published, public content is included.
-            </p>
-            <input
-              id="public-search"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="What are you looking for?"
-              ref={inputRef}
-              type="search"
-              value={query}
-            />
-            <div className="search-results" role="list">
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            id="public-search"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="What are you looking for?"
+            ref={inputRef}
+            type="search"
+            value={query}
+          />
+          <div className="search-results max-h-[50vh]" role="list">
               {results.map((entry) => (
                 <a
                   href={entry.href}
@@ -103,10 +95,9 @@ export function SearchDialog({
               {results.length === 0 ? (
                 <p>No published content matches that search.</p>
               ) : null}
-            </div>
-          </section>
-        </div>
-      ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

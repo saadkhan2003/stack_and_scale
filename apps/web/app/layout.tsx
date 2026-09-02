@@ -5,6 +5,7 @@ import "./globals.css";
 import { AnalyticsController } from "../src/analytics-controller";
 import { JsonLd } from "../src/json-ld";
 import { siteUrl } from "../src/seo";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +32,7 @@ export default function RootLayout({
             url: siteUrl.toString(),
           }}
         />
-        {children}
+        <TooltipProvider>{children}</TooltipProvider>
         <AnalyticsController />
       </body>
     </html>

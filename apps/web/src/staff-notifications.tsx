@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
 import { playStaffCue } from "./staff-sfx";
 
 type Notification = {
@@ -103,15 +108,14 @@ export function StaffNotifications() {
         aria-label="Notification preferences"
       >
         {Object.keys(preferences).map((category) => (
-          <label key={category}>
-            <input
+          <Label key={category}>
+            <Checkbox
               checked={preferences[category]}
               disabled={category === "security"}
-              onChange={() => void togglePreference(category)}
-              type="checkbox"
+              onCheckedChange={() => void togglePreference(category)}
             />
             {category} notices
-          </label>
+          </Label>
         ))}
       </div>
       <ul className="staff-notification-list">
@@ -120,20 +124,24 @@ export function StaffNotifications() {
             className={`${item.readAt ? "is-read" : "is-unread"} urgency-${item.urgency}`}
             key={item.id}
           >
-            <button onClick={() => void markRead(item)} type="button">
-              <span className="staff-record-id">
+            <Button onClick={() => void markRead(item)} variant="ghost">
+              <Badge className="staff-record-id" variant="outline">
                 {item.category} / {item.urgency}
-              </span>
+              </Badge>
               <strong>{item.title}</strong>
               <span>{item.body}</span>
               <small>
                 {new Date(item.createdAt).toLocaleString()} · email{" "}
                 {item.deliveryState}
               </small>
-            </button>
-            <a href={item.deepLink} onClick={() => void markRead(item)}>
+            </Button>
+            <Button
+              render={<a href={item.deepLink} />}
+              onClick={() => void markRead(item)}
+              variant="link"
+            >
               Open record
-            </a>
+            </Button>
           </li>
         ))}
       </ul>

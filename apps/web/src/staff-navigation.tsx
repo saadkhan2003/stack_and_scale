@@ -3,6 +3,17 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
 import { primeStaffAudio, setSoundEnabled, soundEnabled } from "./staff-sfx";
 
 export const staffNavigation = [
@@ -38,52 +49,31 @@ function StaffCommandSearch() {
 
   return (
     <div className="staff-command-search">
-      <button
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        className="staff-search-trigger"
-        onClick={() => {
-          setOpen(true);
-          primeStaffAudio("open");
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          primeStaffAudio(nextOpen ? "open" : "close");
         }}
-        type="button"
       >
-        Find a workspace <kbd>Ctrl K</kbd>
-      </button>
-      {open ? (
-        <div
-          className="staff-search-backdrop"
-          onMouseDown={() => setOpen(false)}
-          role="presentation"
+        <DialogTrigger
+          render={<Button className="staff-search-trigger" size="sm" variant="outline" />}
         >
-          <section
-            aria-label="Staff workspace search"
-            aria-modal="true"
-            className="staff-search-dialog"
-            onMouseDown={(event) => event.stopPropagation()}
-            role="dialog"
-          >
-            <div className="staff-search-heading">
-              <label htmlFor="staff-workspace-search">Go to</label>
-              <button
-                aria-label="Close workspace search"
-                onClick={() => {
-                  setOpen(false);
-                  primeStaffAudio("close");
-                }}
-                type="button"
-              >
-                Close
-              </button>
-            </div>
-            <input
-              autoFocus
-              id="staff-workspace-search"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Dashboard, leads, or search"
-              type="search"
-              value={query}
-            />
+          Find a workspace <kbd>Ctrl K</kbd>
+        </DialogTrigger>
+        <DialogContent className="staff-search-dialog max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Go to workspace</DialogTitle>
+            <DialogDescription>Search the staff workspace destinations.</DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            id="staff-workspace-search"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Dashboard, leads, or search"
+            type="search"
+            value={query}
+          />
             <nav
               aria-label="Workspace destinations"
               className="staff-search-results"
@@ -99,10 +89,9 @@ function StaffCommandSearch() {
                 </a>
               ))}
               {results.length === 0 ? <p>No workspace matches.</p> : null}
-            </nav>
-          </section>
-        </div>
-      ) : null}
+          </nav>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -140,7 +129,7 @@ export function StaffNavigation() {
       </nav>
       <div className="staff-tools">
         <StaffCommandSearch />
-        <button
+        <Button
           aria-pressed={enabled}
           className="staff-sound-toggle"
           onClick={() => {
@@ -153,14 +142,15 @@ export function StaffNavigation() {
           type="button"
         >
           {enabled ? "Sound on" : "Sound off"}
-        </button>
-        <a
+        </Button>
+        <Button
           className="staff-exit"
-          href="/api/auth/logout"
+          render={<a href="/api/auth/logout" />}
+          variant="link"
           onClick={() => primeStaffAudio("lock")}
         >
           Sign out
-        </a>
+        </Button>
       </div>
     </header>
   );

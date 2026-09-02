@@ -2,6 +2,21 @@
 
 import { useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
 type Review = {
   id: string;
   target: { version: string; renderedChecksumSha256: string };
@@ -60,7 +75,7 @@ export function PortalControls({
         <ul>
           {reviews.map((review) => (
             <li key={review.id}>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   void (async () => {
@@ -86,8 +101,9 @@ export function PortalControls({
                 }}
               >
                 Accept review
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 type="button"
                 onClick={() => {
                   void (async () => {
@@ -113,7 +129,7 @@ export function PortalControls({
                 }}
               >
                 Decline review
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -144,29 +160,32 @@ export function PortalControls({
             })();
           }}
         >
-          <label>
-            Subject <input name="subject" required maxLength={180} />
-          </label>
-          <label>
+          <Label>
+            Subject <Input name="subject" required maxLength={180} />
+          </Label>
+          <Label>
             Category
-            <select name="category" defaultValue="question">
-              <option value="question">Question</option>
-              <option value="request">Request</option>
-              <option value="bug">Bug</option>
-              <option value="billing">Billing</option>
-              <option value="other">Other</option>
-            </select>
-          </label>
-          <label>
-            Details <textarea name="description" required maxLength={12000} />
-          </label>
-          <button type="submit">Send request</button>
+            <Select name="category" defaultValue="question">
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="question">Question</SelectItem>
+                <SelectItem value="request">Request</SelectItem>
+                <SelectItem value="bug">Bug</SelectItem>
+                <SelectItem value="billing">Billing</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </Label>
+          <Label>
+            Details <Textarea name="description" required maxLength={12000} />
+          </Label>
+          <Button type="submit">Send request</Button>
         </form>
         {tickets.length ? <h3>Your open and recent requests</h3> : null}
         <ul>
           {tickets.map((ticket) => (
             <li key={ticket.id}>
-              <strong>{ticket.subject}</strong> — {ticket.status}
+              <strong>{ticket.subject}</strong> — <Badge variant="outline">{ticket.status}</Badge>
               <form
                 onSubmit={(event) => {
                   void (async () => {
@@ -191,11 +210,11 @@ export function PortalControls({
                   })();
                 }}
               >
-                <label>
+                <Label>
                   Add a public reply
-                  <textarea name="body" required maxLength={12000} />
-                </label>
-                <button type="submit">Send reply</button>
+                  <Textarea name="body" required maxLength={12000} />
+                </Label>
+                <Button type="submit">Send reply</Button>
               </form>
             </li>
           ))}
@@ -204,18 +223,17 @@ export function PortalControls({
       <section aria-labelledby="notifications-heading">
         <h2 id="notifications-heading">Notifications</h2>
         {preferences.map((preference) => (
-          <label key={preference.category}>
-            <input
-              type="checkbox"
+          <Label key={preference.category}>
+            <Checkbox
               defaultChecked={preference.enabled}
               disabled={preference.category === "security"}
-              onChange={(event) => {
+              onCheckedChange={(checked) => {
                 void (async () => {
                   try {
                     await send(
                       `notification-preferences/${preference.category}`,
                       {
-                        enabled: event.currentTarget.checked,
+                        enabled: checked,
                       },
                     );
                     setMessage("Notification preference saved.");
@@ -230,7 +248,7 @@ export function PortalControls({
               }}
             />
             {preference.category} notifications
-          </label>
+          </Label>
         ))}
       </section>
       {canManageMembers ? (
@@ -263,17 +281,20 @@ export function PortalControls({
               })();
             }}
           >
-            <label>
-              Email <input name="email" type="email" required maxLength={254} />
-            </label>
-            <label>
+            <Label>
+              Email <Input name="email" type="email" required maxLength={254} />
+            </Label>
+            <Label>
               Role
-              <select name="role" defaultValue="client_member">
-                <option value="client_member">Member</option>
-                <option value="client_admin">Administrator</option>
-              </select>
-            </label>
-            <button type="submit">Grant access</button>
+              <Select name="role" defaultValue="client_member">
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="client_member">Member</SelectItem>
+                  <SelectItem value="client_admin">Administrator</SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+            <Button type="submit">Grant access</Button>
           </form>
           <ul>
             {members.map((member) => (
@@ -281,7 +302,9 @@ export function PortalControls({
                 <strong>{member.email}</strong> — {member.role} ({member.status}
                 ){" "}
                 {member.status === "active" ? (
-                  <button
+                  <Button
+                    size="sm"
+                    variant="destructive"
                     type="button"
                     onClick={() => {
                       void (async () => {
@@ -301,14 +324,14 @@ export function PortalControls({
                     }}
                   >
                     Revoke access
-                  </button>
+                  </Button>
                 ) : null}
               </li>
             ))}
           </ul>
         </section>
       ) : null}
-      <p aria-live="polite">{message}</p>
+      {message ? <Alert aria-live="polite"><AlertDescription>{message}</AlertDescription></Alert> : null}
     </>
   );
 }

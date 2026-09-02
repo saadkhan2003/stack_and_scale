@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+
 import { playStaffCue } from "./staff-sfx";
 
 export type StaffAccessState =
@@ -68,69 +71,68 @@ function AccessMessage({
 }: Readonly<{ state: StaffAccessState; retry: () => void }>) {
   if (state === "anonymous") {
     return (
-      <div className="staff-status staff-status-warning" role="alert">
+      <Alert className="staff-status staff-status-warning">
         <span className="staff-status-code">401</span>
         <div>
-          <h2>Sign-in required</h2>
-          <p>Your staff session is missing or has expired.</p>
-          <a
-            className="button button-primary"
-            href="/signin"
+          <AlertTitle>Sign-in required</AlertTitle>
+          <AlertDescription>Your staff session is missing or has expired.</AlertDescription>
+          <Button
+            render={<a href="/signin" />}
             onClick={() => playStaffCue("unlock")}
           >
             Continue to sign in
-          </a>
+          </Button>
         </div>
-      </div>
+      </Alert>
     );
   }
   if (state === "forbidden") {
     return (
-      <div className="staff-status staff-status-warning" role="alert">
+      <Alert className="staff-status staff-status-warning">
         <span className="staff-status-code">403</span>
         <div>
-          <h2>Access is restricted</h2>
-          <p>Your active staff membership does not include CRM access.</p>
+          <AlertTitle>Access is restricted</AlertTitle>
+          <AlertDescription>Your active staff membership does not include CRM access.</AlertDescription>
         </div>
-      </div>
+      </Alert>
     );
   }
   if (state === "degraded") {
     return (
-      <div className="staff-status staff-status-warning" role="alert">
+      <Alert className="staff-status staff-status-warning">
         <span className="staff-status-code">503</span>
         <div>
-          <h2>Workspace is degraded</h2>
-          <p>
+          <AlertTitle>Workspace is degraded</AlertTitle>
+          <AlertDescription>
             CRM access is temporarily unavailable. Your session remains
             protected.
-          </p>
-          <button
-            className="button button-secondary"
+          </AlertDescription>
+          <Button
+            variant="secondary"
             onClick={retry}
             type="button"
           >
             Try again
-          </button>
+          </Button>
         </div>
-      </div>
+      </Alert>
     );
   }
   return (
-    <div className="staff-status staff-status-error" role="alert">
+    <Alert className="staff-status staff-status-error" variant="destructive">
       <span className="staff-status-code">!</span>
       <div>
-        <h2>We could not verify the workspace</h2>
-        <p>Something unexpected interrupted the staff access check.</p>
-        <button
-          className="button button-secondary"
+        <AlertTitle>We could not verify the workspace</AlertTitle>
+        <AlertDescription>Something unexpected interrupted the staff access check.</AlertDescription>
+        <Button
+          variant="secondary"
           onClick={retry}
           type="button"
         >
           Try again
-        </button>
+        </Button>
       </div>
-    </div>
+    </Alert>
   );
 }
 
