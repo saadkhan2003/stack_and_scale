@@ -108,9 +108,23 @@ jobs:
               ;;
             disable-integration|enable-integration)
               if [ "$action" = disable-integration ]; then enabled=false; else enabled=true; fi
+              credential="$(openssl rand -base64 48 | tr -d '=+/\n' | cut -c1-48)"
+              credential_hash="$(printf %s "$credential" | sha256sum | cut -d' ' -f1)"
               psql <<SQL
           UPDATE product.account_organizations SET integration_enabled = $enabled, updated_at = now() WHERE id = 'phase17-qa-account';
+          DELETE FROM product.installation_credentials WHERE installation_id = 'phase17-qa-installation';
+          INSERT INTO product.installation_credentials (id,installation_id,credential_hash,status,expires_at) VALUES ('phase17-qa-credential','phase17-qa-installation','$credential_hash','active',now() + interval '30 minutes');
           SQL
+              expected_status=200
+              if [ "$action" = disable-integration ]; then expected_status=403; fi
+              "${compose[@]}" exec -T -e PHASE17_QA_CREDENTIAL="$credential" -e PHASE17_EXPECTED_STATUS="$expected_status" api node - <<'NODE'
+          const response = await fetch('http://127.0.0.1:3100/api/v1/product-integrations/status', {
+            headers: { 'x-product-installation-credential': process.env.PHASE17_QA_CREDENTIAL },
+          });
+          if (response.status !== Number(process.env.PHASE17_EXPECTED_STATUS)) {
+            throw new Error(`expected ${process.env.PHASE17_EXPECTED_STATUS}, received ${response.status}: ${await response.text()}`);
+          }
+          NODE
               ;;
             *) exit 64 ;;
           esac
