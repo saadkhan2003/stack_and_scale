@@ -56,7 +56,7 @@ jobs:
           if [[ ! "$image_tag" =~ ^[a-f0-9]{7,64}$ ]]; then image_tag="unknown"; fi
           read -r load_one _ < /proc/loadavg
           cpu_count="$(getconf _NPROCESSORS_ONLN)"
-          cpu_percent="$(awk -v load="$load_one" -v count="$cpu_count" 'BEGIN { printf "%.2f", (load / (count > 0 ? count : 1)) * 100 }')"
+          cpu_percent="$(awk -v host_load="$load_one" -v count="$cpu_count" 'BEGIN { printf "%.2f", (host_load / (count > 0 ? count : 1)) * 100 }')"
           memory_total="$(awk '/MemTotal:/ { print $2 * 1024 }' /proc/meminfo)"
           memory_available="$(awk '/MemAvailable:/ { print $2 * 1024 }' /proc/meminfo)"
           memory_used="$((memory_total - memory_available))"
