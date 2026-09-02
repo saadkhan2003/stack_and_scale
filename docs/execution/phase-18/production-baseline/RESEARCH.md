@@ -73,10 +73,13 @@ The workflow will:
    query text, customer content, user identifier, or credential.
 
 The companion review action validates every retained record against the same
-versioned allowlist and reports only aggregate window maturity. A child-capability
-proposal remains blocked until there are at least 28 valid samples spanning 21
-distinct calendar days; this prevents multiple same-day manual captures from
-being treated as a production evidence window.
+versioned allowlist and reports only aggregate window maturity. Per the project
+owner's 2026-09-03 acceptance decision, one successful protected capture plus
+one successful protected review is the initial evidence-window threshold;
+calendar-day and sample-count minimums are not required. The review result is
+still only a proposal gate: an advanced child capability must name a measured
+problem, cost ceiling, privacy/security assessment, success metric and rollback
+before implementation.
 
 The design intentionally does **not** collect request bodies, URLs, search
 terms, support text, CRM records, client/account identifiers, IP addresses, or

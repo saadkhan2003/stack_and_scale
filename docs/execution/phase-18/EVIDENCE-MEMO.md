@@ -1,7 +1,8 @@
 # Phase 18 evidence and prioritization memo
 
 **Decision date:** 2026-09-02  
-**Status:** No Phase 18 child capability is approved for implementation.
+**Status:** Initial evidence window accepted; no advanced Phase 18 child
+capability is approved for implementation.
 
 ## Decision
 
@@ -9,17 +10,19 @@ Do not activate advanced analytics, specialist search, marketing automation,
 workflow automation, AI-assisted features, a public developer platform,
 regional infrastructure, or additional compliance tooling at this time.
 Phase 18 is a portfolio gate, not blanket implementation authorization. The
-required meaningful production evidence window does not yet exist.
+initial protected production evidence window is complete under the project
+owner's 2026-09-03 acceptance decision: one valid protected capture and review
+are sufficient; no 21-day or 28-sample minimum applies.
 
 ## Evidence reviewed
 
-| Required baseline                                  | Current evidence                                                                                                                | Finding                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Traffic, latency, database and infrastructure cost | The capacity ledger contains planning allocations and control thresholds, not a representative customer-production measurement. | No measured scale, query, availability, or cost bottleneck.                                 |
-| Client/product usage                               | Phases 15–17 include isolated synthetic-account rollout verification.                                                           | Synthetic QA proves safety, not user demand, workload, or operational value.                |
-| Search quality                                     | No production search-failure, zero-result, relevance, or authorization-escape dataset exists.                                   | Specialist search is not justified.                                                         |
-| Staff workload and support volume                  | No sustained queue, support, conversion, or repetitive-process baseline exists.                                                 | Automation and AI are not justified.                                                        |
-| Integration load                                   | Phase 17’s synthetic installation passed bounded protocol and toggle checks.                                                    | This establishes a safe baseline; it does not demonstrate a public developer-platform need. |
+| Required baseline                                  | Current evidence                                                                                                          | Finding                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Traffic, latency, database and infrastructure cost | Protected Phase 18 records now capture aggregate host/database/traffic/outbox values, with four valid records and review. | No measured scale, query, availability, or cost bottleneck.                                 |
+| Client/product usage                               | Protected records now also capture whole-platform lead, task, support and integration aggregates.                         | Current evidence establishes the baseline but identifies no advanced-capability bottleneck. |
+| Search quality                                     | No production search-failure, zero-result, relevance, or authorization-escape dataset exists.                             | Specialist search is not justified.                                                         |
+| Staff workload and support volume                  | No sustained queue, support, conversion, or repetitive-process baseline exists.                                           | Automation and AI are not justified.                                                        |
+| Integration load                                   | Phase 17’s synthetic installation passed bounded protocol and toggle checks.                                              | This establishes a safe baseline; it does not demonstrate a public developer-platform need. |
 
 Sources: [capacity ledger](../../operations/CAPACITY-LEDGER.md), [Phase 15
 assurance](../../evidence/phase-15/15.6-assurance-rollout.md), [Phase 16
@@ -41,8 +44,8 @@ and [Phase 17 assurance](../../evidence/phase-17/17.8-capacity-rollout/VERIFICAT
 
 Collect a meaningful production window without introducing any new feature:
 
-1. Capture timestamped host/database capacity, query latency, queue lag,
-   traffic and infrastructure cost using the existing operational controls.
+1. The initial protected evidence window is complete. Continue daily collection
+   to improve confidence and detect a trend, but it is not an activation gate.
 2. Capture consented, aggregate search, lead, support, portal and integration
    demand/failure metrics without adding personal data to the telemetry stream.
 3. Identify one material bottleneck and name the affected users and current

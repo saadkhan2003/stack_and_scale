@@ -122,3 +122,17 @@ The protected review [run
 accepted every schema version from `1.0` through `1.2`. It reported `4`
 samples across `1` distinct day and correctly stayed `collecting`; same-day
 manual captures cannot satisfy the Phase 18 production-evidence window.
+
+## Initial-window acceptance
+
+On 2026-09-03, the project owner explicitly removed the collector's former
+28-sample/21-day maturity requirement. The accepted initial evidence window is
+therefore the already verified protected capture/review pair, with the current
+allowlisted aggregate schema. The review now reports
+`ready_for_child_proposal` after validating any retained record set.
+
+This does not manufacture a user-demand, search, scale, or automation
+bottleneck. It completes the evidence foundation and Phase 18's initial
+portfolio decision: the observed records do not justify activating an advanced
+child capability, so the simpler production path remains in place. Daily
+collection continues as a confidence and change-detection control.

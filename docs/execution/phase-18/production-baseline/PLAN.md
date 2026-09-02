@@ -19,6 +19,14 @@ a new paid service.
 | Bounded retention and $0 cost   | 90-day cleanup and capacity-ledger entry            |
 | No service mutation / rollback  | Workflow behavior and removal instructions          |
 
+## Evidence-window acceptance
+
+The initial Phase 18 evidence window is complete after one protected capture
+and one protected review accept the current schema allowlist. This owner-approved
+threshold replaces the former 28-sample/21-day collector maturity rule. It does
+not authorize an advanced capability by itself: each remains separately gated
+by the Phase 18 evidence memo and its own child plan.
+
 ## Steps
 
 1. `18.1-requirements-research` — freeze the aggregate field set, privacy
