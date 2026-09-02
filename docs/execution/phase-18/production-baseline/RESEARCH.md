@@ -8,14 +8,23 @@ current system has an on-demand capacity view and one-off protected snapshots,
 but no comparable retained series of aggregate production measurements.
 
 The approved child capability is therefore **production-baseline collection**:
-a protected daily or manual capture that stores only host/database aggregate capacity
-measurements. It creates no customer-facing behavior, new data store,
-third-party account, canonical business record, or usage-priced service.
+a protected daily or manual capture that stores only aggregate capacity and
+operational-health measurements. It creates no customer-facing behavior, new
+data store, third-party account, canonical business record, or usage-priced
+service.
 
 ## Existing-system findings
 
 - `CapacitySnapshotService` already bounds its staff-only view to CPU, memory,
   disk, PostgreSQL connections and retention controls.
+- The existing Prometheus deployment already retains 14 days of redacted API
+  counters: completed requests, 5xx failures and total request duration. Its
+  labels use route templates rather than URLs, but the baseline collector will
+  query only `sum(...)` aggregates and will never retain labels or routes.
+- The durable outbox already exposes aggregate delivery-state gauges. The
+  collector can additionally query only aggregate pending/processing/dead-letter
+  counts and the age of the oldest undelivered event; it never reads payloads,
+  event IDs, organizations or correlation IDs.
 - Phase 15 has a protected one-off host capture, but its output is intentionally
   not committed and is not a retained, machine-readable series.
 - The capacity ledger explicitly requires timestamp, workload/version, CPU,
@@ -48,13 +57,15 @@ The workflow will:
    `/opt/stack-and-scale/evidence/phase18/baselines/`;
 4. retain the latest 90 days and remove older aggregate records only;
 5. capture timestamp, deployed image tag, normalized load, memory/disk use,
-   database connection count/database bytes, and running service count;
+   database connection count/database bytes, running service count, 24-hour
+   aggregate API volume/failure/mean-duration values, and aggregate outbox
+   backlog/oldest-undelivered age;
 6. validate every written record has only the declared aggregate fields; and
 7. print only a redacted success summary, never an SSH key, connection string,
    query text, customer content, user identifier, or credential.
 
 The companion review action validates every retained record against the same
-allowlist and reports only aggregate window maturity. A child-capability
+versioned allowlist and reports only aggregate window maturity. A child-capability
 proposal remains blocked until there are at least 28 valid samples spanning 21
 distinct calendar days; this prevents multiple same-day manual captures from
 being treated as a production evidence window.
@@ -70,7 +81,7 @@ any individual-level telemetry.
 | Cost           | $0 incremental cost; small local JSON records only.                                                                               |
 | Storage        | At most 90 daily-ish records; remove records older than 90 days.                                                                  |
 | Security       | Existing protected environment, least `contents: read`, pinned host key, no secrets in output.                                    |
-| Privacy        | Aggregate host/database values only; no product/customer/person data.                                                             |
+| Privacy        | Aggregate host/database/Prometheus values only; no product/customer/person data, labels, routes or payloads.                      |
 | Rollback       | Disable/delete the workflow and remove only `/opt/stack-and-scale/evidence/phase18/baselines`; production services are untouched. |
 | Success metric | A valid protected record can be captured, schema-checked and retained without changing a production service.                      |
 

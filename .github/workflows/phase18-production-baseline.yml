@@ -66,6 +66,25 @@ jobs:
           umask 077
           mkdir -p "$evidence_dir"
 
+          prometheus_scalar() {
+            local query="$1"
+            local prometheus_container encoded_query payload
+            prometheus_container="$(docker ps --filter label=com.docker.compose.service=prometheus -q | head -n 1)"
+            test -n "$prometheus_container"
+            encoded_query="$("${compose[@]}" exec -T api node -p 'encodeURIComponent(process.argv[1])' "$query")"
+            payload="$(docker exec "$prometheus_container" wget -qO- "http://127.0.0.1:9090/api/v1/query?query=$encoded_query")"
+            printf '%s' "$payload" | "${compose[@]}" exec -T api node --input-type=module -e '
+              let body = "";
+              for await (const chunk of process.stdin) body += chunk;
+              const payload = JSON.parse(body);
+              const values = payload?.data?.result;
+              if (payload?.status !== "success" || !Array.isArray(values)) throw new Error("Prometheus returned an invalid response");
+              const value = values.reduce((total, sample) => total + Number(sample?.value?.[1] ?? 0), 0);
+              if (!Number.isFinite(value) || value < 0) throw new Error("Prometheus returned an invalid scalar");
+              process.stdout.write(String(value));
+            ' "$query"
+          }
+
           case "$baseline_action" in
           capture)
           captured_at="$(date -u +%FT%TZ)"
@@ -80,29 +99,47 @@ jobs:
           disk_used="$(df -PB1 / | awk 'NR == 2 { print $3 }')"
           disk_total="$(df -PB1 / | awk 'NR == 2 { print $2 }')"
           running_services="$("${compose[@]}" ps --status running -q | wc -l | tr -d ' ')"
+          completed_requests_24h="$(prometheus_scalar 'sum(increase(stack_and_scale_api_requests_total[24h]))')"
+          server_failures_24h="$(prometheus_scalar 'sum(increase(stack_and_scale_api_failures_total[24h]))')"
+          average_request_duration_ms_24h="$(prometheus_scalar 'sum(increase(stack_and_scale_api_request_duration_milliseconds_total[24h])) / clamp_min(sum(increase(stack_and_scale_api_requests_total[24h])), 1)')"
           database="$("${compose[@]}" exec -T postgres sh -c 'exec psql -At -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
           SELECT json_build_object(
             'connections', (SELECT count(*) FROM pg_stat_activity),
-            'databaseBytes', pg_database_size(current_database())
+            'databaseBytes', pg_database_size(current_database()),
+            'outbox', json_build_object(
+              'pending', (SELECT count(*) FROM platform.outbox_events WHERE status = 'pending'),
+              'processing', (SELECT count(*) FROM platform.outbox_events WHERE status = 'processing'),
+              'deadLetter', (SELECT count(*) FROM platform.outbox_events WHERE status = 'dead_letter'),
+              'oldestUndeliveredAgeSeconds', (
+                SELECT COALESCE(
+                  greatest(0, extract(epoch FROM now() - min(created_at))),
+                  0
+                )
+                FROM platform.outbox_events
+                WHERE status IN ('pending', 'processing')
+              )
+            )
           )::text;
           SQL
           )"
           output="$evidence_dir/baseline-$(date -u +%Y%m%dT%H%M%SZ).json"
           temporary="$output.tmp"
-          printf '{\n"schemaVersion":"1.0","capturedAt":"%s","imageTag":"%s","reason":"%s","host":{"cpuUtilizationPercent":%s,"memoryUsedBytes":%s,"memoryTotalBytes":%s,"diskUsedBytes":%s,"diskTotalBytes":%s,"runningServices":%s},"database":%s\n}\n' \
-            "$captured_at" "$image_tag" "$capture_reason" "$cpu_percent" "$memory_used" "$memory_total" "$disk_used" "$disk_total" "$running_services" "$database" > "$temporary"
+          printf '{\n"schemaVersion":"1.1","capturedAt":"%s","imageTag":"%s","reason":"%s","host":{"cpuUtilizationPercent":%s,"memoryUsedBytes":%s,"memoryTotalBytes":%s,"diskUsedBytes":%s,"diskTotalBytes":%s,"runningServices":%s},"database":%s,"traffic":{"completedRequests24h":%s,"serverFailures24h":%s,"averageRequestDurationMilliseconds24h":%s}\n}\n' \
+            "$captured_at" "$image_tag" "$capture_reason" "$cpu_percent" "$memory_used" "$memory_total" "$disk_used" "$disk_total" "$running_services" "$database" "$completed_requests_24h" "$server_failures_24h" "$average_request_duration_ms_24h" > "$temporary"
 
           "${compose[@]}" exec -T api node --input-type=module -e '
             let body = "";
             for await (const chunk of process.stdin) body += chunk;
             const record = JSON.parse(body);
-            const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database"];
+            const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database", "traffic"];
             const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
-            const database = ["connections", "databaseBytes"];
+            const database = ["connections", "databaseBytes", "outbox"];
+            const outbox = ["pending", "processing", "deadLetter", "oldestUndeliveredAgeSeconds"];
+            const traffic = ["completedRequests24h", "serverFailures24h", "averageRequestDurationMilliseconds24h"];
             const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
-            const metrics = [...host, ...database].map((key) => key in record.host ? record.host[key] : record.database[key]);
-            if (!exact(record, top) || !exact(record.host, host) || !exact(record.database, database) || record.schemaVersion !== "1.0" || !["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) || !metrics.every((value) => Number.isFinite(value) && value >= 0) || !Number.isInteger(record.host.runningServices) || !Number.isInteger(record.database.connections) || !Number.isInteger(record.database.databaseBytes)) process.exit(1);
-            process.stdout.write(JSON.stringify({ capturedAt: record.capturedAt, imageTag: record.imageTag, runningServices: record.host.runningServices, databaseConnections: record.database.connections }) + "\n");
+            const metrics = [...host, "connections", "databaseBytes"].map((key) => key in record.host ? record.host[key] : record.database[key]).concat(Object.values(record.database.outbox ?? {}), Object.values(record.traffic ?? {}));
+            if (!exact(record, top) || !exact(record.host, host) || !exact(record.database, database) || !exact(record.database.outbox, outbox) || !exact(record.traffic, traffic) || record.schemaVersion !== "1.1" || !["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) || !metrics.every((value) => Number.isFinite(value) && value >= 0) || ![record.host.runningServices, record.database.connections, record.database.databaseBytes, record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h].every(Number.isInteger)) process.exit(1);
+            process.stdout.write(JSON.stringify({ capturedAt: record.capturedAt, imageTag: record.imageTag, runningServices: record.host.runningServices, databaseConnections: record.database.connections, completedRequests24h: record.traffic.completedRequests24h, outboxPending: record.database.outbox.pending }) + "\n");
           ' < "$temporary"
           mv "$temporary" "$output"
           find "$evidence_dir" -maxdepth 1 -type f -name 'baseline-*.json' -mtime +90 -delete
@@ -124,12 +161,23 @@ jobs:
           } | "${compose[@]}" exec -T api node --input-type=module -e '
             let body = "";
             for await (const chunk of process.stdin) body += chunk;
-            const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database"];
+            const legacyTop = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database"];
+            const extendedTop = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database", "traffic"];
             const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
-            const database = ["connections", "databaseBytes"];
+            const legacyDatabase = ["connections", "databaseBytes"];
+            const extendedDatabase = ["connections", "databaseBytes", "outbox"];
+            const outbox = ["pending", "processing", "deadLetter", "oldestUndeliveredAgeSeconds"];
+            const traffic = ["completedRequests24h", "serverFailures24h", "averageRequestDurationMilliseconds24h"];
             const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
             const records = body.trim().split(/\n(?=\{)/).map((line) => JSON.parse(line));
-            const valid = (record) => exact(record, top) && exact(record.host, host) && exact(record.database, database) && record.schemaVersion === "1.0" && ["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) && Number.isFinite(Date.parse(record.capturedAt)) && [...host, ...database].map((key) => key in record.host ? record.host[key] : record.database[key]).every((value) => Number.isFinite(value) && value >= 0);
+            const baseValid = (record) => ["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) && Number.isFinite(Date.parse(record.capturedAt)) && exact(record.host, host) && [...host, "connections", "databaseBytes"].map((key) => key in record.host ? record.host[key] : record.database?.[key]).every((value) => Number.isFinite(value) && value >= 0) && [record.host?.runningServices, record.database?.connections, record.database?.databaseBytes].every(Number.isInteger);
+            const valid = (record) => {
+              if (!baseValid(record)) return false;
+              if (record.schemaVersion === "1.0") return exact(record, legacyTop) && exact(record.database, legacyDatabase);
+              if (record.schemaVersion !== "1.1" || !exact(record, extendedTop) || !exact(record.database, extendedDatabase) || !exact(record.database.outbox, outbox) || !exact(record.traffic, traffic)) return false;
+              const extra = [...Object.values(record.database.outbox), ...Object.values(record.traffic)];
+              return extra.every((value) => Number.isFinite(value) && value >= 0) && [record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h].every(Number.isInteger);
+            };
             if (!records.length || !records.every(valid)) process.exit(1);
             const dates = [...new Set(records.map((record) => record.capturedAt.slice(0, 10)))].sort();
             const summary = { samples: records.length, distinctDays: dates.length, oldestDay: dates[0], latestDay: dates.at(-1), maturity: dates.length >= 21 && records.length >= 28 ? "ready_for_child_proposal" : "collecting" };

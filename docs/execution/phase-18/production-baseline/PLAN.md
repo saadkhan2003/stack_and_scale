@@ -4,17 +4,19 @@
 
 ## Outcome
 
-Record a comparable, privacy-minimized daily capacity baseline on the protected
-host without changing application behavior or creating a new paid service.
+Record a comparable, privacy-minimized daily capacity and operational-health
+baseline on the protected host without changing application behavior or creating
+a new paid service.
 
 ## Requirement map
 
-| Requirement                    | Evidence                                            |
-| ------------------------------ | --------------------------------------------------- |
-| Protected/manual access        | Production-environment workflow and successful run  |
-| Aggregate-only record          | Schema validation and review of the workflow fields |
-| Bounded retention and $0 cost  | 90-day cleanup and capacity-ledger entry            |
-| No service mutation / rollback | Workflow behavior and removal instructions          |
+| Requirement                     | Evidence                                            |
+| ------------------------------- | --------------------------------------------------- |
+| Protected/manual access         | Production-environment workflow and successful run  |
+| Aggregate-only record           | Schema validation and review of the workflow fields |
+| Aggregate demand/failure signal | 24-hour Prometheus sums and aggregate outbox state  |
+| Bounded retention and $0 cost   | 90-day cleanup and capacity-ledger entry            |
+| No service mutation / rollback  | Workflow behavior and removal instructions          |
 
 ## Steps
 
@@ -26,6 +28,8 @@ host without changing application behavior or creating a new paid service.
    redacted result/evidence link.
 4. `18.4-window-review` — validate the retained aggregate series and report
    whether enough distinct-day evidence exists for an individual proposal.
+5. `18.5-operational-coverage` — add pre-existing aggregate traffic, failure,
+   latency and outbox measurements without retaining labels or payloads.
 
 ## Ownership and dependencies
 
