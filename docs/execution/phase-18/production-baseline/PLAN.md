@@ -1,6 +1,6 @@
 # Phase 18 child plan — protected production baseline collection
 
-**Status:** Approved as a no-customer-data evidence-collection child capability.
+**Status:** Complete — protected production verification passed.
 
 ## Outcome
 

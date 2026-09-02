@@ -136,3 +136,11 @@ bottleneck. It completes the evidence foundation and Phase 18's initial
 portfolio decision: the observed records do not justify activating an advanced
 child capability, so the simpler production path remains in place. Daily
 collection continues as a confidence and change-detection control.
+
+The policy was itself verified by protected capture [run
+33671982899](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33671982899)
+and review [run
+33672085929](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33672085929).
+The capture validated a current schema `1.2` record. The review validated all
+five retained records and returned `ready_for_child_proposal`, with no raw
+production record copied into Git.

@@ -1,8 +1,8 @@
 # Phase 18 evidence and prioritization memo
 
 **Decision date:** 2026-09-02  
-**Status:** Initial evidence window accepted; no advanced Phase 18 child
-capability is approved for implementation.
+**Status:** Phase 18 initial portfolio complete. The evidence window is
+accepted; no advanced Phase 18 child capability is approved for implementation.
 
 ## Decision
 
@@ -59,3 +59,13 @@ Collect a meaningful production window without introducing any new feature:
 Until then, the simpler production baseline remains the approved and safer
 path. No Phase 18 schema, API, external service, or infrastructure change is
 authorized by this memo.
+
+## Phase completion decision
+
+The initial Phase 18 portfolio is complete under the owner-approved evidence
+threshold. The protected evidence foundation is implemented, independently
+verified in production, has a $0 recurring-cost delta, and the current
+measurements do not identify a bottleneck that would justify activating a
+second child capability. The Phase 18 outcome is therefore satisfied by leaving
+analytics, specialist search, automation, AI, a public platform and regional
+topology unbuilt until a real future need is measured.
