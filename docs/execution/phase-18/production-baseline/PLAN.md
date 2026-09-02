@@ -24,6 +24,8 @@ host without changing application behavior or creating a new paid service.
    validator.
 3. `18.3-verification-evidence` — run it against production and record the
    redacted result/evidence link.
+4. `18.4-window-review` — validate the retained aggregate series and report
+   whether enough distinct-day evidence exists for an individual proposal.
 
 ## Ownership and dependencies
 

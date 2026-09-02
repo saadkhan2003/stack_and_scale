@@ -6,6 +6,12 @@ on:
     - cron: "17 3 * * *"
   workflow_dispatch:
     inputs:
+      action:
+        description: Capture one aggregate record or review the retained window.
+        required: true
+        type: choice
+        default: capture
+        options: [capture, review]
       reason:
         description: Approved reason for this aggregate-only capture.
         required: true
@@ -29,6 +35,7 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
       DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
       DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      BASELINE_ACTION: ${{ github.event_name == 'schedule' && 'capture' || inputs.action }}
       CAPTURE_REASON: ${{ github.event_name == 'schedule' && 'routine' || inputs.reason }}
     steps:
       - uses: webfactory/ssh-agent@v0.9.1
@@ -43,9 +50,14 @@ jobs:
             routine|post-release|phase-18-evidence-window) ;;
             *) echo "Unsupported capture reason." >&2; exit 64 ;;
           esac
-          ssh "$REMOTE" bash -s -- "$CAPTURE_REASON" <<'REMOTE_SCRIPT'
+          case "$BASELINE_ACTION" in
+            capture|review) ;;
+            *) echo "Unsupported baseline action." >&2; exit 64 ;;
+          esac
+          ssh "$REMOTE" bash -s -- "$BASELINE_ACTION" "$CAPTURE_REASON" <<'REMOTE_SCRIPT'
           set -euo pipefail
-          capture_reason="$1"
+          baseline_action="$1"
+          capture_reason="$2"
           cd /opt/stack-and-scale
           export IMAGE_TAG="$(sed -n 's/.*"imageTag":"\([a-f0-9]*\)".*/\1/p' deployments/current.json)"
           export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
@@ -54,6 +66,8 @@ jobs:
           umask 077
           mkdir -p "$evidence_dir"
 
+          case "$baseline_action" in
+          capture)
           captured_at="$(date -u +%FT%TZ)"
           image_tag="$IMAGE_TAG"
           if [[ ! "$image_tag" =~ ^[a-f0-9]{7,64}$ ]]; then image_tag="unknown"; fi
@@ -94,4 +108,34 @@ jobs:
           find "$evidence_dir" -maxdepth 1 -type f -name 'baseline-*.json' -mtime +90 -delete
           test -s "$output"
           echo "Phase 18 aggregate baseline captured and validated."
+          ;;
+          review)
+          shopt -s nullglob
+          records=("$evidence_dir"/baseline-*.json)
+          if [ "${#records[@]}" -eq 0 ]; then
+            echo "No baseline records are available for review." >&2
+            exit 1
+          fi
+          {
+            for record in "${records[@]}"; do
+              sed -n '1,$p' "$record"
+              printf '\n'
+            done
+          } | "${compose[@]}" exec -T api node --input-type=module -e '
+            let body = "";
+            for await (const chunk of process.stdin) body += chunk;
+            const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database"];
+            const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
+            const database = ["connections", "databaseBytes"];
+            const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
+            const records = body.trim().split(/\n(?=\{)/).map((line) => JSON.parse(line));
+            const valid = (record) => exact(record, top) && exact(record.host, host) && exact(record.database, database) && record.schemaVersion === "1.0" && ["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) && Number.isFinite(Date.parse(record.capturedAt)) && [...host, ...database].map((key) => key in record.host ? record.host[key] : record.database[key]).every((value) => Number.isFinite(value) && value >= 0);
+            if (!records.length || !records.every(valid)) process.exit(1);
+            const dates = [...new Set(records.map((record) => record.capturedAt.slice(0, 10)))].sort();
+            const summary = { samples: records.length, distinctDays: dates.length, oldestDay: dates[0], latestDay: dates.at(-1), maturity: dates.length >= 21 && records.length >= 28 ? "ready_for_child_proposal" : "collecting" };
+            process.stdout.write(JSON.stringify(summary) + "\n");
+          '
+          echo "Phase 18 aggregate baseline window reviewed."
+          ;;
+          esac
           REMOTE_SCRIPT

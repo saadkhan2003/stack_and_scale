@@ -53,6 +53,12 @@ The workflow will:
 7. print only a redacted success summary, never an SSH key, connection string,
    query text, customer content, user identifier, or credential.
 
+The companion review action validates every retained record against the same
+allowlist and reports only aggregate window maturity. A child-capability
+proposal remains blocked until there are at least 28 valid samples spanning 21
+distinct calendar days; this prevents multiple same-day manual captures from
+being treated as a production evidence window.
+
 The design intentionally does **not** collect request bodies, URLs, search
 terms, support text, CRM records, client/account identifiers, IP addresses, or
 any individual-level telemetry.
