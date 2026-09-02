@@ -98,3 +98,27 @@ accepted the two `1.0` records and the new `1.1` record. Its aggregate result
 was `3` samples across `1` distinct day, still `collecting`. The zeros are a
 valid observed result, not a reason to invent activity or to activate an
 advanced Phase 18 capability.
+
+## Aggregate business and integration coverage
+
+Commit `4028cb5` added schema `1.2`, filling the remaining approved evidence
+categories with only fixed whole-platform `count(*)` values. The record now
+covers daily lead intake and confirmed bookings, overdue open staff tasks,
+open and unresponded-SLA-breached support tickets, and daily integration
+mutations/conflicts, pending deliveries and stale active installations. It does
+not retain any customer, organization, staff, installation, ticket, event or
+payload identifier—or any text, status/category breakdown or timestamp from an
+individual record.
+
+The protected capture [run
+33668075487](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33668075487)
+passed on the production host. Its redacted summary again showed 14 running
+services, 12 PostgreSQL connections, 0 prior-24-hour requests and 0 pending
+outbox events. The record itself remains only in the restrictive host evidence
+directory.
+
+The protected review [run
+33668111544](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33668111544)
+accepted every schema version from `1.0` through `1.2`. It reported `4`
+samples across `1` distinct day and correctly stayed `collecting`; same-day
+manual captures cannot satisfy the Phase 18 production-evidence window.
