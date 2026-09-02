@@ -88,9 +88,9 @@ jobs:
           SQL
               "${compose[@]}" exec -T -e PHASE17_QA_CREDENTIAL="$credential" api node - <<'NODE'
           const credential = process.env.PHASE17_QA_CREDENTIAL;
-          const headers = { 'content-type': 'application/json', 'x-product-installation-credential': credential };
+          const headers = { 'x-product-installation-credential': credential };
           const request = async (path, init = {}) => {
-            const response = await fetch(`http://127.0.0.1:3100/api/v1/product-integrations${path}`, { ...init, headers: { ...headers, ...(init.headers ?? {}) } });
+            const response = await fetch(`http://127.0.0.1:3100/api/v1/product-integrations${path}`, { ...init, headers: { ...headers, ...(init.body ? { 'content-type': 'application/json' } : {}), ...(init.headers ?? {}) } });
             if (!response.ok) throw new Error(`${path} returned ${response.status}: ${await response.text()}`);
             return response.json();
           };
