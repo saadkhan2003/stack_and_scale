@@ -103,7 +103,7 @@ jobs:
           if (!['accepted', 'duplicate'].includes(sync.outcomes?.[0]?.outcome)) throw new Error('sync mutation was not accepted idempotently');
           const events = await request('/events?limit=10');
           if (!Array.isArray(events.events) || events.events.length === 0) throw new Error('signed event was not delivered');
-          await request(`/events/${events.events[0].id}/ack`, { method: 'POST' });
+          await request(`/events/${events.events[0].eventId}/ack`, { method: 'POST' });
           NODE
               ;;
             disable-integration|enable-integration)
