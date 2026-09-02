@@ -46,3 +46,17 @@ This successful record starts the measurement capability; it is not yet a
 meaningful production evidence window and does not authorize analytics, AI,
 automation, public APIs, or regional scaling. Those remain individually gated
 by [the Phase 18 evidence memo](../../../execution/phase-18/EVIDENCE-MEMO.md).
+
+## Scheduled evidence window
+
+Commit `0d00602` added the bounded daily 03:17 UTC trigger. It selects the
+fixed `routine` reason, retains the same production-environment guard,
+concurrency lock, field allowlist and 90-day cleanup as manual captures. The
+manual dispatch path using the updated event-aware reason selection passed in
+[run 33660828944](https://github.com/saadkhan2003/stack_and_scale/actions/runs/33660828944).
+
+The scheduled collector is still not customer telemetry: it creates one
+aggregate capacity record per day and has no API, customer-data, or
+application-service mutation path. A meaningful evidence window requires time
+and representative production operation; no advanced Phase 18 child is
+authorized until that window identifies a measured bottleneck.
