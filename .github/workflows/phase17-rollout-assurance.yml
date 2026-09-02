@@ -99,7 +99,7 @@ jobs:
           const keys = await request('/verification-keys');
           if (!Array.isArray(keys.keys) || keys.keys.length === 0) throw new Error('verification key is unavailable');
           await request('/heartbeat', { method: 'POST', body: JSON.stringify({ softwareVersion: 'phase17-qa', leaseState: 'valid', syncCursor: 0, syncStatus: 'idle' }) });
-          const sync = await request('/sync', { method: 'POST', body: JSON.stringify({ mutations: [{ id: 'phase17-qa-mutation-1', localSequence: 1, entityKind: 'operational_note', payload: { message: 'synthetic rollout verification' } }] }) });
+          const sync = await request('/sync', { method: 'POST', body: JSON.stringify({ mutations: [{ mutationId: 'phase17-qa-mutation-1', localSequence: 1, entityKind: 'operational_note', payload: { message: 'synthetic rollout verification' } }] }) });
           if (!['accepted', 'duplicate'].includes(sync.outcomes?.[0]?.outcome)) throw new Error('sync mutation was not accepted idempotently');
           const events = await request('/events?limit=10');
           if (!Array.isArray(events.events) || events.events.length === 0) throw new Error('signed event was not delivered');
