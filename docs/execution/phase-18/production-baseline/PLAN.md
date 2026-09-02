@@ -15,6 +15,7 @@ a new paid service.
 | Protected/manual access         | Production-environment workflow and successful run  |
 | Aggregate-only record           | Schema validation and review of the workflow fields |
 | Aggregate demand/failure signal | 24-hour Prometheus sums and aggregate outbox state  |
+| Aggregate product operations    | Whole-platform fixed `count(*)` queries             |
 | Bounded retention and $0 cost   | 90-day cleanup and capacity-ledger entry            |
 | No service mutation / rollback  | Workflow behavior and removal instructions          |
 
@@ -30,6 +31,8 @@ a new paid service.
    whether enough distinct-day evidence exists for an individual proposal.
 5. `18.5-operational-coverage` — add pre-existing aggregate traffic, failure,
    latency and outbox measurements without retaining labels or payloads.
+6. `18.6-business-coverage` — add fixed whole-platform business and
+   integration counts without retaining customer, staff or product identifiers.
 
 ## Ownership and dependencies
 

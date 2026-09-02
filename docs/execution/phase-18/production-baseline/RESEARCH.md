@@ -25,6 +25,12 @@ service.
   collector can additionally query only aggregate pending/processing/dead-letter
   counts and the age of the oldest undelivered event; it never reads payloads,
   event IDs, organizations or correlation IDs.
+- Existing CRM, support and product-integration tables provide whole-platform
+  counts for daily lead intake/confirmed bookings, overdue open tasks, open or
+  unresponded-SLA-breached tickets, and daily integration mutation/conflict,
+  delivery-backlog and stale-heartbeat volume. The baseline may use only fixed
+  `count(*)` queries; it must never select text, identifiers, owners,
+  organizations, customers, payloads, event types or status breakdowns.
 - Phase 15 has a protected one-off host capture, but its output is intentionally
   not committed and is not a retained, machine-readable series.
 - The capacity ledger explicitly requires timestamp, workload/version, CPU,
@@ -60,8 +66,10 @@ The workflow will:
    database connection count/database bytes, running service count, 24-hour
    aggregate API volume/failure/mean-duration values, and aggregate outbox
    backlog/oldest-undelivered age;
-6. validate every written record has only the declared aggregate fields; and
-7. print only a redacted success summary, never an SSH key, connection string,
+6. capture only whole-platform counts for lead flow, staff workload, support
+   pressure and integration health; and
+7. validate every written record has only the declared aggregate fields; and
+8. print only a redacted success summary, never an SSH key, connection string,
    query text, customer content, user identifier, or credential.
 
 The companion review action validates every retained record against the same
@@ -81,7 +89,7 @@ any individual-level telemetry.
 | Cost           | $0 incremental cost; small local JSON records only.                                                                               |
 | Storage        | At most 90 daily-ish records; remove records older than 90 days.                                                                  |
 | Security       | Existing protected environment, least `contents: read`, pinned host key, no secrets in output.                                    |
-| Privacy        | Aggregate host/database/Prometheus values only; no product/customer/person data, labels, routes or payloads.                      |
+| Privacy        | Aggregate host/database/Prometheus values only; no product/customer/person data, labels, routes, IDs, text or payloads.           |
 | Rollback       | Disable/delete the workflow and remove only `/opt/stack-and-scale/evidence/phase18/baselines`; production services are untouched. |
 | Success metric | A valid protected record can be captured, schema-checked and retained without changing a production service.                      |
 

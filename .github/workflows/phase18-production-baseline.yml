@@ -118,13 +118,46 @@ jobs:
                 FROM platform.outbox_events
                 WHERE status IN ('pending', 'processing')
               )
+            ),
+            'business', json_build_object(
+              'leads', json_build_object(
+                'created24h', (SELECT count(*) FROM platform.leads WHERE created_at >= now() - interval '24 hours'),
+                'confirmedBookings24h', (SELECT count(*) FROM platform.demo_bookings WHERE status = 'confirmed' AND created_at >= now() - interval '24 hours'),
+                'overdueOpenTasks', (SELECT count(*) FROM platform.lead_tasks WHERE completed_at IS NULL AND due_at IS NOT NULL AND due_at < now())
+              ),
+              'support', json_build_object(
+                'openTickets', (SELECT count(*) FROM platform.support_tickets WHERE status NOT IN ('resolved', 'closed')),
+                'unrespondedSlaBreaches', (
+                  SELECT count(*)
+                  FROM platform.support_tickets
+                  WHERE status NOT IN ('resolved', 'closed')
+                    AND first_response_at IS NULL
+                    AND now() > created_at + sla_target_seconds * interval '1 second'
+                )
+              ),
+              'integrations', json_build_object(
+                'syncMutations24h', (SELECT count(*) FROM product.integration_sync_mutations WHERE created_at >= now() - interval '24 hours'),
+                'conflicts24h', (SELECT count(*) FROM product.integration_conflicts WHERE created_at >= now() - interval '24 hours'),
+                'pendingDeliveries', (SELECT count(*) FROM product.integration_event_deliveries WHERE status = 'pending'),
+                'staleActiveInstallations', (
+                  SELECT count(*)
+                  FROM product.installations installation
+                  WHERE installation.status = 'active'
+                    AND NOT EXISTS (
+                      SELECT 1
+                      FROM product.installation_heartbeats heartbeat
+                      WHERE heartbeat.installation_id = installation.id
+                        AND heartbeat.received_at >= now() - interval '15 minutes'
+                    )
+                )
+              )
             )
           )::text;
           SQL
           )"
           output="$evidence_dir/baseline-$(date -u +%Y%m%dT%H%M%SZ).json"
           temporary="$output.tmp"
-          printf '{\n"schemaVersion":"1.1","capturedAt":"%s","imageTag":"%s","reason":"%s","host":{"cpuUtilizationPercent":%s,"memoryUsedBytes":%s,"memoryTotalBytes":%s,"diskUsedBytes":%s,"diskTotalBytes":%s,"runningServices":%s},"database":%s,"traffic":{"completedRequests24h":%s,"serverFailures24h":%s,"averageRequestDurationMilliseconds24h":%s}\n}\n' \
+          printf '{\n"schemaVersion":"1.2","capturedAt":"%s","imageTag":"%s","reason":"%s","host":{"cpuUtilizationPercent":%s,"memoryUsedBytes":%s,"memoryTotalBytes":%s,"diskUsedBytes":%s,"diskTotalBytes":%s,"runningServices":%s},"database":%s,"traffic":{"completedRequests24h":%s,"serverFailures24h":%s,"averageRequestDurationMilliseconds24h":%s}\n}\n' \
             "$captured_at" "$image_tag" "$capture_reason" "$cpu_percent" "$memory_used" "$memory_total" "$disk_used" "$disk_total" "$running_services" "$database" "$completed_requests_24h" "$server_failures_24h" "$average_request_duration_ms_24h" > "$temporary"
 
           "${compose[@]}" exec -T api node --input-type=module -e '
@@ -133,12 +166,16 @@ jobs:
             const record = JSON.parse(body);
             const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database", "traffic"];
             const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
-            const database = ["connections", "databaseBytes", "outbox"];
+            const database = ["connections", "databaseBytes", "outbox", "business"];
             const outbox = ["pending", "processing", "deadLetter", "oldestUndeliveredAgeSeconds"];
+            const business = ["leads", "support", "integrations"];
+            const leads = ["created24h", "confirmedBookings24h", "overdueOpenTasks"];
+            const support = ["openTickets", "unrespondedSlaBreaches"];
+            const integrations = ["syncMutations24h", "conflicts24h", "pendingDeliveries", "staleActiveInstallations"];
             const traffic = ["completedRequests24h", "serverFailures24h", "averageRequestDurationMilliseconds24h"];
             const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
-            const metrics = [...host, "connections", "databaseBytes"].map((key) => key in record.host ? record.host[key] : record.database[key]).concat(Object.values(record.database.outbox ?? {}), Object.values(record.traffic ?? {}));
-            if (!exact(record, top) || !exact(record.host, host) || !exact(record.database, database) || !exact(record.database.outbox, outbox) || !exact(record.traffic, traffic) || record.schemaVersion !== "1.1" || !["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) || !metrics.every((value) => Number.isFinite(value) && value >= 0) || ![record.host.runningServices, record.database.connections, record.database.databaseBytes, record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h].every(Number.isInteger)) process.exit(1);
+            const metrics = [...host, "connections", "databaseBytes"].map((key) => key in record.host ? record.host[key] : record.database[key]).concat(Object.values(record.database.outbox ?? {}), Object.values(record.traffic ?? {}), Object.values(record.database.business?.leads ?? {}), Object.values(record.database.business?.support ?? {}), Object.values(record.database.business?.integrations ?? {}));
+            if (!exact(record, top) || !exact(record.host, host) || !exact(record.database, database) || !exact(record.database.outbox, outbox) || !exact(record.database.business, business) || !exact(record.database.business.leads, leads) || !exact(record.database.business.support, support) || !exact(record.database.business.integrations, integrations) || !exact(record.traffic, traffic) || record.schemaVersion !== "1.2" || !["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) || !metrics.every((value) => Number.isFinite(value) && value >= 0) || ![record.host.runningServices, record.database.connections, record.database.databaseBytes, record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h, ...Object.values(record.database.business.leads), ...Object.values(record.database.business.support), ...Object.values(record.database.business.integrations)].every(Number.isInteger)) process.exit(1);
             process.stdout.write(JSON.stringify({ capturedAt: record.capturedAt, imageTag: record.imageTag, runningServices: record.host.runningServices, databaseConnections: record.database.connections, completedRequests24h: record.traffic.completedRequests24h, outboxPending: record.database.outbox.pending }) + "\n");
           ' < "$temporary"
           mv "$temporary" "$output"
@@ -166,7 +203,12 @@ jobs:
             const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
             const legacyDatabase = ["connections", "databaseBytes"];
             const extendedDatabase = ["connections", "databaseBytes", "outbox"];
+            const businessDatabase = ["connections", "databaseBytes", "outbox", "business"];
             const outbox = ["pending", "processing", "deadLetter", "oldestUndeliveredAgeSeconds"];
+            const business = ["leads", "support", "integrations"];
+            const leads = ["created24h", "confirmedBookings24h", "overdueOpenTasks"];
+            const support = ["openTickets", "unrespondedSlaBreaches"];
+            const integrations = ["syncMutations24h", "conflicts24h", "pendingDeliveries", "staleActiveInstallations"];
             const traffic = ["completedRequests24h", "serverFailures24h", "averageRequestDurationMilliseconds24h"];
             const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
             const records = body.trim().split(/\n(?=\{)/).map((line) => JSON.parse(line));
@@ -174,9 +216,14 @@ jobs:
             const valid = (record) => {
               if (!baseValid(record)) return false;
               if (record.schemaVersion === "1.0") return exact(record, legacyTop) && exact(record.database, legacyDatabase);
-              if (record.schemaVersion !== "1.1" || !exact(record, extendedTop) || !exact(record.database, extendedDatabase) || !exact(record.database.outbox, outbox) || !exact(record.traffic, traffic)) return false;
-              const extra = [...Object.values(record.database.outbox), ...Object.values(record.traffic)];
-              return extra.every((value) => Number.isFinite(value) && value >= 0) && [record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h].every(Number.isInteger);
+              if (record.schemaVersion === "1.1") {
+                if (!exact(record, extendedTop) || !exact(record.database, extendedDatabase) || !exact(record.database.outbox, outbox) || !exact(record.traffic, traffic)) return false;
+                const extra = [...Object.values(record.database.outbox), ...Object.values(record.traffic)];
+                return extra.every((value) => Number.isFinite(value) && value >= 0) && [record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h].every(Number.isInteger);
+              }
+              if (record.schemaVersion !== "1.2" || !exact(record, extendedTop) || !exact(record.database, businessDatabase) || !exact(record.database.outbox, outbox) || !exact(record.database.business, business) || !exact(record.database.business.leads, leads) || !exact(record.database.business.support, support) || !exact(record.database.business.integrations, integrations) || !exact(record.traffic, traffic)) return false;
+              const extra = [...Object.values(record.database.outbox), ...Object.values(record.traffic), ...Object.values(record.database.business.leads), ...Object.values(record.database.business.support), ...Object.values(record.database.business.integrations)];
+              return extra.every((value) => Number.isFinite(value) && value >= 0) && [record.database.outbox.pending, record.database.outbox.processing, record.database.outbox.deadLetter, record.traffic.completedRequests24h, record.traffic.serverFailures24h, ...Object.values(record.database.business.leads), ...Object.values(record.database.business.support), ...Object.values(record.database.business.integrations)].every(Number.isInteger);
             };
             if (!records.length || !records.every(valid)) process.exit(1);
             const dates = [...new Set(records.map((record) => record.capturedAt.slice(0, 10)))].sort();
