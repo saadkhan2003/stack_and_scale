@@ -1,0 +1,94 @@
+name: Phase 18 production baseline capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Approved reason for this aggregate-only capture.
+        required: true
+        type: choice
+        options: [routine, post-release, phase-18-evidence-window]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase18-production-baseline
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      CAPTURE_REASON: ${{ inputs.reason }}
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ env.DEPLOY_SSH_PRIVATE_KEY }}
+      - run: printf '%s\n' "$DEPLOY_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+      - name: Capture and validate aggregate-only baseline
+        env:
+          REMOTE: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+        run: |
+          case "$CAPTURE_REASON" in
+            routine|post-release|phase-18-evidence-window) ;;
+            *) echo "Unsupported capture reason." >&2; exit 64 ;;
+          esac
+          ssh "$REMOTE" bash -s -- "$CAPTURE_REASON" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          capture_reason="$1"
+          cd /opt/stack-and-scale
+          export IMAGE_TAG="$(sed -n 's/.*"imageTag":"\([a-f0-9]*\)".*/\1/p' deployments/current.json)"
+          export IMAGE_REGISTRY="ghcr.io/saadkhan2003/stack_and_scale"
+          compose=(docker compose --env-file .env.production -f infra/compose.production.yaml)
+          evidence_dir="/opt/stack-and-scale/evidence/phase18/baselines"
+          umask 077
+          mkdir -p "$evidence_dir"
+
+          captured_at="$(date -u +%FT%TZ)"
+          image_tag="$IMAGE_TAG"
+          if [[ ! "$image_tag" =~ ^[a-f0-9]{7,64}$ ]]; then image_tag="unknown"; fi
+          read -r load_one _ < /proc/loadavg
+          cpu_count="$(getconf _NPROCESSORS_ONLN)"
+          cpu_percent="$(awk -v load="$load_one" -v count="$cpu_count" 'BEGIN { printf "%.2f", (load / (count > 0 ? count : 1)) * 100 }')"
+          memory_total="$(awk '/MemTotal:/ { print $2 * 1024 }' /proc/meminfo)"
+          memory_available="$(awk '/MemAvailable:/ { print $2 * 1024 }' /proc/meminfo)"
+          memory_used="$((memory_total - memory_available))"
+          disk_used="$(df -PB1 / | awk 'NR == 2 { print $3 }')"
+          disk_total="$(df -PB1 / | awk 'NR == 2 { print $2 }')"
+          running_services="$("${compose[@]}" ps --status running -q | wc -l | tr -d ' ')"
+          database="$("${compose[@]}" exec -T postgres sh -c 'exec psql -At -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' <<'SQL'
+          SELECT json_build_object(
+            'connections', (SELECT count(*) FROM pg_stat_activity),
+            'databaseBytes', pg_database_size(current_database())
+          )::text;
+          SQL
+          )"
+          output="$evidence_dir/baseline-$(date -u +%Y%m%dT%H%M%SZ).json"
+          temporary="$output.tmp"
+          printf '{\n"schemaVersion":"1.0","capturedAt":"%s","imageTag":"%s","reason":"%s","host":{"cpuUtilizationPercent":%s,"memoryUsedBytes":%s,"memoryTotalBytes":%s,"diskUsedBytes":%s,"diskTotalBytes":%s,"runningServices":%s},"database":%s\n}\n' \
+            "$captured_at" "$image_tag" "$capture_reason" "$cpu_percent" "$memory_used" "$memory_total" "$disk_used" "$disk_total" "$running_services" "$database" > "$temporary"
+
+          "${compose[@]}" exec -T api node --input-type=module -e '
+            let body = "";
+            for await (const chunk of process.stdin) body += chunk;
+            const record = JSON.parse(body);
+            const top = ["schemaVersion", "capturedAt", "imageTag", "reason", "host", "database"];
+            const host = ["cpuUtilizationPercent", "memoryUsedBytes", "memoryTotalBytes", "diskUsedBytes", "diskTotalBytes", "runningServices"];
+            const database = ["connections", "databaseBytes"];
+            const exact = (value, keys) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join(",") === keys.sort().join(",");
+            const metrics = [...host, ...database].map((key) => key in record.host ? record.host[key] : record.database[key]);
+            if (!exact(record, top) || !exact(record.host, host) || !exact(record.database, database) || record.schemaVersion !== "1.0" || !["routine", "post-release", "phase-18-evidence-window"].includes(record.reason) || !metrics.every((value) => Number.isFinite(value) && value >= 0) || !Number.isInteger(record.host.runningServices) || !Number.isInteger(record.database.connections) || !Number.isInteger(record.database.databaseBytes)) process.exit(1);
+            process.stdout.write(JSON.stringify({ capturedAt: record.capturedAt, imageTag: record.imageTag, runningServices: record.host.runningServices, databaseConnections: record.database.connections }) + "\n");
+          ' < "$temporary"
+          mv "$temporary" "$output"
+          find "$evidence_dir" -maxdepth 1 -type f -name 'baseline-*.json' -mtime +90 -delete
+          test -s "$output"
+          echo "Phase 18 aggregate baseline captured and validated."
+          REMOTE_SCRIPT
