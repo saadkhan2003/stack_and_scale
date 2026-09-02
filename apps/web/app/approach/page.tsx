@@ -1,5 +1,6 @@
 import { approachPageModel } from "../../src/approach-content";
 import { SiteHeader } from "../../src/site-header";
+import { Button } from "@/components/ui/button";
 
 export default function ApproachPage() {
   return (
@@ -25,9 +26,9 @@ export default function ApproachPage() {
       <section className="approach-close">
         <p className="eyebrow">Ready when you are</p>
         <h2>Start with the problem worth solving.</h2>
-        <a className="button button-primary" href="/#contact">
+        <Button render={<a href="/#contact" />}>
           {approachPageModel.action} <span aria-hidden="true">→</span>
-        </a>
+        </Button>
       </section>
     </main>
   );

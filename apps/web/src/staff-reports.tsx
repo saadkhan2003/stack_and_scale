@@ -99,7 +99,7 @@ export function StaffReports() {
           Report
           <Select
             value={type}
-            onValueChange={(value) => setType((value ?? "funnel") as (typeof reportTypes)[number])}
+            onValueChange={(value) => setType(value ?? "funnel")}
           >
             <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
             <SelectContent>

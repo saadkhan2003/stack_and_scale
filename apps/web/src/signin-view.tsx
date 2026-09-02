@@ -1,5 +1,7 @@
 import type { AuthContentModel } from "./auth-content";
 
+import { Button } from "@/components/ui/button";
+
 type SigninViewProps = {
   model: AuthContentModel;
 };
@@ -14,9 +16,9 @@ export function SigninView({ model }: SigninViewProps) {
       </div>
 
       <div className="signin-card">
-        <a className="button button-primary" href="/api/auth/oidc/start">
+        <Button render={<a href="/api/auth/oidc/start" />}>
           {model.primaryAction}
-        </a>
+        </Button>
         <p className="signin-provider-note">{model.providerNote}</p>
         <p className="signin-legal-note">{model.legalNote}</p>
       </div>

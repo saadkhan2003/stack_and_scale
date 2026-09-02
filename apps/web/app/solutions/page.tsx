@@ -1,5 +1,6 @@
 import { solutionsPageModel } from "../../src/solutions-content";
 import { SiteHeader } from "../../src/site-header";
+import { Button } from "@/components/ui/button";
 
 export default function SolutionsPage() {
   return (
@@ -36,9 +37,9 @@ export default function SolutionsPage() {
       <section className="solutions-cta">
         <p className="eyebrow">Not sure where to begin?</p>
         <h2>We can help you find the most useful next step.</h2>
-        <a className="button button-primary" href="/#contact">
+        <Button render={<a href="/#contact" />}>
           Discuss your needs <span aria-hidden="true">→</span>
-        </a>
+        </Button>
       </section>
     </main>
   );

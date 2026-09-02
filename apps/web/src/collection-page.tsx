@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
+
 import { getPublishedBySlug } from "./cms-content";
 import { CmsDetailSections } from "./cms-renderers";
 import { JsonLd } from "./json-ld";
@@ -119,9 +121,9 @@ export async function CollectionDetailPage({
               replaced by approved published material.
             </p>
           )}
-          <a className="button button-primary" href="/contact">
+          <Button render={<a href="/contact" />}>
             Discuss this with us <span aria-hidden="true">→</span>
-          </a>
+          </Button>
         </div>
       </article>
       <SiteFooter />

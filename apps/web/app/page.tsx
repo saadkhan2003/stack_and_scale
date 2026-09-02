@@ -2,6 +2,7 @@ import { homepageModel } from "../src/homepage-content";
 import { metadataForPath } from "../src/seo";
 import { SiteFooter } from "../src/site-footer";
 import { SiteHeader } from "../src/site-header";
+import { Button } from "@/components/ui/button";
 
 export const metadata = metadataForPath(
   "/",
@@ -20,12 +21,12 @@ export default function HomePage() {
           <h1 id="hero-heading">{homepageModel.heading}</h1>
           <p className="hero-description">{homepageModel.description}</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#contact">
+            <Button render={<a href="#contact" />}>
               {homepageModel.primaryAction} <span aria-hidden="true">→</span>
-            </a>
-            <a className="button button-secondary" href="#contact">
+            </Button>
+            <Button render={<a href="#contact" />} variant="secondary">
               {homepageModel.secondaryAction}
-            </a>
+            </Button>
           </div>
           <p className="trust-line">
             Built for local businesses today. Ready to scale with you tomorrow.
@@ -138,9 +139,9 @@ export default function HomePage() {
             Let&apos;s make your next system useful from day one.
           </h2>
         </div>
-        <a className="button button-primary" href="/contact">
+        <Button render={<a href="/contact" />}>
           Discuss your project <span aria-hidden="true">→</span>
-        </a>
+        </Button>
       </section>
       <SiteFooter />
     </main>

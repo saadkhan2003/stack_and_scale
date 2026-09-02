@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { designSystemCatalog } from "../../src/design-system-catalog";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Design system | Stack & Scale",
@@ -21,15 +22,15 @@ export default function DesignSystemPage() {
         <div className="design-system-grid">
           <article className="design-system-card">
             <h3>{designSystemCatalog.components[0]}</h3>
-            <a className="ss-button ss-button--primary" href="/#contact">
+            <Button render={<a href="/#contact" />}>
               Book a demo
-            </a>
+            </Button>
           </article>
           <article className="design-system-card">
             <h3>{designSystemCatalog.components[1]}</h3>
-            <a className="ss-button ss-button--secondary" href="/solutions">
+            <Button render={<a href="/solutions" />} variant="secondary">
               Explore solutions
-            </a>
+            </Button>
           </article>
           <article className="design-system-card design-system-card--dark">
             <h3>{designSystemCatalog.components[2]}</h3>

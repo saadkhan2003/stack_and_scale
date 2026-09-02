@@ -1,6 +1,7 @@
 import { SiteFooter } from "../../src/site-footer";
 import { SiteHeader } from "../../src/site-header";
 import { metadataForPath } from "../../src/seo";
+import { Button } from "@/components/ui/button";
 export const metadata = metadataForPath(
   "/about",
   "About",
@@ -26,9 +27,9 @@ export default function AboutPage() {
           constraints that matter: people, time, existing tools and the
           decisions that keep operations moving.
         </p>
-        <a className="button button-primary" href="/contact">
+        <Button render={<a href="/contact" />}>
           Start a conversation <span aria-hidden="true">→</span>
-        </a>
+        </Button>
       </section>
       <SiteFooter />
     </main>
