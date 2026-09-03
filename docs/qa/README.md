@@ -1,7 +1,7 @@
 # Stack & Scale — End-to-End Team QA & Production Verification Suite
 
 **Master Verification Matrix:** [Platform Blueprint v1.0](file:///media/saad/Data/stack_and_scale/STACK_AND_SCALE_PLATFORM_BLUEPRINT_V1.md) & [100 Architecture Question Decisions](file:///media/saad/Data/stack_and_scale/question-decisions/README.md)  
-**Target Environment:** OVHcloud Production Host (`vps-5d4dfcb1`, Ubuntu 24.04 LTS)  
+**Target Environment:** OVHcloud Production Host (`vps-5d4dfcb1`, Ubuntu 24.04 LTS / `51.195.136.215`)  
 **Production Gateway:** `https://stackandscale.org`  
 **Identity Gateway:** `https://identity.stackandscale.org`  
 **Payload CMS Gateway:** `https://cms.stackandscale.org/admin`  
@@ -25,7 +25,9 @@ flowchart LR
 
 ---
 
-## 2. Team Member QA Runbooks
+## 2. Team Credentials & QA Runbooks Directory
+
+> 🔑 **Authoritative Team Credentials Matrix:** [`TEAM-CREDENTIALS-AND-ENVIRONMENT.md`](./TEAM-CREDENTIALS-AND-ENVIRONMENT.md)
 
 | Member       | Assigned Engineer      | Scope & Architectural Focus                                                                                                                                                                                    | Runbook Document                                                                                                         |
 | ------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
