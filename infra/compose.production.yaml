@@ -185,7 +185,11 @@ services:
     volumes:
       - minio-data:/data
     networks: [storage]
-    secrets: [minio_root_user, minio_root_password]
+    secrets:
+      - source: minio_root_user
+        mode: 0444
+      - source: minio_root_password
+        mode: 0444
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://127.0.0.1:9000/minio/health/live"]
       interval: 15s
@@ -218,10 +222,14 @@ services:
       PRIVATE_STORAGE_S3_BUCKET: ${PRIVATE_STORAGE_S3_BUCKET:-stack-and-scale-private}
     networks: [storage]
     secrets:
-      - minio_root_user
-      - minio_root_password
-      - minio_api_access_key
-      - minio_api_secret_key
+      - source: minio_root_user
+        mode: 0444
+      - source: minio_root_password
+        mode: 0444
+      - source: minio_api_access_key
+        mode: 0444
+      - source: minio_api_secret_key
+        mode: 0444
     depends_on:
       minio:
         condition: service_healthy
