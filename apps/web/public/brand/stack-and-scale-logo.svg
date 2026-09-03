@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 92" fill="none" role="img" aria-label="Stack &amp; Scale Logo">
+  <!-- Brand Symbol: Layered Stack & Ascending Scale Indicator -->
+  <g transform="translate(12, 14)">
+    <!-- Base Layer: Night Petrol Foundation -->
+    <rect x="0" y="44" width="48" height="12" rx="4" fill="#135D61" />
+
+    <!-- Mid Layer: Ascending Seafoam Scale Block -->
+    <rect x="8" y="24" width="44" height="12" rx="4" fill="#80DDD1" />
+
+    <!-- Top Layer: Apex Solar Block -->
+    <rect x="18" y="4" width="38" height="12" rx="4" fill="#F4C542" />
+
+    <!-- Kinetic Accent Dot -->
+    <circle cx="60" cy="10" r="3" fill="#80DDD1" />
+  </g>
+
+  <!-- Brand Typography: Stack & Scale -->
+  <g transform="translate(94, 20)">
+    <text x="0" y="30" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="28" letter-spacing="-0.5" fill="#F5F2E8">
+      STACK <tspan fill="#F4C542">&amp;</tspan> SCALE
+    </text>
+    <text x="2" y="48" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="10" letter-spacing="3.2" fill="#80DDD1">
+      TECHNOLOGIES
+    </text>
+  </g>
+</svg>

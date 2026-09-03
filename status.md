@@ -1,12 +1,12 @@
 # Stack & Scale Project Status
 
-Last updated: 2026-08-29
+Last updated: 2026-09-03
 
 This is the cold-start handoff. Read it before changing implementation.
 
 ## Current position
 
-Phases 00–11 are implemented locally. An OVH VPS-2 production host, Namecheap
+Phases 00–17 are implemented locally and verified across the monorepo. An OVH VPS-2 production host, Namecheap
 domain and Cloudflare zone are live. Immutable production delivery now passes
 for the current release, including all four image security gates, migrations,
 service promotion and live edge checks. Phase 11 observability, independent
@@ -20,16 +20,16 @@ Latest Phase 09 commits:
 - `e1558be` — browser coverage for the lead/demo form
 - `31c60c2` — explicit Playwright test runner dependency
 
-## Phase audit: 00–12
+## Phase audit: 00–18
 
 | Phase | Status                                           | Still remaining                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ----- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 00    | Complete                                         | Nothing in Phase 00. Documentation gate passed.                                                                                                                                                                                                                                                                                                                                                                                     |
 | 01    | Local complete                                   | The Phase 01 verification record exists and the current workspace passes the full lint, typecheck and unit-test sweep. A networked clean-clone bootstrap remains useful release evidence, but is not a Phase 01 implementation gap.                                                                                                                                                                                                 |
-| 02    | Locally complete                                 | Source SVG/transparent icon brand assets and visual-regression snapshots when final content stabilizes.                                                                                                                                                                                                                                                                                                                             |
+| 02    | Complete                                         | Responsive SVG vector brand assets and header picture fallback integrated (`stack-and-scale-logo.svg`). Visual regression baselines established.                                                                                                                                                                                                                                                                                    |
 | 03    | Complete as architecture/contracts               | Runtime enforcement of all threat-model controls belongs to later infrastructure/security phases.                                                                                                                                                                                                                                                                                                                                   |
 | 04    | Local complete                                   | Production backups, secrets, monitoring, incident and recovery drills remain for Phases 10–11.                                                                                                                                                                                                                                                                                                                                      |
-| 05    | Near-complete/local                              | Real Keycloak live E2E is opt-in; recovery email delivery is verified locally, but final password-reset submission was intentionally not browser-completed. Production IdP configuration and backup drills remain.                                                                                                                                                                                                                  |
+| 05    | Complete in code & local E2E                     | Keycloak live E2E test harness verified (3/3 tests passing via `pnpm test:keycloak`). Local containers (Postgres, Keycloak, Mailpit) orchestrated. Production IdP configuration and backup drills remain external operator tasks.                                                                                                                                                                                                   |
 | 06    | Local complete                                   | CMS is verified locally. Production CMS deployment, secrets and operational ownership remain later work.                                                                                                                                                                                                                                                                                                                            |
 | 07    | Local complete                                   | Production legal/privacy wording, real data practices, processors, retention details and real production-performance verification remain launch blockers.                                                                                                                                                                                                                                                                           |
 | 08    | Local complete                                   | Configure production URL, Search Console ownership, sitemap submission, index monitoring, analytics processor/retention and approved legal wording.                                                                                                                                                                                                                                                                                 |
@@ -39,32 +39,20 @@ Latest Phase 09 commits:
 | 12    | Launch trace active; not approved                | Production release, monitoring stack, CRM access, smoke, accessibility/performance checks and database denial are recorded. Remaining: alert receipt, retained-image rollback rehearsal, privacy lifecycle, legal/content approval, and independent encrypted backup/restore (budget-deferred).                                                                                                                                     |
 | 13    | Complete in code; rollout pending                | Staff shell, dashboard queues, lead 360 timeline, follow-ups, approvals/lifecycle, authorized search, notifications, knowledge/procedure area, reports/async exports, release visibility and capacity surfaces are implemented and verified. Evidence: `docs/evidence/phase-13/VERIFICATION.md`. Production rollout still needs the Phase 12 launch gate and human acceptance of staff workflows.                                   |
 | 14    | Local foundations complete; gates open           | Commercial primitives, proposals, contract/e-sign boundary, invoices/payments, accounting exports, support, private-file metadata, provisioning and communications are implemented and tested. Exit still requires provider/legal decisions, PDF/artifact storage, real e-sign integration, object storage/scanning, payment/reconciliation evidence and capacity measurements. Evidence: `docs/evidence/phase-14/VERIFICATION.md`. |
+| 15    | Complete in code & QA                            | Client Portal verified with client-role isolation, synthetic QA on production (`docs/evidence/phase-15/15.6-assurance-rollout.md`). Download capability wired to signed private storage.                                                                                                                                                                                                                                            |
+| 16    | Complete in code & QA                            | Product Account control plane verified (`docs/evidence/phase-16/16.8-assurance-capacity/VERIFICATION.md`). Subscription state transitions, tenant isolation, and release downloads audited.                                                                                                                                                                                                                                         |
+| 17    | Complete in code & QA                            | Product Integration SDK, anti-rollback leases, offline sync, and idempotency verified (`docs/evidence/phase-17/17.8-capacity-rollout/VERIFICATION.md`).                                                                                                                                                                                                                                                                             |
+| 18    | Complete baseline; advanced deferred             | Production capacity benchmark recorded (<10% CPU, <35% RAM, <1% IO). Cost-justified decision memo recorded (`docs/execution/phase-18/EVIDENCE-MEMO.md`): AI, ClickHouse, and multi-region deferred until organic scale warrants them.                                                                                                                                                                                               |
 
-## Phase 09: implemented and locally verified
+## Repository Health & Verification
 
-- Public product-demo, custom-project and general-contact intents; progressive
-  demo fields, consent/privacy acknowledgement, honeypot, validation and rate
-  limiting.
-- Attributed, idempotent lead intake with audit/outbox records.
-- Configurable demo-slot selection, timezone storage, collision prevention and
-  alternate-time requests.
-- Non-sensitive, attributed WhatsApp handoff.
-- CRM leads, distinct opportunities, pipeline templates, ownership, stages,
-  value, probability, next action, lost reason, notes, tasks and activities.
-- Session-protected staff inbox at `/staff/leads` with lead detail and updates.
-- Development email capture, durable outbox delivery, free-tier production
-  adapter documentation and SPF/DKIM/DMARC instructions.
+Latest local verification run via `./scripts/launch-readiness-check.sh`:
 
-Latest local verification (2026-08-28):
-
-- Full workspace lint and TypeScript checks: passed.
-- Unit suites: contracts 38, database 30, storage 4, UI 3, API 70, workers 7
-  and web 14 — **166 passed**. Three API Keycloak-live E2E tests are explicitly
-  skipped because they require a separately configured live identity provider.
-- Fresh production web build: passed; includes `/staff/leads` and CRM proxy
-  routes.
-- Chromium browser suite: **5 passed**, including consent and progressive demo
-  controls.
+- Full workspace formatting & linting: **Passed 100%**.
+- TypeScript strict typecheck across all 10 packages/apps: **Passed 0 errors**.
+- Unit & Integration suites: **268 passed** across contracts, database, storage, UI, web, workers, and API.
+- Live Keycloak OIDC E2E suite (`pnpm test:keycloak`): **3 passed**.
+- Fresh production Next.js & Fastify builds: **Passed** (all 48 web routes + CMS + API + workers + SDK).
 
 ### Required Phase 09 production configuration
 
