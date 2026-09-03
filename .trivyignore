@@ -27,6 +27,8 @@ CVE-2026-42497
 CVE-2026-57432
 CVE-2026-57433
 CVE-2026-9538
+# systemd / libsystemd0 / libudev1 — systemd-homed not running in container; no fix in bookworm
+CVE-2026-16742
 # util-linux / bsdutils — mount/blkid not used in container
 CVE-2022-0563
 CVE-2026-53613
