@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { playStaffCue } from "./staff-sfx";
 
 const reportTypes = [
@@ -101,20 +107,19 @@ export function StaffReports() {
             value={type}
             onValueChange={(value) => setType(value ?? "funnel")}
           >
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-            {reportTypes.map((item) => (
-              <SelectItem key={item} value={item}>
-                {item}
-              </SelectItem>
-            ))}
+              {reportTypes.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </Label>
-        <Button
-          onClick={() => void download("json")}
-          type="button"
-        >
+        <Button onClick={() => void download("json")} type="button">
           Download JSON
         </Button>
         <Button

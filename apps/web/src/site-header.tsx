@@ -40,26 +40,29 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
       <Sheet>
         <SheetTrigger
           className="mobile-navigation"
-          render={<Button size="icon" variant="outline" />}
+          render={<Button size="sm" variant="outline" />}
         >
-          <MenuIcon />
-          <span className="sr-only">Open navigation</span>
+          <MenuIcon aria-hidden="true" />
+          <span>Menu</span>
         </SheetTrigger>
         <SheetContent side="right">
           <SheetHeader>
             <SheetTitle>Navigation</SheetTitle>
             <SheetDescription>Explore Stack &amp; Scale.</SheetDescription>
           </SheetHeader>
-          <nav aria-label="Compact navigation" className="mobile-navigation-links">
-          {primaryNavigation.map((item) => (
-            <a
-              href={item.href}
-              key={item.href}
-              aria-current={currentPath === item.href ? "page" : undefined}
-            >
-              {item.label}
-            </a>
-          ))}
+          <nav
+            aria-label="Compact navigation"
+            className="mobile-navigation-links"
+          >
+            {primaryNavigation.map((item) => (
+              <a
+                href={item.href}
+                key={item.href}
+                aria-current={currentPath === item.href ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
         </SheetContent>
       </Sheet>

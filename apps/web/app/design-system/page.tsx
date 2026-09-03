@@ -22,9 +22,7 @@ export default function DesignSystemPage() {
         <div className="design-system-grid">
           <article className="design-system-card">
             <h3>{designSystemCatalog.components[0]}</h3>
-            <Button render={<a href="/#contact" />}>
-              Book a demo
-            </Button>
+            <Button render={<a href="/#contact" />}>Book a demo</Button>
           </article>
           <article className="design-system-card">
             <h3>{designSystemCatalog.components[1]}</h3>

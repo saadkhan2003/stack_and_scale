@@ -91,10 +91,7 @@ export function StaffOperationsSearch() {
             type="search"
             value={query}
           />
-          <Button
-            disabled={busy}
-            type="submit"
-          >
+          <Button disabled={busy} type="submit">
             {busy ? "Searching..." : "Search"}
           </Button>
         </div>
@@ -105,7 +102,9 @@ export function StaffOperationsSearch() {
       <ul className="staff-search-records">
         {results.map((result) => (
           <li key={`${result.resource_type}-${result.id}`}>
-            <Badge className="staff-record-id" variant="outline">{result.resource_type}</Badge>
+            <Badge className="staff-record-id" variant="outline">
+              {result.resource_type}
+            </Badge>
             <strong>{result.title}</strong>
             {result.excerpt ? <small>{result.excerpt}</small> : null}
           </li>

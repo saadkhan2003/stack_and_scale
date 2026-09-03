@@ -57,14 +57,22 @@ function StaffCommandSearch() {
         }}
       >
         <DialogTrigger
-          render={<Button className="staff-search-trigger" size="sm" variant="outline" />}
+          render={
+            <Button
+              className="staff-search-trigger"
+              size="sm"
+              variant="outline"
+            />
+          }
         >
           Find a workspace <kbd>Ctrl K</kbd>
         </DialogTrigger>
         <DialogContent className="staff-search-dialog max-w-lg">
           <DialogHeader>
             <DialogTitle>Go to workspace</DialogTitle>
-            <DialogDescription>Search the staff workspace destinations.</DialogDescription>
+            <DialogDescription>
+              Search the staff workspace destinations.
+            </DialogDescription>
           </DialogHeader>
           <Input
             autoFocus
@@ -74,21 +82,21 @@ function StaffCommandSearch() {
             type="search"
             value={query}
           />
-            <nav
-              aria-label="Workspace destinations"
-              className="staff-search-results"
-            >
-              {results.map((item) => (
-                <a
-                  href={item.href}
-                  key={item.href}
-                  onClick={() => primeStaffAudio("select")}
-                >
-                  {item.label}
-                  <span aria-hidden="true">↗</span>
-                </a>
-              ))}
-              {results.length === 0 ? <p>No workspace matches.</p> : null}
+          <nav
+            aria-label="Workspace destinations"
+            className="staff-search-results"
+          >
+            {results.map((item) => (
+              <a
+                href={item.href}
+                key={item.href}
+                onClick={() => primeStaffAudio("select")}
+              >
+                {item.label}
+                <span aria-hidden="true">↗</span>
+              </a>
+            ))}
+            {results.length === 0 ? <p>No workspace matches.</p> : null}
           </nav>
         </DialogContent>
       </Dialog>

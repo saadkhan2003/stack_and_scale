@@ -4,7 +4,13 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -142,11 +148,11 @@ export function LeadForm() {
         </CardHeader>
         <CardContent>
           <Button
-          variant="secondary"
-          onClick={() => setStatus("idle")}
-          type="button"
-        >
-          Send another request
+            variant="secondary"
+            onClick={() => setStatus("idle")}
+            type="button"
+          >
+            Send another request
           </Button>
         </CardContent>
       </Card>
@@ -160,7 +166,13 @@ export function LeadForm() {
         </Label>
         <Label htmlFor="lead-email">
           Email
-          <Input autoComplete="email" id="lead-email" name="email" required type="email" />
+          <Input
+            autoComplete="email"
+            id="lead-email"
+            name="email"
+            required
+            type="email"
+          />
         </Label>
         <Label htmlFor="lead-phone">
           Phone <span>(optional)</span>
@@ -174,14 +186,16 @@ export function LeadForm() {
             onValueChange={(value) => setIntakeType(value ?? "project")}
             value={intakeType}
           >
-            <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="demo">Book a product demo</SelectItem>
               <SelectItem value="project">Discuss a custom project</SelectItem>
               <SelectItem value="contact">General contact</SelectItem>
-            {whatsappNumber ? (
+              {whatsappNumber ? (
                 <SelectItem value="whatsapp">Continue on WhatsApp</SelectItem>
-            ) : null}
+              ) : null}
             </SelectContent>
           </Select>
         </Label>
@@ -195,13 +209,15 @@ export function LeadForm() {
             <Label htmlFor="demo-starts-at">
               Available time
               <Select name="demoStartsAt">
-                <SelectTrigger className="w-full" id="demo-starts-at"><SelectValue placeholder="Choose a time" /></SelectTrigger>
+                <SelectTrigger className="w-full" id="demo-starts-at">
+                  <SelectValue placeholder="Choose a time" />
+                </SelectTrigger>
                 <SelectContent>
-                {slots.map((slot) => (
+                  {slots.map((slot) => (
                     <SelectItem key={slot} value={slot}>
-                    {new Date(slot).toLocaleString()}
+                      {new Date(slot).toLocaleString()}
                     </SelectItem>
-                ))}
+                  ))}
                 </SelectContent>
               </Select>
             </Label>
@@ -235,15 +251,12 @@ export function LeadForm() {
       {status === "error" ? (
         <Alert className="form-error" variant="destructive">
           <AlertDescription>
-          {error} Your details are still in this form. You can try again
-          shortly.
+            {error} Your details are still in this form. You can try again
+            shortly.
           </AlertDescription>
         </Alert>
       ) : null}
-      <Button
-        disabled={status === "sending"}
-        type="submit"
-      >
+      <Button disabled={status === "sending"} type="submit">
         {status === "sending" ? "Sending…" : "Send request"}
       </Button>
     </form>

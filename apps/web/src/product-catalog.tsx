@@ -48,7 +48,12 @@ export function ProductCatalog({
         {visibleEntries.length === 0 ? (
           <p className="empty-catalog">
             No product matches that search.{" "}
-            <Button onClick={() => setQuery("")} size="sm" type="button" variant="link">
+            <Button
+              onClick={() => setQuery("")}
+              size="sm"
+              type="button"
+              variant="link"
+            >
               Clear search
             </Button>
           </p>

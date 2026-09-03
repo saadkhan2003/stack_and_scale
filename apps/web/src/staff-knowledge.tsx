@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { playStaffCue } from "./staff-sfx";
 
@@ -155,7 +161,11 @@ export function StaffKnowledge() {
           <ul className="staff-knowledge-list">
             {items.map((item) => (
               <li key={item.id}>
-                <Button variant="ghost" onClick={() => void open(item.id)} type="button">
+                <Button
+                  variant="ghost"
+                  onClick={() => void open(item.id)}
+                  type="button"
+                >
                   <strong>{item.title}</strong>
                   <span>
                     {item.content_type} · review{" "}
@@ -186,9 +196,13 @@ export function StaffKnowledge() {
             Type
             <Select
               value={form.contentType}
-              onValueChange={(value) => setForm({ ...form, contentType: value ?? "procedure" })}
+              onValueChange={(value) =>
+                setForm({ ...form, contentType: value ?? "procedure" })
+              }
             >
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="procedure">Procedure</SelectItem>
                 <SelectItem value="script">Script</SelectItem>
@@ -223,9 +237,13 @@ export function StaffKnowledge() {
             Status
             <Select
               value={form.status}
-              onValueChange={(value) => setForm({ ...form, status: value ?? "published" })}
+              onValueChange={(value) =>
+                setForm({ ...form, status: value ?? "published" })
+              }
             >
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
@@ -275,9 +293,7 @@ export function StaffKnowledge() {
               }
             />
           </Label>
-          <Button type="submit">
-            Save article
-          </Button>
+          <Button type="submit">Save article</Button>
           {selected ? (
             <Button
               variant="destructive"

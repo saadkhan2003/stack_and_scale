@@ -62,9 +62,9 @@ export function SearchDialog({
         </DialogTrigger>
         <DialogContent className="max-w-2xl gap-3 p-5 sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Search Stack &amp; Scale</DialogTitle>
+            <DialogTitle>Public site search</DialogTitle>
             <DialogDescription>
-              Only published, public content is included.
+              Search Stack &amp; Scale's published public content.
             </DialogDescription>
           </DialogHeader>
           <Input
@@ -76,25 +76,23 @@ export function SearchDialog({
             value={query}
           />
           <div className="search-results max-h-[50vh]" role="list">
-              {results.map((entry) => (
-                <a
-                  href={entry.href}
-                  key={`${entry.collection}-${entry.id}`}
-                  role="listitem"
-                  onClick={() => setOpen(false)}
-                >
-                  <span>
-                    {entry.collection === "projects"
-                      ? "work"
-                      : entry.collection}
-                  </span>
-                  <strong>{entry.title}</strong>
-                  <small>{entry.summary}</small>
-                </a>
-              ))}
-              {results.length === 0 ? (
-                <p>No published content matches that search.</p>
-              ) : null}
+            {results.map((entry) => (
+              <a
+                href={entry.href}
+                key={`${entry.collection}-${entry.id}`}
+                role="listitem"
+                onClick={() => setOpen(false)}
+              >
+                <span>
+                  {entry.collection === "projects" ? "work" : entry.collection}
+                </span>
+                <strong>{entry.title}</strong>
+                <small>{entry.summary}</small>
+              </a>
+            ))}
+            {results.length === 0 ? (
+              <p>No published content matches that search.</p>
+            ) : null}
           </div>
         </DialogContent>
       </Dialog>

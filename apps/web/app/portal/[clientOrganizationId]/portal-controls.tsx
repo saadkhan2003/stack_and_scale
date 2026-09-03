@@ -166,7 +166,9 @@ export function PortalControls({
           <Label>
             Category
             <Select name="category" defaultValue="question">
-              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="question">Question</SelectItem>
                 <SelectItem value="request">Request</SelectItem>
@@ -185,7 +187,8 @@ export function PortalControls({
         <ul>
           {tickets.map((ticket) => (
             <li key={ticket.id}>
-              <strong>{ticket.subject}</strong> — <Badge variant="outline">{ticket.status}</Badge>
+              <strong>{ticket.subject}</strong> —{" "}
+              <Badge variant="outline">{ticket.status}</Badge>
               <form
                 onSubmit={(event) => {
                   void (async () => {
@@ -287,7 +290,9 @@ export function PortalControls({
             <Label>
               Role
               <Select name="role" defaultValue="client_member">
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="client_member">Member</SelectItem>
                   <SelectItem value="client_admin">Administrator</SelectItem>
@@ -331,7 +336,11 @@ export function PortalControls({
           </ul>
         </section>
       ) : null}
-      {message ? <Alert aria-live="polite"><AlertDescription>{message}</AlertDescription></Alert> : null}
+      {message ? (
+        <Alert aria-live="polite">
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      ) : null}
     </>
   );
 }

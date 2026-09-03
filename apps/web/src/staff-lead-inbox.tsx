@@ -260,7 +260,11 @@ export function StaffLeadInbox() {
           <ul className="staff-lead-list">
             {leads.map((lead) => (
               <li key={lead.id}>
-                <Button type="button" variant="ghost" onClick={() => void open(lead.id)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => void open(lead.id)}
+                >
                   <strong>{lead.name ?? lead.email}</strong>
                   <span>
                     {lead.intakeType} · {lead.stage}
@@ -277,7 +281,9 @@ export function StaffLeadInbox() {
                 <p className="eyebrow">360 lead record</p>
                 <h2>{selected.name ?? selected.email}</h2>
               </div>
-              <Badge className="staff-record-id" variant="outline">{selected.intakeType}</Badge>
+              <Badge className="staff-record-id" variant="outline">
+                {selected.intakeType}
+              </Badge>
             </header>
             <section
               className="staff-sensitive"
@@ -332,7 +338,9 @@ export function StaffLeadInbox() {
               <Label>
                 Stage
                 <Select defaultValue={selected.stage} name="stage">
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="new">New</SelectItem>
                     <SelectItem value="qualified">Qualified</SelectItem>
@@ -376,9 +384,7 @@ export function StaffLeadInbox() {
                   name="lostReason"
                 />
               </Label>
-              <Button type="submit">
-                Save lead
-              </Button>
+              <Button type="submit">Save lead</Button>
             </form>
             <section aria-labelledby="follow-up-heading">
               <h3 id="follow-up-heading">Follow-up tasks</h3>

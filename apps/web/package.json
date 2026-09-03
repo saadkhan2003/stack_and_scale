@@ -29,7 +29,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=/media/saad/Data/.playwright-browsers PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/google/chrome/chrome playwright test",
+    "test:e2e": "pnpm build && PLAYWRIGHT_BROWSERS_PATH=/media/saad/Data/.playwright-browsers PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/google/chrome/chrome playwright test",
     "build": "next build --webpack"
   }
 }

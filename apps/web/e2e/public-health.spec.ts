@@ -49,7 +49,7 @@ test("mobile navigation and not-found state remain usable", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByText("Menu", { exact: true }).click();
+  await page.getByRole("button", { name: "Menu" }).click();
   await expect(
     page.getByRole("navigation", { name: "Compact navigation" }),
   ).toBeVisible();
@@ -90,7 +90,8 @@ test("lead form exposes consent and progressive demo booking controls", async ({
   await expect(
     page.getByRole("link", { name: "Privacy details" }),
   ).toBeVisible();
-  await page.getByLabel("How can we help?").selectOption("demo");
+  await page.getByRole("combobox", { name: "How can we help?" }).click();
+  await page.getByRole("option", { name: "Book a product demo" }).click();
   await expect(
     page.getByRole("group", { name: /book a product demo/i }),
   ).toBeVisible();

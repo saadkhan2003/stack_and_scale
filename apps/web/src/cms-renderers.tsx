@@ -232,7 +232,9 @@ export function CmsPageBlocks({
               <h2>{stringValue(block, "heading")}</h2>
               <p>{stringValue(block, "body")}</p>
               <Button
-                render={<a href={stringValue(block, "buttonUrl") ?? "/contact"} />}
+                render={
+                  <a href={stringValue(block, "buttonUrl") ?? "/contact"} />
+                }
               >
                 {stringValue(block, "buttonLabel") ?? "Contact us"}
               </Button>
@@ -256,7 +258,9 @@ export function CmsPageBlocks({
                 {faqs.map((faq) => (
                   <AccordionItem key={faq.question} value={faq.question}>
                     <AccordionTrigger>{faq.question}</AccordionTrigger>
-                    <AccordionContent><p>{faq.answer}</p></AccordionContent>
+                    <AccordionContent>
+                      <p>{faq.answer}</p>
+                    </AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>

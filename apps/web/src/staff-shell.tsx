@@ -75,7 +75,9 @@ function AccessMessage({
         <span className="staff-status-code">401</span>
         <div>
           <AlertTitle>Sign-in required</AlertTitle>
-          <AlertDescription>Your staff session is missing or has expired.</AlertDescription>
+          <AlertDescription>
+            Your staff session is missing or has expired.
+          </AlertDescription>
           <Button
             render={<a href="/signin" />}
             onClick={() => playStaffCue("unlock")}
@@ -92,7 +94,9 @@ function AccessMessage({
         <span className="staff-status-code">403</span>
         <div>
           <AlertTitle>Access is restricted</AlertTitle>
-          <AlertDescription>Your active staff membership does not include CRM access.</AlertDescription>
+          <AlertDescription>
+            Your active staff membership does not include CRM access.
+          </AlertDescription>
         </div>
       </Alert>
     );
@@ -107,11 +111,7 @@ function AccessMessage({
             CRM access is temporarily unavailable. Your session remains
             protected.
           </AlertDescription>
-          <Button
-            variant="secondary"
-            onClick={retry}
-            type="button"
-          >
+          <Button variant="secondary" onClick={retry} type="button">
             Try again
           </Button>
         </div>
@@ -123,12 +123,10 @@ function AccessMessage({
       <span className="staff-status-code">!</span>
       <div>
         <AlertTitle>We could not verify the workspace</AlertTitle>
-        <AlertDescription>Something unexpected interrupted the staff access check.</AlertDescription>
-        <Button
-          variant="secondary"
-          onClick={retry}
-          type="button"
-        >
+        <AlertDescription>
+          Something unexpected interrupted the staff access check.
+        </AlertDescription>
+        <Button variant="secondary" onClick={retry} type="button">
           Try again
         </Button>
       </div>

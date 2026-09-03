@@ -60,13 +60,14 @@ export function AnalyticsController() {
         content is tracked.
       </p>
       <div>
-        <Button onClick={() => decide("denied")} type="button" variant="outline">
+        <Button
+          onClick={() => decide("denied")}
+          type="button"
+          variant="outline"
+        >
           Decline
         </Button>
-        <Button
-          onClick={() => decide("granted")}
-          type="button"
-        >
+        <Button onClick={() => decide("granted")} type="button">
           Allow analytics
         </Button>
       </div>
