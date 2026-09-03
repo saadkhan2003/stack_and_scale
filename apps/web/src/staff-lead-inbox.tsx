@@ -3,10 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
-  Calendar,
   CheckCircle2,
   Clock,
-  DollarSign,
   FileText,
   Lock,
   Mail,
@@ -17,7 +15,6 @@ import {
   Shield,
   Sparkles,
   TrendingUp,
-  User,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";

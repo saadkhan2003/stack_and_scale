@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText, ArrowUpRight, AlertCircle } from "lucide-react";
+import { FileText, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 type Proposal = {
