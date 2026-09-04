@@ -5,43 +5,42 @@ import { Button } from "@/components/ui/button";
 
 export default function SolutionsPage() {
   return (
-    <main className="site-shell solutions-page">
+    <main className="solutions-page">
       <SiteHeader currentPath="/solutions" />
 
-      <section className="solutions-hero" aria-labelledby="solutions-heading">
-        <p className="eyebrow">Solutions</p>
-        <h1 id="solutions-heading">{solutionsPageModel.heading}</h1>
+      <section className="solutions-hero">
+        <h1>{solutionsPageModel.heading}</h1>
         <p>{solutionsPageModel.description}</p>
+        <div className="solutions-hero-actions">
+          <Button render={<a href="/#contact" />}>
+            {solutionsPageModel.productAction} <span aria-hidden="true">→</span>
+          </Button>
+          <Button render={<a href="/#contact" />} variant="secondary">
+            {solutionsPageModel.serviceAction}
+          </Button>
+        </div>
       </section>
 
-      <section
-        className="solutions-list"
-        aria-label="Stack and Scale solutions"
-      >
+      <div className="solutions-list">
         {solutionsPageModel.solutions.map((solution) => (
           <article className="solution-row" key={solution.number}>
             <span>{solution.number}</span>
             <div>
-              <p className="eyebrow">{solution.type}</p>
+              <span className="solution-type">{solution.type}</span>
               <h2>{solution.title}</h2>
-            </div>
-            <div className="solution-summary">
               <p>{solution.description}</p>
-              <a className="text-link" href={solution.href}>
-                {solution.action} <span aria-hidden="true">↗</span>
-              </a>
             </div>
+            <Button
+              render={<a href={solution.href} />}
+              variant="secondary"
+              size="sm"
+            >
+              {solution.action} <span aria-hidden="true">→</span>
+            </Button>
           </article>
         ))}
-      </section>
+      </div>
 
-      <section className="solutions-cta">
-        <p className="eyebrow">Not sure where to begin?</p>
-        <h2>We can help you find the most useful next step.</h2>
-        <Button render={<a href="/#contact" />}>
-          Discuss your needs <span aria-hidden="true">→</span>
-        </Button>
-      </section>
       <SiteFooter />
     </main>
   );

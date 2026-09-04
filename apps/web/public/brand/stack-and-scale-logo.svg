@@ -16,10 +16,10 @@
 
   <!-- Brand Typography: Stack & Scale -->
   <g transform="translate(94, 20)">
-    <text x="0" y="30" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="28" letter-spacing="-0.5" fill="#F5F2E8">
+    <text x="0" y="30" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="28" letter-spacing="-0.5" fill="#EDEDED">
       STACK <tspan fill="#F4C542">&amp;</tspan> SCALE
     </text>
-    <text x="2" y="48" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="10" letter-spacing="3.2" fill="#80DDD1">
+    <text x="2" y="48" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="10" letter-spacing="3.2" fill="#888888">
       TECHNOLOGIES
     </text>
   </g>

@@ -56,69 +56,6 @@ export default function HomePage() {
             Built for local businesses today. Ready to scale with you tomorrow.
           </p>
         </div>
-
-        <div
-          className="ecosystem"
-          aria-label="Connected software ecosystem telemetry dashboard"
-        >
-          <div className="ecosystem-header">
-            <div className="ecosystem-dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div className="ecosystem-live-badge">
-              <span className="pulse-dot" aria-hidden="true" />
-              <span>LIVE · NODE AP-SOUTH-1</span>
-            </div>
-            <span className="ecosystem-latency">9ms · TLS 1.3</span>
-          </div>
-
-          <div className="ecosystem-grid">
-            <article className="product-card pos-card">
-              <span className="card-label">Retail POS</span>
-              <strong>Today&apos;s sales</strong>
-              <b>Rs. 184,200</b>
-              <div className="chart" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-            </article>
-            <article className="product-card analytics-card">
-              <span className="card-label">Analytics</span>
-              <strong>Operating clearly</strong>
-              <div className="metric-row">
-                <span>
-                  98.7%<small>on track</small>
-                </span>
-                <span>
-                  24<small>actions</small>
-                </span>
-              </div>
-            </article>
-            <article className="product-card automation-card">
-              <div className="flex items-center gap-3">
-                <span className="status-dot" aria-hidden="true" />
-                <div>
-                  <span className="card-label">Automation</span>
-                  <strong>Follow-up ready</strong>
-                  <p>New lead routed to sales · Synced across inventory</p>
-                </div>
-              </div>
-              <span className="text-xs font-mono text-[#80ddd1] hidden sm:inline-block">
-                Active
-              </span>
-            </article>
-            <div className="ecosystem-core">
-              <span>Stack &amp; Scale</span>
-              <strong>Connected operations · Real-time telemetry</strong>
-            </div>
-          </div>
-        </div>
       </section>
 
       <section
@@ -153,40 +90,40 @@ export default function HomePage() {
         <h2 id="approach-heading">
           Clear thinking. Dependable delivery. Software that earns trust.
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 relative z-10">
-          <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px mt-12 relative z-10 bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.06]">
+          <div className="p-7 bg-[#111]">
             <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">
               01 · Sovereignty
             </div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+            <h3 className="text-xl font-bold text-white mb-2">
               Zero Vendor Lock-in
             </h3>
-            <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
+            <p className="text-sm text-[#888] leading-relaxed">
               Complete ownership of your database, storage, and models.
               Self-hosted on your own hardware or VPC with no artificial
               per-seat fees.
             </p>
           </div>
-          <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
+          <div className="p-7 bg-[#111]">
             <div className="text-xs font-mono text-[#f4c542] tracking-widest uppercase mb-3">
               02 · Velocity
             </div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+            <h3 className="text-xl font-bold text-white mb-2">
               Sub-Second Operations
             </h3>
-            <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
+            <p className="text-sm text-[#888] leading-relaxed">
               Real-time point-of-sale synchronization, automated event queues,
               and instant customer handoffs without latency bottlenecks.
             </p>
           </div>
-          <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
+          <div className="p-7 bg-[#111]">
             <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">
               03 · Security
             </div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+            <h3 className="text-xl font-bold text-white mb-2">
               Defense in Depth
             </h3>
-            <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
+            <p className="text-sm text-[#888] leading-relaxed">
               Automated ClamAV antivirus file scanning, encrypted private MinIO
               S3 object storage, and Keycloak enterprise single sign-on.
             </p>

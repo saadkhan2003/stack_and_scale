@@ -6,11 +6,12 @@ export default function ErrorPage({
   reset,
 }: Readonly<{ error: Error; reset: () => void }>) {
   return (
-    <main className="status-page">
-      <p className="eyebrow">Something changed</p>
-      <h1>We could not load that page.</h1>
-      <p>Please try again, or contact us directly if the issue continues.</p>
-      <Button onClick={reset}>Try again</Button>
-    </main>
+    <div className="error-page">
+      <div>
+        <h1>Error</h1>
+        <h2>We could not load that page.</h2>
+        <Button onClick={reset}>Try again</Button>
+      </div>
+    </div>
   );
 }
