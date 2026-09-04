@@ -391,17 +391,17 @@ export function ArchitectureExplorer() {
       subtitle: "Offline-resilient retail terminal synchronization",
       steps: [
         {
-          num: "Step 1",
+          num: "01",
           name: "Terminal Local Commit",
           desc: "Cashier scans item; transaction commits immediately to local embedded SQLite within 1.2ms without blocking for network.",
         },
         {
-          num: "Step 2",
+          num: "02",
           name: "Async Delta Stream",
           desc: "Background daemon captures WAL changes and batches cryptographically signed transaction envelopes.",
         },
         {
-          num: "Step 3",
+          num: "03",
           name: "Idempotent Reconcile",
           desc: "Central PostgreSQL receives packet, verifies hash signature, and broadcasts ledger updates to connected inventory nodes.",
         },
@@ -419,17 +419,17 @@ export function ArchitectureExplorer() {
       subtitle: "Event-driven state machine pipelines",
       steps: [
         {
-          num: "Step 1",
+          num: "01",
           name: "Webhook / Event Ingest",
           desc: "Customer enquiry, payment, or inventory alert triggers an asynchronous BullMQ queue worker in Fastify.",
         },
         {
-          num: "Step 2",
+          num: "02",
           name: "Deterministic State Machine",
           desc: "Structured pipeline validates schema, checks customer credit, and computes delivery routing paths.",
         },
         {
-          num: "Step 3",
+          num: "03",
           name: "Staff Handoff & Dispatch",
           desc: "If action requires human approval, staff notifications sound and WhatsApp bridge dispatches confirmations.",
         },
@@ -447,17 +447,17 @@ export function ArchitectureExplorer() {
       subtitle: "Keycloak OIDC and ClamAV sandboxed storage",
       steps: [
         {
-          num: "Step 1",
+          num: "01",
           name: "PKCE OIDC Handshake",
           desc: "User initiates single sign-on; browser redirects through self-hosted Keycloak realm with hardware MFA enforcement.",
         },
         {
-          num: "Step 2",
+          num: "02",
           name: "Signed Cookie Issuance",
           desc: "Secure HTTP-only session cookie is set with strict SameSite policy, bypassing external auth trackers.",
         },
         {
-          num: "Step 3",
+          num: "03",
           name: "Quarantine File Sandbox",
           desc: "Customer invoices and agreements stream to MinIO private bucket after passing synchronous ClamAV antivirus scans.",
         },

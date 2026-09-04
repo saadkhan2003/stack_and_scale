@@ -27,14 +27,14 @@ export default function HomePage() {
       <SiteHeader currentPath="/" />
 
       {/* 1. HERO SECTION WITH VERCEL-STYLE GLOW & CONSOLE */}
-      <section className="hero relative pt-16 pb-20 overflow-hidden" id="top" aria-labelledby="hero-heading">
+      <section className="relative pt-20 pb-20 overflow-hidden" id="top" aria-labelledby="hero-heading">
         {/* Ambient background glow */}
         <div 
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(94,106,210,0.18),rgba(128,221,209,0.08)_40%,transparent_70%)] pointer-events-none -z-10" 
           aria-hidden="true" 
         />
 
-        <div className="hero-copy max-w-5xl mx-auto text-center px-4">
+        <div className="w-full max-w-5xl mx-auto text-center px-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-zinc-300 backdrop-blur-md mb-8 hover:border-white/20 transition-colors">
             <span className="w-2 h-2 rounded-full bg-[#80ddd1] animate-pulse" aria-hidden="true" />
             <span className="font-medium text-white">Stack &amp; Scale v2.4</span>
@@ -87,7 +87,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Interactive Console Preview */}
-        <div className="mt-12 max-w-5xl mx-auto px-4">
+        <div className="mt-12 w-full max-w-5xl mx-auto px-4">
           <HeroConsole />
         </div>
       </section>
@@ -97,18 +97,18 @@ export default function HomePage() {
 
       {/* 3. CAPABILITIES / CORE SOLUTIONS */}
       <section
-        className="capabilities max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
+        className="max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
         id="solutions"
         aria-labelledby="solutions-heading"
       >
-        <div className="max-w-2xl mb-16">
-          <p className="text-xs uppercase tracking-[0.25em] text-[#80ddd1] font-mono mb-3 font-semibold">
+        <div className="section-intro">
+          <p className="eyebrow">
             What we build
           </p>
-          <h2 id="solutions-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+          <h2 id="solutions-heading">
             Useful technology, built with absolute intent.
           </h2>
-          <p className="text-base text-zinc-400 leading-relaxed">
+          <p>
             Eliminate fragile third-party SaaS subscriptions with purpose-engineered, sovereign software running directly on your edge nodes and private VPC.
           </p>
         </div>
@@ -161,18 +161,18 @@ export default function HomePage() {
 
       {/* 7. APPROACH & SOVEREIGNTY STANDARDS */}
       <section
-        className="approach max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
+        className="max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
         id="approach"
         aria-labelledby="approach-heading"
       >
-        <div className="max-w-2xl mb-16">
-          <p className="text-xs uppercase tracking-[0.25em] text-[#80ddd1] font-mono mb-3 font-semibold">
+        <div className="section-intro">
+          <p className="eyebrow">
             The Stack &amp; Scale standard
           </p>
-          <h2 id="approach-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+          <h2 id="approach-heading">
             Clear thinking. Dependable delivery. Software that earns trust.
           </h2>
-          <p className="text-base text-zinc-400 leading-relaxed">
+          <p>
             Every system we design prioritizes operational durability, data custody, and frictionless execution for front-line operators.
           </p>
         </div>
@@ -228,7 +228,7 @@ export default function HomePage() {
       <FaqAccordion />
 
       {/* 11. PRACTICE EXPLORATION STRIP */}
-      <section className="feature-strip max-w-6xl mx-auto px-6 py-16 border-t border-white/[0.06]" aria-labelledby="explore-heading">
+      <section className="max-w-6xl mx-auto px-6 py-16 border-t border-white/[0.06]" aria-labelledby="explore-heading">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#09090b] p-8 rounded-2xl border border-white/[0.08]">
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-[#80ddd1] font-mono mb-2 font-semibold">Explore the practice</p>
