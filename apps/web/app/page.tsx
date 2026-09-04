@@ -2,12 +2,12 @@ import { homepageModel } from "../src/homepage-content";
 import { metadataForPath } from "../src/seo";
 import { SiteFooter } from "../src/site-footer";
 import { SiteHeader } from "../src/site-header";
+import { HeroBackdrop } from "../src/hero-backdrop";
 import { Button } from "@/components/ui/button";
 import {
   HeroConsole,
   ClientLogos,
   InteractiveCapabilitiesGrid,
-  BentoGrid,
   ArchitectureExplorer,
   ComparisonMatrix,
   MetricsBar,
@@ -17,7 +17,6 @@ import {
   InteractiveExploreStrip,
   AuroraBottomCta,
 } from "../src/landing-interactive";
-import { LinearFiguresSection } from "../src/linear-figures";
 import { StorefrontPricingSection } from "../src/storefront-pricing";
 
 export const metadata = metadataForPath(
@@ -31,20 +30,31 @@ export default function HomePage() {
     <main className="site-shell bg-black text-[#ededed]">
       <SiteHeader currentPath="/" />
 
-      {/* 1. HERO SECTION WITH VERCEL-STYLE GLOW & CONSOLE */}
-      <section className="relative pt-20 pb-20 overflow-hidden" id="top" aria-labelledby="hero-heading">
-        {/* Ambient background glow */}
-        <div 
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(94,106,210,0.18),rgba(128,221,209,0.08)_40%,transparent_70%)] pointer-events-none -z-10" 
-          aria-hidden="true" 
-        />
+      {/* 1. HERO SECTION WITH LINEAR HORIZON, GRID MESH & CONSOLE */}
+      <section
+        className="relative pt-16 sm:pt-24 pb-16 sm:pb-20 overflow-hidden"
+        id="top"
+        aria-labelledby="hero-heading"
+      >
+        {/* Dynamic Architectural Mesh & Celestial Horizon Backdrop */}
+        <HeroBackdrop />
 
-        <div className="w-full max-w-5xl mx-auto text-center px-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs text-zinc-300 backdrop-blur-md mb-8 hover:border-white/20 transition-colors linear-shimmer-badge">
-            <span className="w-2 h-2 rounded-full bg-[#80ddd1] animate-pulse" aria-hidden="true" />
-            <span className="font-medium text-white">Stack &amp; Scale v2.4</span>
+        <div className="w-full max-w-[1360px] mx-auto text-center px-5 sm:px-8 lg:px-12">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-md border border-white/10 bg-white/[0.03] text-xs text-zinc-300 backdrop-blur-md mb-6 sm:mb-8 hover:border-white/20 transition-colors linear-shimmer-badge max-w-[95vw]">
+            <span
+              className="w-2 h-2 rounded-full bg-[#80ddd1] animate-pulse shrink-0"
+              aria-hidden="true"
+            />
+            <span className="font-medium text-white shrink-0">
+              Stack &amp; Scale v2.4
+            </span>
             <span className="text-zinc-500">·</span>
-            <span className="text-zinc-400">Enterprise Self-Hosted Infrastructure</span>
+            <span className="text-zinc-400 hidden sm:inline">
+              Enterprise Self-Hosted Infrastructure
+            </span>
+            <span className="text-zinc-400 sm:hidden truncate">
+              Self-Hosted Infra
+            </span>
             <span className="text-zinc-500">→</span>
           </div>
 
@@ -52,30 +62,37 @@ export default function HomePage() {
             {homepageModel.eyebrow}
           </p>
 
-          <h1 
-            id="hero-heading" 
-            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.08] mb-6 bg-gradient-to-b from-white via-[#f4f4f5] to-[#a1a1aa] bg-clip-text text-transparent"
+          <h1
+            id="hero-heading"
+            className="text-3xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white max-w-5xl mx-auto leading-[1.1] sm:leading-[1.08] mb-5 sm:mb-6 bg-gradient-to-b from-white via-[#f4f4f5] to-[#a1a1aa] bg-clip-text text-transparent"
           >
             {homepageModel.heading}
           </h1>
 
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+          <p className="text-base sm:text-xl text-zinc-400 max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal">
             {homepageModel.description}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-            <Button render={<a href="#contact" />} className="!h-11 !px-7 !text-sm !font-semibold !rounded-full shadow-[0_0_24px_rgba(255,255,255,0.18)] !bg-white !text-black hover:!bg-[#ededed]">
-              {homepageModel.primaryAction} <span aria-hidden="true" className="ml-1">→</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-10 sm:mb-12 max-w-md sm:max-w-none mx-auto">
+            <Button
+              render={<a href="#contact" />}
+              className="w-full sm:w-auto !h-11 !px-7 !text-sm !font-semibold !rounded-lg shadow-[0_0_24px_rgba(255,255,255,0.18)] !bg-white !text-black hover:!bg-[#ededed]"
+            >
+              {homepageModel.primaryAction}{" "}
+              <span aria-hidden="true" className="ml-1">
+                →
+              </span>
             </Button>
-            <Button render={<a href="#solutions" />} variant="secondary" className="!h-11 !px-7 !text-sm !font-semibold !rounded-full">
+            <Button
+              render={<a href="#solutions" />}
+              variant="secondary"
+              className="w-full sm:w-auto !h-11 !px-7 !text-sm !font-semibold !rounded-lg"
+            >
               {homepageModel.secondaryAction}
-            </Button>
-            <Button render={<a href="/staff" />} variant="outline" className="!h-11 !px-6 !text-sm !font-medium !rounded-full">
-              Access Staff CRM <span aria-hidden="true" className="ml-1 text-zinc-500">↗</span>
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-8 text-xs font-mono text-zinc-400 border-t border-white/[0.07] pt-6 max-w-2xl mx-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-y-2 gap-x-8 text-xs font-mono text-zinc-400 border-t border-white/[0.07] pt-6 max-w-2xl mx-auto">
             <div className="flex items-center gap-2">
               <span className="text-[#80ddd1]">✓</span>
               <span>99.999% Fault-Tolerant SLA</span>
@@ -92,7 +109,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Interactive Console Preview */}
-        <div className="mt-12 w-full max-w-5xl mx-auto px-4">
+        <div className="mt-14 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
           <HeroConsole />
         </div>
       </section>
@@ -100,34 +117,34 @@ export default function HomePage() {
       {/* 2. ENTERPRISE CLIENT LOGOS */}
       <ClientLogos />
 
-      {/* 2.5 LINEAR ARCHITECTURAL WIREFRAME FIGURES (FIG 0.1 - FIG 0.3) */}
-      <LinearFiguresSection />
-
       {/* 3. CAPABILITIES / CORE SOLUTIONS */}
       <section
-        className="max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
+        className="max-w-[1360px] mx-auto px-6 sm:px-8 lg:px-12 py-24 border-t border-white/[0.06]"
         id="solutions"
         aria-labelledby="solutions-heading"
       >
-        <div className="section-intro">
-          <p className="eyebrow">
-            What we build
-          </p>
-          <h2 id="solutions-heading">
-            Useful technology, built with absolute intent.
-          </h2>
-          <p>
-            Eliminate fragile third-party SaaS subscriptions with purpose-engineered, sovereign software running directly on your edge nodes and private VPC.
-          </p>
+        <div className="section-header-split">
+          <div className="header-left">
+            <span className="eyebrow">Store Floors &amp; Warehouses</span>
+            <h2 id="solutions-heading">
+              Point of sale, inventory, and order dispatch in one system.
+            </h2>
+          </div>
+          <div className="header-right">
+            <p>
+              Replace three fragile subscriptions with software that runs
+              directly on your registers and local servers. No per-seat
+              penalties, no cloud lockouts.
+            </p>
+          </div>
         </div>
 
-        <InteractiveCapabilitiesGrid capabilities={homepageModel.capabilities} />
+        <InteractiveCapabilitiesGrid
+          capabilities={homepageModel.capabilities}
+        />
       </section>
 
-      {/* 4. LINEAR-STYLE BENTO GRID */}
-      <BentoGrid />
-
-      {/* 5. INTERACTIVE ARCHITECTURE EXPLORER */}
+      {/* 4. INTERACTIVE ARCHITECTURE EXPLORER */}
       <ArchitectureExplorer />
 
       {/* 6. ENTERPRISE PERFORMANCE METRICS */}
@@ -135,20 +152,24 @@ export default function HomePage() {
 
       {/* 7. APPROACH & SOVEREIGNTY STANDARDS */}
       <section
-        className="max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
+        className="max-w-[1360px] mx-auto px-6 sm:px-8 lg:px-12 py-24 border-t border-white/[0.06]"
         id="approach"
         aria-labelledby="approach-heading"
       >
-        <div className="section-intro">
-          <p className="eyebrow">
-            The Stack &amp; Scale standard
-          </p>
-          <h2 id="approach-heading">
-            Clear thinking. Dependable delivery. Software that earns trust.
-          </h2>
-          <p>
-            Every system we design prioritizes operational durability, data custody, and frictionless execution for front-line operators.
-          </p>
+        <div className="section-header-split">
+          <div className="header-left">
+            <span className="eyebrow">Reliability Standards</span>
+            <h2 id="approach-heading">
+              Engineered for busy checkout counters and spotty Wi-Fi.
+            </h2>
+          </div>
+          <div className="header-right">
+            <p>
+              Front-line cashiers and warehouse staff don&apos;t have time for
+              spinning loading wheels. Every screen, keystroke, and barcode scan
+              is built to survive high-volume rush hours.
+            </p>
+          </div>
         </div>
 
         <InteractiveApproachGrid />
@@ -178,4 +199,3 @@ export default function HomePage() {
     </main>
   );
 }
-

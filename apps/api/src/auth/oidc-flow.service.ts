@@ -312,6 +312,63 @@ export class OidcFlowService {
     };
   }
 
+  /**
+   * Resolves the post-login redirect destination based on user role and
+   * active organization memberships. Priority order:
+   *   1. Staff realm roles → /staff/leads
+   *   2. Active client portal membership → /portal/:clientOrganizationId
+   *   3. Active product account membership → /account/:accountOrganizationId
+   *   4. Fallback → /
+   */
+  public async resolvePostLoginRedirect(
+    userId: string,
+    role: StaffRole | null,
+  ): Promise<string> {
+    // 1. Staff roles always land in the staff CRM
+    if (role !== null) {
+      return "/staff/leads";
+    }
+
+    // 2. Check for an active client portal membership
+    const clientResult = await this.database.query(
+      `SELECT membership.client_organization_id
+         FROM portal.client_memberships AS membership
+         JOIN portal.client_organizations AS org
+           ON org.id = membership.client_organization_id
+        WHERE membership.user_id = $1
+          AND membership.status = 'active'
+          AND org.portal_access_enabled = true
+        ORDER BY membership.created_at ASC
+        LIMIT 1`,
+      [userId],
+    );
+    const clientOrgId = clientResult.rows[0]?.["client_organization_id"];
+    if (typeof clientOrgId === "string") {
+      return `/portal/${clientOrgId}`;
+    }
+
+    // 3. Check for an active product account membership
+    const accountResult = await this.database.query(
+      `SELECT membership.account_organization_id
+         FROM product.account_memberships AS membership
+         JOIN product.account_organizations AS org
+           ON org.id = membership.account_organization_id
+        WHERE membership.user_id = $1
+          AND membership.status = 'active'
+          AND org.account_enabled = true
+        ORDER BY membership.created_at ASC
+        LIMIT 1`,
+      [userId],
+    );
+    const accountOrgId = accountResult.rows[0]?.["account_organization_id"];
+    if (typeof accountOrgId === "string") {
+      return `/account/${accountOrgId}`;
+    }
+
+    // 4. Fallback for users with no active memberships
+    return "/";
+  }
+
   public buildLogoutRedirect(): {
     location: string;
     cookies: readonly CookieSpec[];

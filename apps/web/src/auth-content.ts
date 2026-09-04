@@ -29,13 +29,13 @@ export function createAuthContentModel(
 }
 
 export const authContentModel = createAuthContentModel({
-  eyebrow: "Staff sign-in",
-  heading: "Sign in to Stack & Scale.",
+  eyebrow: "Unified Access",
+  heading: "Sign in to Stack & Scale",
   description:
-    "Use your staff account to reach dashboards, deployment tools, and operational controls.",
+    "Unified access for Client Portals, Product Accounts, and Engineering Teams.",
   primaryAction: "Continue to secure sign-in",
   providerNote:
-    "Sign-in is handled by our identity provider via OpenID Connect. You will be redirected to a secure login page.",
+    "Sign-in is handled by our identity provider via OpenID Connect. You will be redirected to a secure authentication session.",
   legalNote:
-    "Access is restricted to authorized staff. Activity is logged for security.",
+    "Authorized access only. All sessions and administrative operations are cryptographically audited.",
 } as const);

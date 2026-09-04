@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, ShieldCheck, Sliders, X } from "lucide-react";
+import { Check, Sliders, X } from "lucide-react";
 
 type Consent = "granted" | "denied" | null;
 
@@ -27,7 +27,7 @@ function readDetailedSettings(): DetailedConsent {
   const raw = window.localStorage.getItem(settingsKey);
   if (raw) {
     try {
-      return JSON.parse(raw);
+      return JSON.parse(raw) as DetailedConsent;
     } catch {
       // fallback
     }
@@ -48,7 +48,7 @@ declare global {
 }
 
 export function AnalyticsController() {
-  const [consent, setConsent] = useState<Consent | "custom">(null);
+  const [, setConsent] = useState<Consent | "custom">(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [detailed, setDetailed] = useState<DetailedConsent>({
@@ -103,7 +103,7 @@ export function AnalyticsController() {
     window.localStorage.setItem(consentKey, "denied");
     window.localStorage.setItem(
       settingsKey,
-      JSON.stringify({ essential: true, telemetry: false, marketing: false })
+      JSON.stringify({ essential: true, telemetry: false, marketing: false }),
     );
     setConsent("denied");
     setIsOpen(false);
@@ -114,7 +114,7 @@ export function AnalyticsController() {
     window.localStorage.setItem(consentKey, "granted");
     window.localStorage.setItem(
       settingsKey,
-      JSON.stringify({ essential: true, telemetry: true, marketing: true })
+      JSON.stringify({ essential: true, telemetry: true, marketing: true }),
     );
     setConsent("granted");
     setIsOpen(false);
@@ -135,13 +135,14 @@ export function AnalyticsController() {
   return (
     <aside
       aria-label="Privacy & Tracking Preferences"
-      className="fixed bottom-6 left-6 z-50 max-w-md w-[calc(100vw-3rem)] rounded-2xl bg-[#0c0c0e]/95 backdrop-blur-xl border border-white/10 p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-zinc-200 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
+      className="fixed bottom-6 left-6 z-50 max-w-md w-[calc(100vw-3rem)] rounded-xl bg-[#0c0c0e]/95 backdrop-blur-xl border border-white/10 p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-zinc-200 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
     >
       {!showSettings ? (
         /* Linear exact default view */
         <div>
           <p className="text-[13px] sm:text-sm text-zinc-300 font-normal leading-relaxed mb-4">
-            This site uses tracking technologies. You may opt in or opt out of the use of these technologies.
+            This site uses tracking technologies. You may opt in or opt out of
+            the use of these technologies.
           </p>
 
           <div className="flex items-center justify-between gap-2.5">
@@ -149,14 +150,14 @@ export function AnalyticsController() {
               <button
                 onClick={handleDeny}
                 type="button"
-                className="px-4 py-1.5 rounded-full border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
+                className="px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
               >
                 Deny
               </button>
               <button
                 onClick={handleAcceptAll}
                 type="button"
-                className="px-4 py-1.5 rounded-full border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
+                className="px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
               >
                 Accept all
               </button>
@@ -165,7 +166,7 @@ export function AnalyticsController() {
             <button
               onClick={() => setShowSettings(true)}
               type="button"
-              className="px-4 py-1.5 rounded-full !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
             >
               Consent Settings
             </button>
@@ -199,7 +200,8 @@ export function AnalyticsController() {
                   </span>
                 </div>
                 <p className="text-zinc-400 text-[11px] mt-0.5">
-                  Required for zero-trust token authentication, edge state, and sovereign API routing.
+                  Required for zero-trust token authentication, edge state, and
+                  sovereign API routing.
                 </p>
               </div>
               <Check className="w-4 h-4 text-[#80ddd1] shrink-0 mt-0.5" />
@@ -208,15 +210,21 @@ export function AnalyticsController() {
             {/* Telemetry */}
             <div className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
               <div>
-                <div className="font-semibold text-white">Performance Telemetry</div>
+                <div className="font-semibold text-white">
+                  Performance Telemetry
+                </div>
                 <p className="text-zinc-400 text-[11px] mt-0.5">
-                  Anonymous latency monitoring and edge sync performance stats. No PII collected.
+                  Anonymous latency monitoring and edge sync performance stats.
+                  No PII collected.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
-                  setDetailed((prev) => ({ ...prev, telemetry: !prev.telemetry }))
+                  setDetailed((prev) => ({
+                    ...prev,
+                    telemetry: !prev.telemetry,
+                  }))
                 }
                 className={`w-9 h-5 rounded-full transition-colors relative shrink-0 p-0.5 ${
                   detailed.telemetry ? "bg-[#80ddd1]" : "bg-white/20"
@@ -234,15 +242,21 @@ export function AnalyticsController() {
             {/* Marketing / Attribution */}
             <div className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
               <div>
-                <div className="font-semibold text-white">Marketing &amp; Attribution</div>
+                <div className="font-semibold text-white">
+                  Marketing &amp; Attribution
+                </div>
                 <p className="text-zinc-400 text-[11px] mt-0.5">
-                  Help us understand how enterprise operators discover our sovereign software platform.
+                  Help us understand how enterprise operators discover our
+                  sovereign software platform.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() =>
-                  setDetailed((prev) => ({ ...prev, marketing: !prev.marketing }))
+                  setDetailed((prev) => ({
+                    ...prev,
+                    marketing: !prev.marketing,
+                  }))
                 }
                 className={`w-9 h-5 rounded-full transition-colors relative shrink-0 p-0.5 ${
                   detailed.marketing ? "bg-[#80ddd1]" : "bg-white/20"
@@ -270,14 +284,14 @@ export function AnalyticsController() {
               <button
                 onClick={handleDeny}
                 type="button"
-                className="px-3 py-1.5 rounded-full border border-white/20 text-xs text-zinc-300 hover:text-white"
+                className="px-3 py-1.5 rounded-lg border border-white/20 text-xs text-zinc-300 hover:text-white"
               >
                 Reject all
               </button>
               <button
                 onClick={handleSaveDetailed}
                 type="button"
-                className="px-4 py-1.5 rounded-full !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold shadow-sm"
+                className="px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold shadow-sm"
               >
                 Save Preferences
               </button>

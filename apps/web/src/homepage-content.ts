@@ -1,25 +1,25 @@
 export const homepageModel = {
-  eyebrow: "Software for real operations",
-  heading: "Software businesses can depend on.",
+  eyebrow: "Local-First Retail & Operations",
+  heading: "Software built for store floors, warehouses, and real operations.",
   description:
-    "Stack & Scale builds dependable business software, mobile experiences, and automation for companies ready to operate with more clarity.",
+    "Keep registers scanning and orders moving even when your internet drops. Stack & Scale runs on your own hardware, syncs in milliseconds, and eliminates per-seat SaaS bills.",
   primaryAction: "Book a demo",
   secondaryAction: "Discuss your project",
   capabilities: [
     {
-      title: "Business software",
+      title: "Local-first Point of Sale",
       description:
-        "POS and operational systems designed around the way your team actually works.",
+        "Terminals commit to local SQLite in under 2ms. Cashiers keep scanning whether Wi-Fi is blazing or completely offline.",
     },
     {
-      title: "Custom engineering",
+      title: "Inventory & Warehouse Dispatch",
       description:
-        "Web and mobile products built for the workflows that make your business different.",
+        "Multi-location stock tracking, barcode scanners, and supplier purchase orders that reconcile across stores without lag.",
     },
     {
-      title: "AI & automation",
+      title: "Automated Order Pipelines",
       description:
-        "Practical systems that reduce repetitive work and make decisions easier to act on.",
+        "Trigger receipts, payment reconciliation, and customer notifications the second an order completes.",
     },
   ],
 } as const;

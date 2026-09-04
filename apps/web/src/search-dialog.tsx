@@ -53,6 +53,25 @@ export function SearchDialog({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setQuery("");
+      // Cleanly blur trigger so no persistent green outline remains when closing with ESC or clicking outside
+      requestAnimationFrame(() => {
+        triggerRef.current?.blur();
+        if (
+          document.activeElement instanceof HTMLElement &&
+          document.activeElement.classList.contains("search-trigger")
+        ) {
+          document.activeElement.blur();
+        }
+      });
+    }
+  };
+
   const results = useMemo(() => {
     const words = query.trim().toLocaleLowerCase();
     return words.length === 0
@@ -73,34 +92,58 @@ export function SearchDialog({
         event.preventDefault();
         setOpen(true);
       }
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        handleOpenChange(false);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      inputRef.current?.focus();
+      const prevOverflow = document.body.style.overflow;
+      const prevPaddingRight = document.body.style.paddingRight;
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.paddingRight = prevPaddingRight;
+      };
+    }
   }, [open]);
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger
+          ref={triggerRef}
           render={
-            <Button className="search-trigger" size="sm" variant="outline" />
+            <Button
+              className="search-trigger !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-0 focus-visible:!border-white/25"
+              size="sm"
+              variant="outline"
+            />
           }
         >
-          Search <kbd>Ctrl K</kbd>
+          <Search className="size-3.5 sm:hidden" />
+          <span className="hidden sm:inline">Search</span>
+          <kbd className="hidden sm:inline-block">Ctrl K</kbd>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl gap-3 p-5 sm:max-w-2xl bg-zinc-950/95 border-zinc-800/90 text-zinc-100 shadow-2xl backdrop-blur-xl">
+        <DialogContent className="max-w-2xl gap-3 p-5 sm:max-w-2xl bg-[#0c0c0e] border border-white/10 text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.95)] overscroll-contain">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base font-semibold text-white tracking-tight">
-              <Search className="size-4 text-emerald-400" />
+              <Search className="size-4 text-[#80ddd1]" />
               Public site search
             </DialogTitle>
             <DialogDescription className="text-xs text-zinc-400">
-              Search Stack &amp; Scale&apos;s published products, services, case studies, and resources.
+              Search Stack &amp; Scale&apos;s published products, services, case
+              studies, and resources.
             </DialogDescription>
           </DialogHeader>
           <div className="relative mt-1">
@@ -115,7 +158,7 @@ export function SearchDialog({
               autoCorrect="off"
               spellCheck={false}
               value={query}
-              className="pl-10 pr-8 h-11 bg-zinc-900/90 border-zinc-700/60 focus-visible:border-emerald-500/60 focus-visible:ring-1 focus-visible:ring-emerald-500/30 text-sm text-zinc-100 placeholder:text-zinc-500 rounded-lg"
+              className="pl-10 pr-8 h-11 bg-zinc-900/90 border-zinc-700/60 !outline-none !ring-0 focus:!outline-none focus:!ring-0 focus-visible:!outline-none focus-visible:!ring-1 focus-visible:!ring-[#80ddd1]/40 focus-visible:!border-[#80ddd1]/60 text-sm text-zinc-100 placeholder:text-zinc-500 rounded-lg transition-colors"
             />
             {query.length > 0 && (
               <button
@@ -129,7 +172,7 @@ export function SearchDialog({
             )}
           </div>
           <div
-            className="search-results flex flex-col gap-1.5 max-h-[50vh] overflow-y-auto mt-2 pr-1"
+            className="search-results flex flex-col gap-1.5 max-h-[50vh] overflow-y-auto mt-2 pr-1 overscroll-contain"
             role="list"
           >
             {results.map((entry) => {
@@ -146,7 +189,7 @@ export function SearchDialog({
                   key={`${entry.collection}-${entry.id}`}
                   role="listitem"
                   onClick={() => setOpen(false)}
-                  className="group flex items-center justify-between gap-3 p-3 rounded-lg border border-white/[0.06] bg-zinc-900/40 hover:bg-zinc-800/70 hover:border-white/15 transition-all duration-150 no-underline text-left focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                  className="group flex items-center justify-between gap-3 p-3 rounded-lg border border-white/[0.06] bg-zinc-900/40 hover:bg-zinc-800/70 hover:border-white/15 transition-colors duration-100 no-underline text-left focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                 >
                   <div className="flex items-start gap-3 min-w-0 flex-1">
                     <div className="p-2 rounded-md bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors shrink-0 mt-0.5">
@@ -167,7 +210,7 @@ export function SearchDialog({
                     >
                       {config.label}
                     </span>
-                    <ArrowUpRight className="size-3.5 text-zinc-500 group-hover:text-zinc-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ArrowUpRight className="size-3.5 text-zinc-500 group-hover:text-zinc-200 transition-colors" />
                   </div>
                 </a>
               );
@@ -179,7 +222,8 @@ export function SearchDialog({
                   No published content matches &ldquo;{query}&rdquo;
                 </p>
                 <p className="text-xs text-zinc-500">
-                  Try searching for keywords like &ldquo;retail&rdquo;, &ldquo;workflow&rdquo;, or &ldquo;service&rdquo;.
+                  Try searching for keywords like &ldquo;retail&rdquo;,
+                  &ldquo;workflow&rdquo;, or &ldquo;service&rdquo;.
                 </p>
               </div>
             ) : null}

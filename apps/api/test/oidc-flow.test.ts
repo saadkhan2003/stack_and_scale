@@ -1,5 +1,6 @@
 import {
   generateKeyPairSync,
+  randomUUID,
   sign as cryptoSign,
   type KeyObject,
 } from "node:crypto";
@@ -237,6 +238,7 @@ describe("oidc browser flow", () => {
       },
     });
     expect(callback.statusCode).toBe(302);
+    // Staff member role → smart routing sends to /staff/leads
     expect(callback.headers.location).toBe("/staff/leads");
     expect(fetchCalls).toHaveLength(1);
     expect(fetchCalls[0]?.url).toBe(`${ISSUER}/protocol/openid-connect/token`);
@@ -352,6 +354,46 @@ describe("oidc browser flow", () => {
 
     expect(callback.statusCode).toBe(302);
     expect(extractSetCookies(callback.headers)[SESSION_COOKIE]).toBeTruthy();
+  });
+
+  it("routes a user with no staff role and no memberships to the fallback /", async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    idTokenToReturn = makeIdToken(key, {
+      iss: ISSUER,
+      aud: AUDIENCE,
+      azp: CLIENT_ID,
+      sub: `no-membership-${randomUUID()}`,
+      email: `nomembership-${Date.now()}@example.test`,
+      exp: nowSec + 300,
+      realm_access: { roles: [] },
+    });
+
+    const start = await fastify.inject({
+      method: "GET",
+      url: "/api/auth/oidc/start",
+    });
+    const jar = extractSetCookies(start.headers);
+
+    const callback = await fastify.inject({
+      method: "GET",
+      url: `/api/auth/oidc/callback?state=${jar["ss_oidc_state"]}&code=no-membership-code`,
+      headers: {
+        cookie: `ss_oidc_state=${jar["ss_oidc_state"]}; ss_oidc_verifier=${jar["ss_oidc_verifier"]}`,
+      },
+    });
+
+    expect(callback.statusCode).toBe(302);
+    // No staff role, no memberships → fallback to /
+    expect(callback.headers.location).toBe("/");
+    const sessionId = extractSetCookies(callback.headers)[SESSION_COOKIE];
+    if (sessionId) {
+      const session = await pool.query(
+        "SELECT user_id FROM identity.sessions WHERE id = $1",
+        [sessionId],
+      );
+      const uid = session.rows[0]?.["user_id"];
+      if (typeof uid === "string") createdUserIds.push(uid);
+    }
   });
 
   it("logs out: revokes the session and redirects to the provider", async () => {

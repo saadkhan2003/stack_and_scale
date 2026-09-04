@@ -1,5 +1,5 @@
 import type { AuthContentModel } from "./auth-content";
-import { Lock, ShieldCheck, ArrowRight, KeyRound } from "lucide-react";
+import { Lock, ShieldCheck, ArrowRight, KeyRound, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -26,9 +26,9 @@ export function SigninView({ model }: SigninViewProps) {
               <KeyRound className="h-6 w-6" />
             </div>
             <div className="signin-card-title-group">
-              <h2 className="signin-card-title">Staff Single Sign-On</h2>
+              <h2 className="signin-card-title">Unified Single Sign-On</h2>
               <span className="signin-card-subtitle">
-                Keycloak OIDC &middot; 256-bit TLS Encrypted
+                OpenID Connect &middot; 256-bit TLS Encrypted
               </span>
             </div>
           </div>
@@ -41,6 +41,19 @@ export function SigninView({ model }: SigninViewProps) {
               <span>{model.primaryAction}</span>
               <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
             </Button>
+          </div>
+
+          {/* Enterprise helper callout */}
+          <div className="signin-helper-callout">
+            <Info className="signin-helper-icon" aria-hidden="true" />
+            <div>
+              <p className="signin-helper-title">Client or Subscriber?</p>
+              <p className="signin-helper-text">
+                Use the business email associated with your contract or
+                organization activation. If you haven&apos;t received your
+                onboarding invitation yet, check with your account lead.
+              </p>
+            </div>
           </div>
 
           <div className="signin-notes">

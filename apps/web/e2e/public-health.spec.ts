@@ -7,7 +7,7 @@ test("visitor sees the branded public platform and clear next actions", async ({
 
   await expect(
     page.getByRole("heading", {
-      name: "Software businesses can depend on.",
+      name: "Software built for store floors, warehouses, and real operations.",
     }),
   ).toBeVisible();
   await expect(

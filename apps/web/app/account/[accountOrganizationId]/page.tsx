@@ -72,7 +72,8 @@ export default async function ProductAccountPage(
             <p className="eyebrow">Product account</p>
             <h1>Product account</h1>
             <p>
-              Sign in with an authorized product-account member to access this area.
+              Sign in with an authorized product-account member to access this
+              area.
             </p>
             <Button
               className="!bg-white !text-black font-semibold hover:!bg-[#e5e5e5]"
@@ -144,7 +145,8 @@ export default async function ProductAccountPage(
       },
       {
         id: "sup-2026-02",
-        title: "Dedicated Technical Account Lead & Quarterly Architecture Review",
+        title:
+          "Dedicated Technical Account Lead & Quarterly Architecture Review",
         status: "active",
       },
     ],
@@ -159,7 +161,8 @@ export default async function ProductAccountPage(
   };
 
   const account =
-    typeof effectiveHome["account"] === "object" && effectiveHome["account"] !== null
+    typeof effectiveHome["account"] === "object" &&
+    effectiveHome["account"] !== null
       ? (effectiveHome["account"] as Record<string, unknown>)
       : {};
   const accountName =
@@ -171,10 +174,16 @@ export default async function ProductAccountPage(
     <div className="min-h-screen bg-black text-white flex flex-col selection:bg-white selection:text-black">
       <SiteHeader currentPath="/account" />
 
-      <main className="portal-layout flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full" aria-labelledby="account-heading">
+      <main
+        className="portal-layout flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full"
+        aria-labelledby="account-heading"
+      >
         <div className="mb-8">
           <p className="eyebrow">Product account</p>
-          <h1 id="account-heading" className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2">
+          <h1
+            id="account-heading"
+            className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2"
+          >
             {accountName}
           </h1>
           <p className="text-sm text-zinc-400">
@@ -187,14 +196,19 @@ export default async function ProductAccountPage(
           {/* Subscriptions */}
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Subscriptions</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <h2 className="text-lg font-semibold text-white">
+                Subscriptions
+              </h2>
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 {values(effectiveHome["subscriptions"]).length} Active
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectiveHome["subscriptions"]).map((item) => (
-                <li key={String(item["id"])} className="py-3 flex items-center justify-between text-sm">
+                <li
+                  key={String(item["id"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
                   <span className="text-zinc-200">
                     Effective {String(item["effective_at"])}
                   </span>
@@ -210,14 +224,19 @@ export default async function ProductAccountPage(
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">Licenses</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 Seat Allotment
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectiveHome["licenses"]).map((item) => (
-                <li key={String(item["id"])} className="py-3 flex items-center justify-between text-sm">
-                  <span className="text-zinc-200">{String(item["seat_limit"])} seats provisioned</span>
+                <li
+                  key={String(item["id"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
+                  <span className="text-zinc-200">
+                    {String(item["seat_limit"])} seats provisioned
+                  </span>
                   <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono">
                     {String(item["status"])}
                   </span>
@@ -232,13 +251,16 @@ export default async function ProductAccountPage(
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">Billing</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 Invoices
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectiveBilling?.["invoices"]).map((item) => (
-                <li key={String(item["id"])} className="py-3 flex items-center justify-between text-sm">
+                <li
+                  key={String(item["id"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
                   <div>
                     <span className="font-mono text-zinc-200">
                       {String(item["currency"])} {String(item["amount_minor"])}
@@ -260,19 +282,30 @@ export default async function ProductAccountPage(
           {/* Supported Releases */}
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Supported releases</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <h2 className="text-lg font-semibold text-white">
+                Supported releases
+              </h2>
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 Verified Binaries
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectiveHome["releases"]).map((item) => (
-                <li key={String(item["id"])} className="py-3 flex items-center justify-between text-sm">
+                <li
+                  key={String(item["id"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
                   <div>
-                    <span className="font-semibold text-white font-mono">{String(item["version"])}</span>
-                    <span className="text-xs text-zinc-400 block mt-0.5">{String(item["platform"])}</span>
+                    <span className="font-semibold text-white font-mono">
+                      {String(item["version"])}
+                    </span>
+                    <span className="text-xs text-zinc-400 block mt-0.5">
+                      {String(item["platform"])}
+                    </span>
                   </div>
-                  <span className="text-xs text-emerald-400 font-mono">✓ Checksum verified</span>
+                  <span className="text-xs text-emerald-400 font-mono">
+                    ✓ Checksum verified
+                  </span>
                 </li>
               ))}
             </ul>
@@ -283,15 +316,22 @@ export default async function ProductAccountPage(
           {/* Product Support */}
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Product support</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <h2 className="text-lg font-semibold text-white">
+                Product support
+              </h2>
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 Tier 1 SLA
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectiveSupport?.["support"]).map((item) => (
-                <li key={String(item["id"])} className="py-3 flex items-center justify-between text-sm">
-                  <strong className="text-zinc-200 font-normal">{String(item["title"])}</strong>
+                <li
+                  key={String(item["id"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
+                  <strong className="text-zinc-200 font-normal">
+                    {String(item["title"])}
+                  </strong>
                   <span className="text-xs px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 font-mono">
                     {String(item["status"])}
                   </span>
@@ -303,16 +343,25 @@ export default async function ProductAccountPage(
           {/* Notifications */}
           <section className="bg-zinc-950/80 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Notifications</h2>
-              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300">
+              <h2 className="text-lg font-semibold text-white">
+                Notifications
+              </h2>
+              <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
                 Preferences
               </span>
             </div>
             <ul className="divide-y divide-white/5">
               {values(effectivePreferences?.["preferences"]).map((item) => (
-                <li key={String(item["category"])} className="py-3 flex items-center justify-between text-sm">
-                  <span className="capitalize text-zinc-300">{String(item["category"])} updates</span>
-                  <span className={`text-xs px-2 py-0.5 rounded font-mono ${item["enabled"] === true ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/30" : "bg-zinc-800 text-zinc-400"}`}>
+                <li
+                  key={String(item["category"])}
+                  className="py-3 flex items-center justify-between text-sm"
+                >
+                  <span className="capitalize text-zinc-300">
+                    {String(item["category"])} updates
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-mono ${item["enabled"] === true ? "bg-emerald-950/60 text-emerald-300 border border-emerald-500/30" : "bg-zinc-800 text-zinc-400"}`}
+                  >
                     {item["enabled"] === true ? "enabled" : "disabled"}
                   </span>
                 </li>

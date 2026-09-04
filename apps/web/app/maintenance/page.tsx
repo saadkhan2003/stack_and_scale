@@ -10,8 +10,8 @@ export default function MaintenancePage() {
         <p className="eyebrow">Planned maintenance</p>
         <h1>We&apos;ll be back shortly.</h1>
         <p>
-          We are upgrading our systems for enhanced performance and security. For
-          urgent inquiries, please reach out to us.
+          We are upgrading our systems for enhanced performance and security.
+          For urgent inquiries, please reach out to us.
         </p>
         <Button render={<a href="/" />}>
           Return to home <span aria-hidden="true">→</span>

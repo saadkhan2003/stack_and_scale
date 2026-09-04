@@ -5,8 +5,8 @@ import { authContentModel, createAuthContentModel } from "../src/auth-content";
 describe("authContentModel", () => {
   it("describes an OIDC-only sign-in flow without fake credentials", () => {
     expect(authContentModel).toMatchObject({
-      eyebrow: "Staff sign-in",
-      heading: "Sign in to Stack & Scale.",
+      eyebrow: "Unified Access",
+      heading: "Sign in to Stack & Scale",
       primaryAction: "Continue to secure sign-in",
     });
 

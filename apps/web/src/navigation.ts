@@ -80,7 +80,7 @@ export const linearDropdowns: Record<string, LinearDropdownData> = {
       { title: "Cloud Software Directory ↗", href: "/cloud" },
       { title: "Architecture Explorer", href: "/#architecture" },
       { title: "System Health & SLA", href: "/health" },
-      { title: "Keycloak SSO & Security", href: "/#platform" },
+      { title: "Keycloak SSO & Security", href: "/#architecture" },
     ],
     bottomBar: {
       badge: "New",
@@ -110,7 +110,7 @@ export const linearDropdowns: Record<string, LinearDropdownData> = {
       },
       {
         title: "Zero-Trust Storage",
-        href: "/#platform",
+        href: "/#architecture",
         description: "MinIO S3 custody with ClamAV inspection",
       },
     ],
@@ -128,7 +128,6 @@ export const linearDropdowns: Record<string, LinearDropdownData> = {
     },
   },
 };
-
 
 export type NavSubItem = {
   readonly title: string;
@@ -164,19 +163,22 @@ export const automationNavItems: readonly NavSubItem[] = [
   {
     title: "Autonomous AI Agents",
     href: "/solutions",
-    description: "On-prem agent pipelines, background task workers, and tool orchestrators.",
+    description:
+      "On-prem agent pipelines, background task workers, and tool orchestrators.",
     badge: "AI / Edge",
   },
   {
     title: "Workflow Automation Hub",
     href: "/products/workflow-hub",
-    description: "Repeatable operational routing, event triggers, and approval chains.",
+    description:
+      "Repeatable operational routing, event triggers, and approval chains.",
     badge: "v2.4",
   },
   {
     title: "Offline-to-Cloud Sync Engine",
     href: "/work",
-    description: "Conflict-free local SQLite replication to cloud Postgres vault.",
+    description:
+      "Conflict-free local SQLite replication to cloud Postgres vault.",
     badge: "Offline",
   },
 ] as const;
@@ -189,18 +191,21 @@ export const webDevNavItems: readonly NavSubItem[] = [
   {
     title: "Mission-Critical Web Apps",
     href: "/services",
-    description: "Ultra-fast Next.js enterprise web applications with zero bloat.",
+    description:
+      "Ultra-fast Next.js enterprise web applications with zero bloat.",
     badge: "Custom",
   },
   {
     title: "Sovereign Client Portals",
     href: "/signin",
-    description: "Role-based customer dashboards for delivery tracking and invoicing.",
+    description:
+      "Role-based customer dashboards for delivery tracking and invoicing.",
   },
   {
     title: "Product Discovery & Blueprint",
     href: "/services/product-discovery",
-    description: "Architecture roadmaps, service blueprinting, and smallest useful releases.",
+    description:
+      "Architecture roadmaps, service blueprinting, and smallest useful releases.",
   },
 ] as const;
 
@@ -212,19 +217,22 @@ export const caseStudiesNavItems: readonly NavSubItem[] = [
   {
     title: "Connected Retail Operations",
     href: "/work/connected-retail-demo",
-    description: "Multi-register shop-floor POS, live stock reconciliation, and instant checkout.",
+    description:
+      "Multi-register shop-floor POS, live stock reconciliation, and instant checkout.",
     badge: "Production",
   },
   {
     title: "Service Delivery Visibility",
     href: "/work/service-delivery-demo",
-    description: "Clear customer-to-team hand-offs from enquiry to milestone sign-off.",
+    description:
+      "Clear customer-to-team hand-offs from enquiry to milestone sign-off.",
     badge: "Case Study",
   },
   {
     title: "Zero-Downtime SaaS Migration",
     href: "/work",
-    description: "Replacing brittle per-seat SaaS tools with sovereign infrastructure.",
+    description:
+      "Replacing brittle per-seat SaaS tools with sovereign infrastructure.",
   },
 ] as const;
 
@@ -236,19 +244,22 @@ export const productsNavItems: readonly NavSubItem[] = [
   {
     title: "Retail Operations & POS",
     href: "/products/retail-operations",
-    description: "Offline-first shop floor register with SQLite local transactions & cloud sync.",
+    description:
+      "Offline-first shop floor register with SQLite local transactions & cloud sync.",
     badge: "v2.4",
   },
   {
     title: "Autonomous CRM & Pipeline",
     href: "/#pricing",
-    description: "Customer relationship ledger and automated dispatch with zero seat fees.",
+    description:
+      "Customer relationship ledger and automated dispatch with zero seat fees.",
     badge: "v3.1",
   },
   {
     title: "Workflow Hub",
     href: "/products/workflow-hub",
-    description: "Visible, accountable operational routing and multi-team collaboration.",
+    description:
+      "Visible, accountable operational routing and multi-team collaboration.",
     badge: "Core App",
   },
 ] as const;
@@ -257,29 +268,32 @@ export const cloudStoreNavItems: readonly NavSubItem[] = [
   {
     title: "Cloud SaaS (Monthly)",
     href: "/#pricing",
-    description: "Zero setup or hardware needed. Instant access in managed cloud clusters.",
+    description:
+      "Zero setup or hardware needed. Instant access in managed cloud clusters.",
     badge: "Cloud",
   },
   {
     title: "One-Time Sovereign License",
     href: "/#pricing",
-    description: "Complete source code custody + Docker blueprints for private deployment.",
+    description:
+      "Complete source code custody + Docker blueprints for private deployment.",
     badge: "Own Forever",
   },
   {
     title: "Cloud Software Directory",
     href: "/cloud",
-    description: "Launch online projects with generous Free Tiers or unlimited Pro Subscriptions.",
+    description:
+      "Launch online projects with generous Free Tiers or unlimited Pro Subscriptions.",
     badge: "Free Tier",
   },
 ] as const;
-
 
 export const megaMenuConfig: Record<string, MegaMenuSection> = {
   "/services": {
     navLabel: "Services",
     navHref: "/services",
-    summary: "Engineering, automation, and bespoke software systems built for operational sovereignty.",
+    summary:
+      "Engineering, automation, and bespoke software systems built for operational sovereignty.",
     categories: [
       {
         id: "automation",
@@ -297,7 +311,8 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
     featured: {
       eyebrow: "Architecture Blueprint",
       title: "Zero Per-Seat Taxes",
-      description: "Replace recurring SaaS seat costs with single-tenant infrastructure you own forever.",
+      description:
+        "Replace recurring SaaS seat costs with single-tenant infrastructure you own forever.",
       href: "/approach",
       badge: "Sovereign",
       ctaText: "Read the Approach →",
@@ -306,7 +321,8 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
   "/resources": {
     navLabel: "Resources",
     navHref: "/resources",
-    summary: "Engineering blueprints, automation pipelines, and verified production case studies.",
+    summary:
+      "Engineering blueprints, automation pipelines, and verified production case studies.",
     categories: [
       {
         id: "automation",
@@ -324,7 +340,8 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
     featured: {
       eyebrow: "Field Architecture",
       title: "Connected Retail Demo",
-      description: "How an omnichannel retail chain runs multi-register POS with sub-millisecond sync.",
+      description:
+        "How an omnichannel retail chain runs multi-register POS with sub-millisecond sync.",
       href: "/work/connected-retail-demo",
       badge: "Case Study",
       ctaText: "Read Case Study →",
@@ -333,25 +350,29 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
   "/products": {
     navLabel: "Products",
     navHref: "/products",
-    summary: "Production-ready sovereign software and cloud-hosted operational platforms.",
+    summary:
+      "Production-ready sovereign software and cloud-hosted operational platforms.",
     categories: [
       {
         id: "core-software",
         title: "Core Platforms",
-        summary: "Ready-to-use business software for retail, CRM, and automation.",
+        summary:
+          "Ready-to-use business software for retail, CRM, and automation.",
         items: productsNavItems,
       },
       {
         id: "cloud-storefront",
         title: "Cloud & Storefront",
-        summary: "Zero-setup cloud subscriptions and one-time perpetual licenses.",
+        summary:
+          "Zero-setup cloud subscriptions and one-time perpetual licenses.",
         items: cloudStoreNavItems,
       },
     ],
     featured: {
       eyebrow: "Cloud Access",
       title: "Zero Hardware Costs",
-      description: "Launch in 60 seconds with our managed cloud cluster. 14-day free trial included.",
+      description:
+        "Launch in 60 seconds with our managed cloud cluster. 14-day free trial included.",
       href: "/#pricing",
       badge: "Managed",
       ctaText: "Explore Cloud Plans →",
@@ -360,33 +381,39 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
   "/work": {
     navLabel: "Work",
     navHref: "/work",
-    summary: "Production case studies, verified deployment metrics, and architectural field guides.",
+    summary:
+      "Production case studies, verified deployment metrics, and architectural field guides.",
     categories: [
       {
         id: "production-case-studies",
         title: "Case Studies",
-        summary: "Verified deployments running on live shop floors and enterprise teams.",
+        summary:
+          "Verified deployments running on live shop floors and enterprise teams.",
         items: caseStudiesNavItems,
       },
       {
         id: "industry-blueprints",
         title: "Industry Blueprints",
-        summary: "Specialized systems engineered for specific sector realities.",
+        summary:
+          "Specialized systems engineered for specific sector realities.",
         items: [
           {
             title: "Retail & Multi-Register POS",
             href: "/industries/retail",
-            description: "Handling inventory spikes, barcode scanners, and offline card processing.",
+            description:
+              "Handling inventory spikes, barcode scanners, and offline card processing.",
           },
           {
             title: "Professional Services Engine",
             href: "/industries/professional-services",
-            description: "Streamlining proposals, milestone sign-offs, and client communications.",
+            description:
+              "Streamlining proposals, milestone sign-offs, and client communications.",
           },
           {
             title: "Field Operations & Dispatch",
             href: "/industries/field-operations",
-            description: "Real-time task dispatching with offline synchronization for mobile teams.",
+            description:
+              "Real-time task dispatching with offline synchronization for mobile teams.",
           },
         ],
       },
@@ -394,7 +421,8 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
     featured: {
       eyebrow: "Verified Results",
       title: "Connected Retail Demo",
-      description: "See how an omnichannel retailer eliminated sync delays across 12 locations.",
+      description:
+        "See how an omnichannel retailer eliminated sync delays across 12 locations.",
       href: "/work/connected-retail-demo",
       badge: "Case Study",
       ctaText: "View Case Study →",
@@ -405,4 +433,3 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
 export function getMegaMenuSection(href: string): MegaMenuSection | undefined {
   return megaMenuConfig[href];
 }
-

@@ -16,7 +16,9 @@ describe("SiteFooter", () => {
   });
 
   it("resolves staff ready state when valid staff session cookie is present", async () => {
-    const result = await resolveStaffAccess("ss_session=mock-dev-session-active");
+    const result = await resolveStaffAccess(
+      "ss_session=mock-dev-session-active",
+    );
     expect(result.state).toBe("ready");
     expect(result.summary).toBeDefined();
     expect(result.summary?.stageCounts).toBeDefined();

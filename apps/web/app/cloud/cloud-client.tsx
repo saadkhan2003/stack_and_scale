@@ -8,7 +8,10 @@ export function CloudPageClient() {
   const tenant = searchParams.get("tenant") || "live-cloud";
   const rawTab = searchParams.get("tab") || "all";
 
-  const tabMapping: Record<string, "all" | "retail-pos" | "autonomous-crm" | "workflow-hub"> = {
+  const tabMapping: Record<
+    string,
+    "all" | "retail-pos" | "autonomous-crm" | "workflow-hub"
+  > = {
     pos: "retail-pos",
     "retail-pos": "retail-pos",
     crm: "autonomous-crm",
@@ -20,6 +23,7 @@ export function CloudPageClient() {
 
   const initialTab = tabMapping[rawTab] || "all";
 
-  return <CloudWorkspaceConsole initialTenant={tenant} initialTab={initialTab} />;
+  return (
+    <CloudWorkspaceConsole initialTenant={tenant} initialTab={initialTab} />
+  );
 }
-

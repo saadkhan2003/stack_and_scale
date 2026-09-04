@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { ChevronDown, MenuIcon } from "lucide-react";
+import { StackAndScaleLogo } from "./brand-logo";
 import {
-  primaryNavigation,
   simpleNavItems,
   linearDropdowns,
   type LinearDropdownData,
@@ -97,7 +97,8 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
         className="desktop-navigation flex items-center gap-0.5 bg-[#09090b]/80 border border-white/[0.08] hover:border-white/[0.16] backdrop-blur-xl rounded-full px-2 py-1 transition-all shadow-[0_2px_12px_rgba(0,0,0,0.5)]"
       >
         {simpleNavItems.map((item) => {
-          const hasDropdown = item.hasSubmenu && Boolean(linearDropdowns[item.href]);
+          const hasDropdown =
+            item.hasSubmenu && Boolean(linearDropdowns[item.href]);
           const isOpen = activeMenu === item.href;
           const isCurrent = currentPath === item.href;
 
@@ -114,8 +115,8 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                   isOpen
                     ? "text-white bg-white/[0.08] font-medium"
                     : isCurrent
-                    ? "text-white font-medium"
-                    : "text-neutral-400 hover:text-white hover:bg-white/[0.04]",
+                      ? "text-white font-medium"
+                      : "text-neutral-400 hover:text-white hover:bg-white/[0.04]",
                 )}
                 aria-current={isCurrent ? "page" : undefined}
                 aria-expanded={hasDropdown ? isOpen : undefined}
@@ -131,7 +132,9 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                   <ChevronDown
                     className={cn(
                       "w-3 h-3 text-neutral-500 transition-transform duration-200 ease-out",
-                      isOpen ? "rotate-180 text-white" : "group-hover:text-white",
+                      isOpen
+                        ? "rotate-180 text-white"
+                        : "group-hover:text-white",
                     )}
                     aria-hidden="true"
                   />
@@ -142,10 +145,10 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
         })}
       </nav>
 
-      {/* Linear-style floating dropdown card (anchored under the pill) */}
+      {/* Linear-style floating dropdown card (anchored under the nav items) */}
       <div
         className={cn(
-          "linear-dropdown-panel absolute top-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-[760px] max-w-[94vw] bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/[0.12] rounded-2xl p-5 shadow-[0_24px_64px_rgba(0,0,0,0.95)] z-50 text-left transition-all duration-200",
+          "linear-dropdown-panel absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 w-[760px] max-w-[94vw] bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/[0.12] rounded-xl p-5 shadow-[0_24px_64px_rgba(0,0,0,0.95)] z-50 text-left transition-all duration-200",
           activeDropdown && activeMenu
             ? "opacity-100 translate-y-0 pointer-events-auto visible"
             : "opacity-0 -translate-y-2 pointer-events-none invisible",
@@ -173,7 +176,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                       key={item.title}
                       href={item.href}
                       onClick={() => setActiveMenu(null)}
-                      className="group/item flex flex-col p-2.5 rounded-xl hover:bg-white/[0.05] transition-all duration-150"
+                      className="group/item flex flex-col p-2.5 rounded-lg hover:bg-white/[0.05] transition-all duration-150"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] font-medium text-white/95 group-hover/item:text-white transition-colors">
@@ -202,7 +205,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                       key={item.title}
                       href={item.href}
                       onClick={() => setActiveMenu(null)}
-                      className="group/item flex flex-col p-2.5 rounded-xl hover:bg-white/[0.05] transition-all duration-150"
+                      className="group/item flex flex-col p-2.5 rounded-lg hover:bg-white/[0.05] transition-all duration-150"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] font-medium text-white/95 group-hover/item:text-white transition-colors">
@@ -243,7 +246,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
             {/* Bottom Announcement Bar */}
             <div className="pt-3 px-2 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2.5 text-neutral-300">
-                <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/15">
+                <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white border border-white/15">
                   {activeDropdown.bottomBar.badge}
                 </span>
                 <span className="text-[12px] text-neutral-300 font-normal">
@@ -283,11 +286,7 @@ export function SiteMobileNav({ currentPath }: NavProps) {
       >
         <SheetHeader className="text-left pb-4 border-b border-white/[0.08]">
           <SheetTitle className="text-white flex items-center gap-2">
-            <img
-              src="/brand/stack-and-scale-logo-horizontal.png"
-              alt="Stack & Scale"
-              className="h-6 w-auto object-contain"
-            />
+            <StackAndScaleLogo size={24} textClassName="text-[18px]" />
           </SheetTitle>
           <SheetDescription className="text-neutral-400 text-xs">
             Sovereign software systems, automation pipelines, and engineering.
@@ -302,7 +301,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
                 Automation & AI
               </p>
-              <span className="text-[10px] text-neutral-500 font-mono">0{automationNavItems.length}</span>
+              <span className="text-[10px] text-neutral-500 font-mono">
+                0{automationNavItems.length}
+              </span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               {automationNavItems.map((item) => (
@@ -329,7 +330,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
                 Web Development
               </p>
-              <span className="text-[10px] text-neutral-500 font-mono">0{webDevNavItems.length}</span>
+              <span className="text-[10px] text-neutral-500 font-mono">
+                0{webDevNavItems.length}
+              </span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               {webDevNavItems.map((item) => (
@@ -356,7 +359,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
                 Case Studies
               </p>
-              <span className="text-[10px] text-neutral-500 font-mono">0{caseStudiesNavItems.length}</span>
+              <span className="text-[10px] text-neutral-500 font-mono">
+                0{caseStudiesNavItems.length}
+              </span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               {caseStudiesNavItems.map((item) => (
@@ -383,7 +388,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               <p className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
                 Sovereign Products
               </p>
-              <span className="text-[10px] text-neutral-500 font-mono">0{productsNavItems.length}</span>
+              <span className="text-[10px] text-neutral-500 font-mono">
+                0{productsNavItems.length}
+              </span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               {productsNavItems.map((item) => (
@@ -408,34 +415,46 @@ export function SiteMobileNav({ currentPath }: NavProps) {
           <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-2">
             <a
               href="/approach"
-              className="text-sm font-medium text-neutral-300 hover:text-white py-1"
+              aria-current={currentPath === "/approach" ? "page" : undefined}
+              className={cn(
+                "text-sm font-medium text-neutral-300 hover:text-white py-1",
+                currentPath === "/approach" && "text-white font-semibold",
+              )}
               onClick={() => setMobileOpen(false)}
             >
               Approach
             </a>
             <a
               href="/contact"
-              className="text-sm font-medium text-neutral-300 hover:text-white py-1"
+              aria-current={currentPath === "/contact" ? "page" : undefined}
+              className={cn(
+                "text-sm font-medium text-neutral-300 hover:text-white py-1",
+                currentPath === "/contact" && "text-white font-semibold",
+              )}
               onClick={() => setMobileOpen(false)}
             >
               Contact
             </a>
             <a
               href="/signin"
-              className="text-sm font-medium text-neutral-300 hover:text-white py-1"
+              aria-current={currentPath === "/signin" ? "page" : undefined}
+              className={cn(
+                "text-sm font-medium text-neutral-300 hover:text-white py-1",
+                currentPath === "/signin" && "text-white font-semibold",
+              )}
               onClick={() => setMobileOpen(false)}
             >
-              Client Portal Sign In
+              Sign In
             </a>
           </div>
 
           <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2.5">
             <a
-              href="/#storefront"
+              href="/signin"
               className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md !bg-white !text-black font-semibold text-sm hover:!bg-neutral-200 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              Sign Up
+              Sign In
             </a>
             <a
               href="/#contact"
@@ -443,13 +462,6 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               onClick={() => setMobileOpen(false)}
             >
               Get a Demo
-            </a>
-            <a
-              href="/signin"
-              className="w-full inline-flex items-center justify-center py-1.5 px-4 text-neutral-400 font-medium text-sm hover:text-white transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Log In
             </a>
           </div>
         </div>
@@ -466,4 +478,3 @@ export function SiteNavigation({ currentPath }: NavProps) {
     </>
   );
 }
-

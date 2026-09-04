@@ -30,7 +30,8 @@ export const CLOUD_PROJECTS: readonly CloudProject[] = [
       "Offline-first shop floor register with SQLite local transactions and real-time cloud Postgres sync.",
     version: "v2.4 Live",
     deployedUrl:
-      process.env.NEXT_PUBLIC_RETAIL_POS_URL || "https://pos.stackandscale.cloud",
+      process.env.NEXT_PUBLIC_RETAIL_POS_URL ||
+      "https://pos.stackandscale.cloud",
     freeTier: {
       name: "Free Tier",
       price: "$0",
@@ -46,10 +47,9 @@ export const CLOUD_PROJECTS: readonly CloudProject[] = [
         "Standard community forum support",
       ],
       ctaText: "Launch Free POS ↗",
-      ctaHref:
-        process.env.NEXT_PUBLIC_RETAIL_POS_URL
-          ? `${process.env.NEXT_PUBLIC_RETAIL_POS_URL}?tier=free`
-          : "https://pos.stackandscale.cloud?tier=free",
+      ctaHref: process.env.NEXT_PUBLIC_RETAIL_POS_URL
+        ? `${process.env.NEXT_PUBLIC_RETAIL_POS_URL}?tier=free`
+        : "https://pos.stackandscale.cloud?tier=free",
       external: true,
     },
     subscriptionTier: {
@@ -96,10 +96,9 @@ export const CLOUD_PROJECTS: readonly CloudProject[] = [
         "Community support",
       ],
       ctaText: "Launch Free CRM ↗",
-      ctaHref:
-        process.env.NEXT_PUBLIC_CRM_URL
-          ? `${process.env.NEXT_PUBLIC_CRM_URL}?tier=free`
-          : "https://crm.stackandscale.cloud?tier=free",
+      ctaHref: process.env.NEXT_PUBLIC_CRM_URL
+        ? `${process.env.NEXT_PUBLIC_CRM_URL}?tier=free`
+        : "https://crm.stackandscale.cloud?tier=free",
       external: true,
     },
     subscriptionTier: {
@@ -130,7 +129,8 @@ export const CLOUD_PROJECTS: readonly CloudProject[] = [
       "Resilient event-driven automation engine with retry policies, self-healing webhooks, and audit ledgers.",
     version: "v2.4 Live",
     deployedUrl:
-      process.env.NEXT_PUBLIC_WORKFLOW_URL || "https://workflow.stackandscale.cloud",
+      process.env.NEXT_PUBLIC_WORKFLOW_URL ||
+      "https://workflow.stackandscale.cloud",
     freeTier: {
       name: "Free Tier",
       price: "$0",
@@ -146,10 +146,9 @@ export const CLOUD_PROJECTS: readonly CloudProject[] = [
         "Community support",
       ],
       ctaText: "Launch Free Hub ↗",
-      ctaHref:
-        process.env.NEXT_PUBLIC_WORKFLOW_URL
-          ? `${process.env.NEXT_PUBLIC_WORKFLOW_URL}?tier=free`
-          : "https://workflow.stackandscale.cloud?tier=free",
+      ctaHref: process.env.NEXT_PUBLIC_WORKFLOW_URL
+        ? `${process.env.NEXT_PUBLIC_WORKFLOW_URL}?tier=free`
+        : "https://workflow.stackandscale.cloud?tier=free",
       external: true,
     },
     subscriptionTier: {

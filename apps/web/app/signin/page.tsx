@@ -6,8 +6,9 @@ import { SiteFooter } from "../../src/site-footer";
 import { SigninView } from "../../src/signin-view";
 
 export const metadata: Metadata = {
-  title: "Staff sign-in | Stack & Scale",
-  description: "Sign in to Stack & Scale staff tools.",
+  title: "Sign in | Stack & Scale",
+  description:
+    "Unified access for Client Portals, Product Accounts, and Engineering Teams.",
 };
 
 export default function SignInPage() {

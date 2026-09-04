@@ -50,7 +50,9 @@ async function relay(request: Request, path: string, method = "GET") {
         return NextResponse.json({ ok: true });
       }
       const segments = path.split("/");
-      const leadId = decodeURIComponent(segments[segments.length - 1] || "lead-dev-1");
+      const leadId = decodeURIComponent(
+        segments[segments.length - 1] || "lead-dev-1",
+      );
       return NextResponse.json({
         data: {
           id: leadId,

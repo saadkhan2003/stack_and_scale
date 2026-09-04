@@ -8,15 +8,8 @@ import {
   CheckCircle2,
   ExternalLink,
   Globe,
-  Layers,
-  Lock,
-  Mail,
   RefreshCw,
   Server,
-  Shield,
-  Sparkles,
-  Terminal,
-  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CLOUD_PROJECTS, type CloudProject } from "./cloud-projects";
@@ -31,9 +24,10 @@ export function CloudWorkspaceConsole({
   initialTab = "all",
 }: CloudWorkspaceProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    initialTab === "all" ? "all" : initialTab
+    initialTab === "all" ? "all" : initialTab,
   );
-  const [launchModalProject, setLaunchModalProject] = useState<CloudProject | null>(null);
+  const [launchModalProject, setLaunchModalProject] =
+    useState<CloudProject | null>(null);
   const [leadEmail, setLeadEmail] = useState("");
   const [leadCompany, setLeadCompany] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,7 +102,7 @@ export function CloudWorkspaceConsole({
             </Link>
             <a
               href="/#pricing"
-              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-white transition-all"
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-white transition-all"
             >
               Manage Subscriptions
             </a>
@@ -119,19 +113,25 @@ export function CloudWorkspaceConsole({
       {/* Hero Header */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-zinc-400 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-zinc-400 mb-5">
             <Globe className="w-3 h-3 text-[#80ddd1]" />
             <span>Online Cloud Deployments</span>
             <span className="text-zinc-600">·</span>
-            <span className="text-[#80ddd1]">Free Tier &amp; Subscription Access</span>
+            <span className="text-[#80ddd1]">
+              Free Tier &amp; Subscription Access
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-4">
             Cloud Software Directory
           </h1>
           <p className="text-sm sm:text-base text-zinc-400 leading-relaxed font-normal mb-6">
-            All systems are deployed online with zero local hardware or server maintenance required.
-            Start immediately on our generous <span className="text-white font-medium">Free Tier</span> with operational limits, or upgrade to an unlimited <span className="text-[#80ddd1] font-medium">Pro Subscription</span>.
+            All systems are deployed online with zero local hardware or server
+            maintenance required. Start immediately on our generous{" "}
+            <span className="text-white font-medium">Free Tier</span> with
+            operational limits, or upgrade to an unlimited{" "}
+            <span className="text-[#80ddd1] font-medium">Pro Subscription</span>
+            .
           </p>
 
           <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-zinc-400 font-mono">
@@ -155,7 +155,7 @@ export function CloudWorkspaceConsole({
           <button
             type="button"
             onClick={() => setSelectedCategory("all")}
-            className={`px-4 py-2 rounded-full text-xs font-mono transition-all whitespace-nowrap ${
+            className={`px-4 py-2 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
               selectedCategory === "all"
                 ? "bg-white text-black font-semibold shadow-sm"
                 : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
@@ -168,7 +168,7 @@ export function CloudWorkspaceConsole({
               key={project.id}
               type="button"
               onClick={() => setSelectedCategory(project.id)}
-              className={`px-4 py-2 rounded-full text-xs font-mono transition-all whitespace-nowrap ${
+              className={`px-4 py-2 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
                 selectedCategory === project.id
                   ? "bg-[#80ddd1] text-black font-semibold shadow-sm"
                   : "bg-white/[0.04] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
@@ -186,7 +186,7 @@ export function CloudWorkspaceConsole({
           <section
             key={project.id}
             id={project.id}
-            className="rounded-3xl border border-white/[0.08] bg-[#070709] p-6 sm:p-8 lg:p-10 transition-all hover:border-white/[0.14]"
+            className="rounded-xl border border-white/[0.08] bg-[#070709] p-6 sm:p-8 lg:p-10 transition-all hover:border-white/[0.14]"
           >
             {/* Project Header Info */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-8 border-b border-white/[0.08]">
@@ -224,7 +224,7 @@ export function CloudWorkspaceConsole({
             {/* Comparison Grid: Free Tier vs Subscription Tier */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 pt-8">
               {/* 1. FREE TIER CARD */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#09090c] p-6 sm:p-7 flex flex-col justify-between relative group hover:border-white/20 transition-all">
+              <div className="rounded-xl border border-white/[0.08] bg-[#09090c] p-6 sm:p-7 flex flex-col justify-between relative group hover:border-white/20 transition-all">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-mono uppercase tracking-widest text-zinc-400">
@@ -255,7 +255,10 @@ export function CloudWorkspaceConsole({
                     </span>
                     <ul className="space-y-2.5">
                       {project.freeTier.limits.map((limit, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-300">
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2.5 text-xs text-zinc-300"
+                        >
                           <Check className="w-3.5 h-3.5 text-zinc-500 shrink-0 mt-0.5" />
                           <span>{limit}</span>
                         </li>
@@ -268,7 +271,7 @@ export function CloudWorkspaceConsole({
                   <button
                     type="button"
                     onClick={() => handleOpenLaunchModal(project)}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-white text-black hover:bg-zinc-200 transition-all shadow-sm"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-semibold bg-white text-black hover:bg-zinc-200 transition-all shadow-sm"
                   >
                     <span>{project.freeTier.ctaText}</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -280,8 +283,8 @@ export function CloudWorkspaceConsole({
               </div>
 
               {/* 2. PRO SUBSCRIPTION CARD */}
-              <div className="rounded-2xl border border-[#80ddd1]/40 bg-[#070b0e] p-6 sm:p-7 flex flex-col justify-between relative group hover:border-[#80ddd1]/70 transition-all shadow-[0_0_30px_rgba(128,221,209,0.05)]">
-                <div className="absolute -top-3 right-6 px-2.5 py-0.5 rounded-full bg-[#80ddd1] text-black text-[10px] font-mono font-bold uppercase tracking-wider">
+              <div className="rounded-xl border border-[#80ddd1]/40 bg-[#070b0e] p-6 sm:p-7 flex flex-col justify-between relative group hover:border-[#80ddd1]/70 transition-all shadow-[0_0_30px_rgba(128,221,209,0.05)]">
+                <div className="absolute -top-3 right-6 px-2.5 py-0.5 rounded-md bg-[#80ddd1] text-black text-[10px] font-mono font-bold uppercase tracking-wider">
                   Full Power
                 </div>
 
@@ -315,7 +318,10 @@ export function CloudWorkspaceConsole({
                     </span>
                     <ul className="space-y-2.5">
                       {project.subscriptionTier.limits.map((feat, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs text-zinc-200">
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2.5 text-xs text-zinc-200"
+                        >
                           <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0 mt-0.5" />
                           <span>{feat}</span>
                         </li>
@@ -327,7 +333,7 @@ export function CloudWorkspaceConsole({
                 <div className="pt-4">
                   <Link
                     href={project.subscriptionTier.ctaHref}
-                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#80ddd1] text-black hover:bg-[#9eeae0] transition-all shadow-sm"
+                    className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-semibold bg-[#80ddd1] text-black hover:bg-[#9eeae0] transition-all shadow-sm"
                   >
                     <span>{project.subscriptionTier.ctaText}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -344,11 +350,13 @@ export function CloudWorkspaceConsole({
 
       {/* Bottom Integration Info for Deployed Instances */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-        <div className="rounded-2xl border border-white/[0.08] bg-[#07070a] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div className="rounded-xl border border-white/[0.08] bg-[#07070a] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
               <Server className="w-4 h-4 text-[#80ddd1]" />
-              <span>Deploying your own standalone instance or private domain?</span>
+              <span>
+                Deploying your own standalone instance or private domain?
+              </span>
             </h3>
             <p className="text-xs text-zinc-400 font-normal leading-relaxed">
               You can connect custom deployment URLs via environment variables (
@@ -359,13 +367,14 @@ export function CloudWorkspaceConsole({
               <code className="text-[11px] font-mono text-zinc-300 bg-white/[0.06] px-1.5 py-0.5 rounded">
                 NEXT_PUBLIC_CRM_URL
               </code>
-              ). For air-gapped on-premise hardware deployment, purchase our perpetual One-Time Sovereign Licenses.
+              ). For air-gapped on-premise hardware deployment, purchase our
+              perpetual One-Time Sovereign Licenses.
             </p>
           </div>
 
           <Link
             href="/#pricing"
-            className="shrink-0 px-4 py-2 rounded-xl text-xs font-mono font-medium text-white border border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08] transition-all flex items-center gap-2"
+            className="shrink-0 px-4 py-2 rounded-lg text-xs font-mono font-medium text-white border border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08] transition-all flex items-center gap-2"
           >
             <span>Perpetual Licenses</span>
             <ArrowRight className="w-3 h-3" />
@@ -376,7 +385,7 @@ export function CloudWorkspaceConsole({
       {/* Free Tier Launch Modal */}
       {launchModalProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-[#09090c] p-6 shadow-2xl relative">
+          <div className="w-full max-w-md rounded-xl border border-white/15 bg-[#09090c] p-6 shadow-2xl relative">
             <button
               type="button"
               onClick={() => setLaunchModalProject(null)}
@@ -398,11 +407,18 @@ export function CloudWorkspaceConsole({
               Launch Online Instance
             </h3>
             <p className="text-xs text-zinc-400 mb-5 font-normal leading-relaxed">
-              This instance is hosted on managed cloud infrastructure with Free Tier limits applied ({launchModalProject.freeTier.limits[0]}, {launchModalProject.freeTier.limits[1]}).
+              This instance is hosted on managed cloud infrastructure with Free
+              Tier limits applied ({launchModalProject.freeTier.limits[0]},{" "}
+              {launchModalProject.freeTier.limits[1]}).
             </p>
 
             {!launchReadyUrl ? (
-              <form onSubmit={handleLaunchSubmit} className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  void handleLaunchSubmit(e);
+                }}
+                className="space-y-4"
+              >
                 <div>
                   <label className="text-[11px] font-mono uppercase text-zinc-400 block mb-1">
                     Your Company / Store Name
@@ -464,20 +480,21 @@ export function CloudWorkspaceConsole({
               </form>
             ) : (
               <div className="text-center py-4 space-y-4">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h4 className="text-sm font-semibold text-white">
                   Instance Ready
                 </h4>
                 <p className="text-xs text-zinc-400">
-                  Your Free Tier environment is active online. Click below to enter the application:
+                  Your Free Tier environment is active online. Click below to
+                  enter the application:
                 </p>
                 <a
                   href={launchReadyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#80ddd1] text-black hover:bg-[#9eeae0] transition-all shadow-sm"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-semibold bg-[#80ddd1] text-black hover:bg-[#9eeae0] transition-all shadow-sm"
                 >
                   <span>Open {launchModalProject.name} ↗</span>
                   <ExternalLink className="w-3.5 h-3.5" />

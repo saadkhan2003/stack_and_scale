@@ -7,11 +7,20 @@ type ContentItem = {
   id: string;
   title: string;
   slug: string;
-  collection: "Whitepaper" | "Case Study" | "Security" | "API Doc" | "Release Note";
+  collection:
+    | "Whitepaper"
+    | "Case Study"
+    | "Security"
+    | "API Doc"
+    | "Release Note";
   status: "Published" | "In Review" | "Scheduled" | "Draft";
   author: string;
   authorAvatar: string;
-  edgeStatus: "14 PoPs Synced" | "Staging Validated" | "Revalidating" | "Draft Local";
+  edgeStatus:
+    | "14 PoPs Synced"
+    | "Staging Validated"
+    | "Revalidating"
+    | "Draft Local";
   updatedAt: string;
   reads: string;
 };
@@ -107,7 +116,8 @@ const deploymentHistory = [
   {
     id: "dep-9921",
     commit: "fbd22ef",
-    message: "fix(auth): resolve oidc 500 error and deliver full Vercel/Linear landing page",
+    message:
+      "fix(auth): resolve oidc 500 error and deliver full Vercel/Linear landing page",
     branch: "main",
     author: "Saad Khan",
     duration: "12.6s",
@@ -131,7 +141,8 @@ const deploymentHistory = [
   {
     id: "dep-9919",
     commit: "88a1c90",
-    message: "feat(landing): integrate bento grid and interactive architecture tabs",
+    message:
+      "feat(landing): integrate bento grid and interactive architecture tabs",
     branch: "feature/landing-overhaul",
     author: "Elena Rostova",
     duration: "13.2s",
@@ -143,7 +154,8 @@ const deploymentHistory = [
   {
     id: "dep-9918",
     commit: "c3d1421",
-    message: "perf(edge): optimize bidirectional sqlite sync buffering under high load",
+    message:
+      "perf(edge): optimize bidirectional sqlite sync buffering under high load",
     branch: "main",
     author: "Marcus Vance",
     duration: "11.8s",
@@ -161,7 +173,14 @@ const schemas = [
     fieldsCount: 14,
     records: 48,
     status: "Synced to Edge",
-    fields: ["title (string)", "slug (slug)", "body (portable_text)", "heroImage (asset)", "authors (reference[])", "seoMetadata (object)"],
+    fields: [
+      "title (string)",
+      "slug (slug)",
+      "body (portable_text)",
+      "heroImage (asset)",
+      "authors (reference[])",
+      "seoMetadata (object)",
+    ],
   },
   {
     name: "Case Study",
@@ -169,7 +188,13 @@ const schemas = [
     fieldsCount: 18,
     records: 12,
     status: "Synced to Edge",
-    fields: ["client (string)", "metrics (key_value[])", "architectureDiagram (svg)", "quote (text)", "executiveTitle (string)"],
+    fields: [
+      "client (string)",
+      "metrics (key_value[])",
+      "architectureDiagram (svg)",
+      "quote (text)",
+      "executiveTitle (string)",
+    ],
   },
   {
     name: "Edge Release",
@@ -177,7 +202,13 @@ const schemas = [
     fieldsCount: 11,
     records: 64,
     status: "Synced to Edge",
-    fields: ["version (semver)", "checksumSha256 (hash)", "binaryUrl (url)", "changelog (markdown)", "breakingChanges (boolean)"],
+    fields: [
+      "version (semver)",
+      "checksumSha256 (hash)",
+      "binaryUrl (url)",
+      "changelog (markdown)",
+      "breakingChanges (boolean)",
+    ],
   },
   {
     name: "Security Advisory",
@@ -185,12 +216,20 @@ const schemas = [
     fieldsCount: 16,
     records: 8,
     status: "Synced to Edge",
-    fields: ["cveId (string)", "severity (enum)", "affectedVersions (range)", "mitigationSteps (markdown)", "fixedIn (semver)"],
+    fields: [
+      "cveId (string)",
+      "severity (enum)",
+      "affectedVersions (range)",
+      "mitigationSteps (markdown)",
+      "fixedIn (semver)",
+    ],
   },
 ];
 
 export function AdminInteractiveDashboard() {
-  const [activeTab, setActiveTab] = useState<"content" | "deployments" | "schemas" | "cache" | "audit">("content");
+  const [activeTab, setActiveTab] = useState<
+    "content" | "deployments" | "schemas" | "cache" | "audit"
+  >("content");
   const [searchQuery, setSearchQuery] = useState("");
   const [collectionFilter, setCollectionFilter] = useState<string>("all");
   const [isPurging, setIsPurging] = useState(false);
@@ -198,8 +237,11 @@ export function AdminInteractiveDashboard() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const filteredContent = initialContentItems.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.slug.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCollection = collectionFilter === "all" || item.collection === collectionFilter;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.slug.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCollection =
+      collectionFilter === "all" || item.collection === collectionFilter;
     return matchesSearch && matchesCollection;
   });
 
@@ -214,7 +256,7 @@ export function AdminInteractiveDashboard() {
   };
 
   const handleCopy = (text: string, id: string) => {
-    navigator.clipboard?.writeText(text);
+    void navigator.clipboard?.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -225,7 +267,9 @@ export function AdminInteractiveDashboard() {
       <div className="admin-top-bar">
         <div className="admin-org-pill">
           <span className="admin-org-dot" />
-          <span className="admin-org-name">Stack &amp; Scale Enterprise Mesh</span>
+          <span className="admin-org-name">
+            Stack &amp; Scale Enterprise Mesh
+          </span>
           <span className="admin-org-sep">/</span>
           <span className="admin-org-env">Production (v2.4.19)</span>
         </div>
@@ -240,7 +284,11 @@ export function AdminInteractiveDashboard() {
             disabled={isPurging}
             className="!bg-[#18181b] !text-[#f4f4f5] border border-white/15 hover:!bg-[#27272a]"
           >
-            {isPurging ? "Purging Edge Mesh..." : purgeSuccess ? "✓ Cache Purged" : "Purge Edge Cache"}
+            {isPurging
+              ? "Purging Edge Mesh..."
+              : purgeSuccess
+                ? "✓ Cache Purged"
+                : "Purge Edge Cache"}
           </Button>
           <Button
             size="sm"
@@ -337,7 +385,14 @@ export function AdminInteractiveDashboard() {
               />
             </div>
             <div className="admin-filter-pills">
-              {["all", "Whitepaper", "Case Study", "Security", "API Doc", "Release Note"].map((cat) => (
+              {[
+                "all",
+                "Whitepaper",
+                "Case Study",
+                "Security",
+                "API Doc",
+                "Release Note",
+              ].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCollectionFilter(cat)}
@@ -388,10 +443,10 @@ export function AdminInteractiveDashboard() {
                           item.status === "Published"
                             ? "status-published"
                             : item.status === "In Review"
-                            ? "status-review"
-                            : item.status === "Scheduled"
-                            ? "status-scheduled"
-                            : "status-draft"
+                              ? "status-review"
+                              : item.status === "Scheduled"
+                                ? "status-scheduled"
+                                : "status-draft"
                         }`}
                       >
                         {item.status}
@@ -399,7 +454,9 @@ export function AdminInteractiveDashboard() {
                     </td>
                     <td>
                       <div className="admin-author-cell">
-                        <span className="admin-author-avatar">{item.authorAvatar}</span>
+                        <span className="admin-author-avatar">
+                          {item.authorAvatar}
+                        </span>
                         <span>{item.author}</span>
                       </div>
                     </td>
@@ -409,7 +466,9 @@ export function AdminInteractiveDashboard() {
                         {item.edgeStatus}
                       </span>
                     </td>
-                    <td className="text-zinc-400 text-sm font-mono">{item.updatedAt}</td>
+                    <td className="text-zinc-400 text-sm font-mono">
+                      {item.updatedAt}
+                    </td>
                     <td className="text-right">
                       <div className="admin-row-actions">
                         <a
@@ -421,7 +480,9 @@ export function AdminInteractiveDashboard() {
                           Preview
                         </a>
                         <button
-                          onClick={() => alert(`Opening visual editor for ${item.title}`)}
+                          onClick={() =>
+                            alert(`Opening visual editor for ${item.title}`)
+                          }
                           className="admin-btn-table primary"
                         >
                           Edit
@@ -445,14 +506,20 @@ export function AdminInteractiveDashboard() {
                 <div className="admin-dep-header">
                   <div className="admin-dep-title-area">
                     <span className="admin-status-dot ready" />
-                    <span className="admin-dep-commit font-mono">#{dep.commit}</span>
+                    <span className="admin-dep-commit font-mono">
+                      #{dep.commit}
+                    </span>
                     <span className="admin-dep-env-tag">{dep.env}</span>
-                    <span className="admin-dep-branch font-mono">git:{dep.branch}</span>
+                    <span className="admin-dep-branch font-mono">
+                      git:{dep.branch}
+                    </span>
                   </div>
                   <div className="admin-dep-meta">
                     <span className="text-zinc-400">{dep.time}</span>
                     <span className="admin-meta-sep">·</span>
-                    <span className="font-mono text-zinc-300">{dep.duration}</span>
+                    <span className="font-mono text-zinc-300">
+                      {dep.duration}
+                    </span>
                   </div>
                 </div>
                 <p className="admin-dep-message">{dep.message}</p>
@@ -463,7 +530,9 @@ export function AdminInteractiveDashboard() {
                   <div className="admin-dep-regions">
                     <span className="text-zinc-500 text-xs">Edge Regions:</span>
                     {dep.regions.map((r) => (
-                      <span key={r} className="admin-region-pill font-mono">{r}</span>
+                      <span key={r} className="admin-region-pill font-mono">
+                        {r}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -482,12 +551,18 @@ export function AdminInteractiveDashboard() {
                 <div className="admin-schema-header">
                   <div>
                     <h3 className="admin-schema-title">{schema.name}</h3>
-                    <code className="admin-schema-ident">{schema.identifier}</code>
+                    <code className="admin-schema-ident">
+                      {schema.identifier}
+                    </code>
                   </div>
-                  <span className="admin-tag-pill">{schema.records} entries</span>
+                  <span className="admin-tag-pill">
+                    {schema.records} entries
+                  </span>
                 </div>
                 <div className="admin-schema-fields-list">
-                  <div className="admin-schema-fields-title">Defined Type Fields:</div>
+                  <div className="admin-schema-fields-title">
+                    Defined Type Fields:
+                  </div>
                   <div className="admin-fields-chips">
                     {schema.fields.map((field) => (
                       <span key={field} className="admin-field-chip font-mono">
@@ -501,7 +576,9 @@ export function AdminInteractiveDashboard() {
                     <span className="pulse-dot" /> {schema.status}
                   </span>
                   <button
-                    onClick={() => alert(`Opening schema definition for ${schema.name}`)}
+                    onClick={() =>
+                      alert(`Opening schema definition for ${schema.name}`)
+                    }
                     className="text-xs text-zinc-300 hover:text-white underline font-mono"
                   >
                     View TypeScript Contract →
@@ -517,13 +594,19 @@ export function AdminInteractiveDashboard() {
       {activeTab === "cache" && (
         <div className="admin-tab-panel">
           <div className="admin-cache-console">
-            <h3 className="text-xl font-semibold text-white mb-2">Global Edge Mesh Cache Invalidation</h3>
+            <h3 className="text-xl font-semibold text-white mb-2">
+              Global Edge Mesh Cache Invalidation
+            </h3>
             <p className="text-zinc-400 text-sm mb-6 max-w-2xl leading-relaxed">
-              Instantly purge ISR static caches and edge reverse proxy buffers across all 14 global points of presence. Invalidation propagation SLA is sub-150ms globally.
+              Instantly purge ISR static caches and edge reverse proxy buffers
+              across all 14 global points of presence. Invalidation propagation
+              SLA is sub-150ms globally.
             </p>
 
             <div className="admin-cache-form">
-              <label className="text-sm font-medium text-zinc-300 block mb-2">Cache Invalidation Tags</label>
+              <label className="text-sm font-medium text-zinc-300 block mb-2">
+                Cache Invalidation Tags
+              </label>
               <div className="flex gap-3 mb-4">
                 <input
                   type="text"
@@ -541,24 +624,44 @@ export function AdminInteractiveDashboard() {
               {purgeSuccess && (
                 <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-md text-emerald-300 text-sm flex items-center gap-2">
                   <span className="pulse-dot" />
-                  Successfully purged cache tags across 14 PoPs (iad1, sfo1, cdg1, lhr1, sin1, nrt1, syd1, fra1).
+                  Successfully purged cache tags across 14 PoPs (iad1, sfo1,
+                  cdg1, lhr1, sin1, nrt1, syd1, fra1).
                 </div>
               )}
             </div>
 
             <div className="admin-cache-pops-grid mt-8">
-              <div className="text-xs font-mono uppercase tracking-wider text-zinc-500 mb-3">Live PoP Cache States</div>
+              <div className="text-xs font-mono uppercase tracking-wider text-zinc-500 mb-3">
+                Live PoP Cache States
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { pop: "iad1 (US East)", hitRate: "99.4%", latency: "2.1ms" },
                   { pop: "sfo1 (US West)", hitRate: "98.9%", latency: "3.4ms" },
-                  { pop: "cdg1 (Europe West)", hitRate: "99.1%", latency: "4.8ms" },
-                  { pop: "sin1 (Asia South)", hitRate: "97.8%", latency: "6.2ms" },
+                  {
+                    pop: "cdg1 (Europe West)",
+                    hitRate: "99.1%",
+                    latency: "4.8ms",
+                  },
+                  {
+                    pop: "sin1 (Asia South)",
+                    hitRate: "97.8%",
+                    latency: "6.2ms",
+                  },
                 ].map((item) => (
-                  <div key={item.pop} className="p-3 bg-zinc-900/60 border border-white/5 rounded-lg">
-                    <div className="text-sm font-medium text-white">{item.pop}</div>
-                    <div className="text-xs text-zinc-400 mt-1 font-mono">Hit Rate: {item.hitRate}</div>
-                    <div className="text-xs text-emerald-400 font-mono">RTT: {item.latency}</div>
+                  <div
+                    key={item.pop}
+                    className="p-3 bg-zinc-900/60 border border-white/5 rounded-lg"
+                  >
+                    <div className="text-sm font-medium text-white">
+                      {item.pop}
+                    </div>
+                    <div className="text-xs text-zinc-400 mt-1 font-mono">
+                      Hit Rate: {item.hitRate}
+                    </div>
+                    <div className="text-xs text-emerald-400 font-mono">
+                      RTT: {item.latency}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -618,12 +721,20 @@ export function AdminInteractiveDashboard() {
                   },
                 ].map((row, idx) => (
                   <tr key={idx} className="admin-table-row">
-                    <td className="font-mono text-xs text-zinc-400">{row.time}</td>
-                    <td className="font-mono text-xs text-zinc-300">{row.actor}</td>
-                    <td>
-                      <span className="admin-tag-pill font-mono">{row.action}</span>
+                    <td className="font-mono text-xs text-zinc-400">
+                      {row.time}
                     </td>
-                    <td className="font-mono text-xs text-white">{row.target}</td>
+                    <td className="font-mono text-xs text-zinc-300">
+                      {row.actor}
+                    </td>
+                    <td>
+                      <span className="admin-tag-pill font-mono">
+                        {row.action}
+                      </span>
+                    </td>
+                    <td className="font-mono text-xs text-white">
+                      {row.target}
+                    </td>
                     <td className="font-mono text-xs text-zinc-500">
                       <code>{row.sha.substring(0, 16)}...</code>
                     </td>

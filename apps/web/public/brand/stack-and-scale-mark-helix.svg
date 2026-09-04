@@ -1,0 +1,26 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Stack &amp; Scale Helix Mark">
+  <defs>
+    <linearGradient id="ss-helix-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#D4D4D8" />
+    </linearGradient>
+  </defs>
+  <!-- Outer S-Helix track -->
+  <path
+    d="M84 14 L94 24 L70 24 C52 24 36 36 36 50 C36 57 39 63 45 68 L35 78 C25 70 20 59 20 48 C20 24 42 10 70 10 L84 14 Z"
+    fill="url(#ss-helix-grad)"
+  />
+  <path
+    d="M16 86 L6 76 L30 76 C48 76 64 64 64 50 C64 43 61 37 55 32 L65 22 C75 30 80 41 80 52 C80 76 58 90 30 90 L16 86 Z"
+    fill="url(#ss-helix-grad)"
+  />
+  <!-- Inner concentric S core -->
+  <path
+    d="M68 32 C58 32 50 38 50 46 C50 49 52 52 55 55 L47 63 C41 58 38 52 38 46 C38 31 51 22 68 22 L76 22 L76 32 Z"
+    fill="#FFFFFF"
+  />
+  <path
+    d="M32 68 C42 68 50 62 50 54 C50 51 48 48 45 45 L53 37 C59 42 62 48 62 54 C62 69 49 78 32 78 L24 78 L24 68 Z"
+    fill="#FFFFFF"
+  />
+</svg>
