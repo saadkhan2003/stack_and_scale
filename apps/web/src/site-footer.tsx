@@ -4,6 +4,10 @@ export function SiteFooter() {
       <div>
         <strong>Stack &amp; Scale</strong>
         <p>Technology for clearer, more dependable operations.</p>
+        <div className="footer-status-pill">
+          <span className="pulse-dot" aria-hidden="true" />
+          <span>ALL SYSTEMS OPERATIONAL · 99.99%</span>
+        </div>
       </div>
       <nav aria-label="Footer navigation">
         <a href="/products">Products</a>
@@ -15,7 +19,11 @@ export function SiteFooter() {
         <a href="/cookies">Cookies</a>
         <a href="/terms">Terms</a>
       </nav>
-      <a href="/contact">Contact us</a>
+      <div>
+        <a className="button-secondary text-sm inline-flex items-center gap-2" href="/contact">
+          Contact us <span aria-hidden="true">→</span>
+        </a>
+      </div>
     </footer>
   );
 }
