@@ -40,7 +40,7 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
           </a>
           <a
             href="/#storefront"
-            className="text-[13px] font-semibold text-black bg-white hover:bg-[#e6e6e6] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap shadow-sm"
+            className="text-[13px] font-semibold !text-black !bg-white hover:!bg-[#e6e6e6] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap shadow-sm"
           >
             Sign Up
           </a>

@@ -67,12 +67,13 @@ export async function CollectionPage({
             <h3 className="text-xl font-bold text-white mb-2">Need a custom software architecture?</h3>
             <p className="text-sm text-zinc-400 max-w-xl">Every module can be adapted, integrated, and deployed directly onto your private VPC or on-premise infrastructure.</p>
           </div>
-          <a
-            href="/contact"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-[#ededed] transition-colors whitespace-nowrap shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          <Button
+            render={<a href="/contact" />}
+            variant="default"
+            className="!bg-white !text-black hover:!bg-[#ededed] font-semibold text-sm px-5 !h-10 !rounded-lg whitespace-nowrap shadow-[0_0_20px_rgba(255,255,255,0.15)]"
           >
             Talk to an architect →
-          </a>
+          </Button>
         </div>
       </section>
       <SiteFooter />

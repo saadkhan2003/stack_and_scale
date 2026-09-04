@@ -429,7 +429,7 @@ export function SiteMobileNav({ currentPath }: NavProps) {
           <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2.5">
             <a
               href="/#storefront"
-              className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors"
+              className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md !bg-white !text-black font-semibold text-sm hover:!bg-neutral-200 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               Sign Up

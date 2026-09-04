@@ -165,7 +165,7 @@ export function AnalyticsController() {
             <button
               onClick={() => setShowSettings(true)}
               type="button"
-              className="px-4 py-1.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-4 py-1.5 rounded-full !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
             >
               Consent Settings
             </button>
@@ -277,7 +277,7 @@ export function AnalyticsController() {
               <button
                 onClick={handleSaveDetailed}
                 type="button"
-                className="px-4 py-1.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-semibold shadow-sm"
+                className="px-4 py-1.5 rounded-full !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold shadow-sm"
               >
                 Save Preferences
               </button>
