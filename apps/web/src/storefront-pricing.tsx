@@ -1,23 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
+  Bot,
+  Building2,
   Check,
   CheckCircle2,
-  Code2,
   CreditCard,
-  Download,
-  ExternalLink,
-  HardDrive,
-  Layers,
-  Lock,
+  Globe,
+  Loader2,
+  Mail,
   Play,
   RefreshCw,
   Server,
   Shield,
   Sparkles,
-  Terminal,
   Wifi,
   WifiOff,
   X,
@@ -30,9 +29,17 @@ type BillingModel = "saas" | "sovereign";
 type DemoProduct = "pos" | "crm" | "workflow";
 
 export function StorefrontPricingSection() {
-  const [billingModel, setBillingModel] = useState<BillingModel>("sovereign");
+  const [billingModel, setBillingModel] = useState<BillingModel>("saas");
   const [activeDemo, setActiveDemo] = useState<DemoProduct | null>(null);
   const [checkoutProduct, setCheckoutProduct] = useState<string | null>(null);
+
+  // Cloud SaaS Self-Serve Provisioning State
+  const [provisionPlan, setProvisionPlan] = useState<string | null>(null);
+  const [provisionCompany, setProvisionCompany] = useState("");
+  const [provisionEmail, setProvisionEmail] = useState("");
+  const [provisionProduct, setProvisionProduct] = useState<"pos" | "crm" | "workflow">("pos");
+  const [provisioningStatus, setProvisioningStatus] = useState<"idle" | "provisioning" | "ready">("idle");
+  const [provisioningStep, setProvisioningStep] = useState(0);
 
   // Demo interactive states
   const [posItems, setPosItems] = useState([
@@ -69,6 +76,72 @@ export function StorefrontPricingSection() {
     }, 900);
   };
 
+  const computedSlug =
+    provisionCompany
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "your-company";
+
+  const handleStartProvisioning = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const company = (formData.get("company") as string)?.trim() || provisionCompany.trim();
+    const email = (formData.get("email") as string)?.trim() || provisionEmail.trim();
+
+    if (!company || !email) return;
+
+    setProvisionCompany(company);
+    setProvisionEmail(email);
+    setProvisioningStatus("provisioning");
+    setProvisioningStep(1);
+
+    const slug =
+      company
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "") || "your-company";
+
+    // Best-effort send lead in background to /api/leads
+    try {
+      fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          name: company,
+          email: email,
+          company: company,
+          intakeType: "cloud-trial",
+          message: `Self-serve Cloud SaaS 14-day trial requested for ${provisionPlan || "Core Node"} focusing on ${provisionProduct}. Subdomain: ${slug}.stackandscale.cloud`,
+          consent: true,
+          attribution: {
+            landingPage: window.location.pathname,
+            source: "public-storefront",
+            cta: "cloud-trial-provision",
+          },
+        }),
+      }).catch(() => {});
+    } catch {}
+
+    setTimeout(() => {
+      setProvisioningStep(2);
+    }, 500);
+
+    setTimeout(() => {
+      setProvisioningStep(3);
+    }, 1000);
+
+    setTimeout(() => {
+      setProvisioningStatus("ready");
+      window.location.href = `/cloud?tenant=${encodeURIComponent(slug)}&tab=${provisionProduct}`;
+    }, 1600);
+  };
+
   return (
     <section
       id="pricing"
@@ -87,18 +160,34 @@ export function StorefrontPricingSection() {
           <Sparkles className="w-3.5 h-3.5 text-[#80ddd1]" />
           <span>Direct Self-Serve Storefront</span>
           <span className="text-zinc-500">·</span>
-          <span className="text-zinc-400">No Sales Calls Required</span>
+          <span className="text-zinc-400">Zero Hardware Needed</span>
         </div>
 
         <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
           Transparent pricing. Sovereign software.
         </h2>
         <p className="text-base sm:text-lg text-zinc-400 font-normal leading-relaxed">
-          Choose between managed high-performance Cloud SaaS or one-time Sovereign Licenses with complete source code custody.
+          Start instantly with our managed multi-tenant Cloud SaaS, or purchase a one-time Sovereign License with perpetual source code custody.
         </p>
 
         {/* Pricing Model Selector Switch */}
         <div className="mt-8 inline-flex items-center p-1 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md">
+          <button
+            type="button"
+            onClick={() => setBillingModel("saas")}
+            className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+              billingModel === "saas"
+                ? "bg-white text-black shadow-lg"
+                : "text-zinc-400 hover:text-white"
+            }`}
+          >
+            <Server className="w-3.5 h-3.5" />
+            <span>Cloud SaaS (Monthly)</span>
+            <span className="hidden sm:inline-block text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
+              Zero Upfront Cost
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => setBillingModel("sovereign")}
@@ -114,27 +203,248 @@ export function StorefrontPricingSection() {
               Own Forever
             </span>
           </button>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => setBillingModel("saas")}
-            className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
-              billingModel === "saas"
-                ? "bg-white text-black shadow-lg"
-                : "text-zinc-400 hover:text-white"
-            }`}
+        {/* Value Assurance Badges */}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-zinc-400 font-mono">
+          <span className="flex items-center gap-1.5 text-[#80ddd1]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#80ddd1]" />
+            <span>Instant cloud activation · No hardware purchase</span>
+          </span>
+          <span className="text-zinc-700 hidden sm:inline">·</span>
+          <span className="flex items-center gap-1.5 text-zinc-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#80ddd1]" />
+            <span>14-day free trial on all cloud tiers</span>
+          </span>
+          <span className="text-zinc-700 hidden sm:inline">·</span>
+          <Link
+            href="/cloud"
+            className="text-zinc-300 hover:text-white underline underline-offset-4 flex items-center gap-1"
           >
-            <Server className="w-3.5 h-3.5" />
-            <span>Cloud SaaS (Monthly)</span>
-            <span className="hidden sm:inline-block text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
-              Managed
-            </span>
-          </button>
+            <span>Explore Cloud Apps &amp; Free Tiers</span>
+            <ArrowRight className="w-3 h-3 text-[#80ddd1]" />
+          </Link>
         </div>
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* MODE 1: SOVEREIGN ONE-TIME LICENSES (ANTI-SAAS STOREFRONT)   */}
+      {/* MODE 1: CLOUD SAAS SUBSCRIPTIONS (DEFAULT - ZERO UPFRONT)    */}
+      {/* ------------------------------------------------------------- */}
+      {billingModel === "saas" && (
+        <div className="space-y-8 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {/* Tier 1: Core Node */}
+            <article
+              className="rounded-2xl border border-white/[0.08] bg-[#050505] p-7 flex flex-col justify-between transition-all duration-300 hover:border-white/25 spotlight-card relative"
+              onMouseMove={handleCardSpotlight}
+            >
+              <div>
+                <span className="text-xs font-mono uppercase tracking-widest text-zinc-400 block mb-4">
+                  Starter Tier
+                </span>
+                <h3 className="text-xl font-bold text-white mb-2">Core Node</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                  For single stores and growing teams needing managed cloud hosting with zero hardware investment.
+                </p>
+
+                <div className="mb-6 pb-6 border-b border-white/[0.08]">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white tracking-tight">
+                      $49
+                    </span>
+                    <span className="text-xs font-mono text-zinc-400">/month</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-1">
+                    14-day free trial · Cancel anytime
+                  </p>
+                </div>
+
+                <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>1 Active Store Terminal or Edge Node</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Up to 5 Team Members included</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Continuous Cloud Backup &amp; Sync</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>99.9% Cloud Uptime Guarantee</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Instant automated deployment</span>
+                  </li>
+                </ul>
+              </div>
+
+              <Button
+                type="button"
+                onClick={() => {
+                  setProvisionPlan("Core Node SaaS ($49/mo)");
+                  setProvisionProduct("pos");
+                }}
+                className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-white !text-black hover:!bg-zinc-200"
+              >
+                Start 14-Day Free Trial →
+              </Button>
+            </article>
+
+            {/* Tier 2: Growth Cluster (Recommended) */}
+            <article
+              className="rounded-2xl border border-[#80ddd1]/40 bg-[#08080c] p-7 flex flex-col justify-between transition-all duration-300 hover:border-[#80ddd1]/70 shadow-[0_0_35px_rgba(128,221,209,0.07)] spotlight-card relative"
+              onMouseMove={handleCardSpotlight}
+            >
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#80ddd1] text-black text-[10px] font-mono font-bold uppercase tracking-wider shadow-sm">
+                Most Popular
+              </div>
+
+              <div>
+                <span className="text-xs font-mono uppercase tracking-widest text-[#80ddd1] block mb-4">
+                  Professional
+                </span>
+                <h3 className="text-xl font-bold text-white mb-2">Growth Cluster</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                  Multi-location operations needing real-time cross-store replication and autonomous CRM pipelines.
+                </p>
+
+                <div className="mb-6 pb-6 border-b border-white/[0.08]">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white tracking-tight">
+                      $199
+                    </span>
+                    <span className="text-xs font-mono text-zinc-400">/month</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-1">
+                    Includes up to 10 edge registers
+                  </p>
+                </div>
+
+                <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Up to 10 Edge Registers &amp; Nodes</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Unlimited Staff Accounts (Zero seat tax)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Sub-second multi-store delta replication</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Autonomous AI Qualification Worker</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Priority 4-hour SLA response</span>
+                  </li>
+                </ul>
+              </div>
+
+              <Button
+                type="button"
+                onClick={() => {
+                  setProvisionPlan("Growth Cluster SaaS ($199/mo)");
+                  setProvisionProduct("crm");
+                }}
+                className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-[#80ddd1] !text-black hover:!bg-[#9eeae0]"
+              >
+                Start 14-Day Free Trial →
+              </Button>
+            </article>
+
+            {/* Tier 3: Dedicated VPC */}
+            <article
+              className="rounded-2xl border border-white/[0.08] bg-[#050505] p-7 flex flex-col justify-between transition-all duration-300 hover:border-white/25 spotlight-card relative"
+              onMouseMove={handleCardSpotlight}
+            >
+              <div>
+                <span className="text-xs font-mono uppercase tracking-widest text-zinc-400 block mb-4">
+                  Enterprise
+                </span>
+                <h3 className="text-xl font-bold text-white mb-2">Dedicated VPC</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                  For regional chains and regulated operations requiring single-tenant isolation, compliance audits, and custom pipelines.
+                </p>
+
+                <div className="mb-6 pb-6 border-b border-white/[0.08]">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-white tracking-tight">
+                      $899
+                    </span>
+                    <span className="text-xs font-mono text-zinc-400">/month</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-1">
+                    Dedicated isolated cloud infrastructure
+                  </p>
+                </div>
+
+                <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Unlimited Edge Nodes &amp; Store Clusters</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Isolated Single-Tenant AWS/GCP VPC</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>99.999% Fault-Tolerant Guaranteed SLA</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Dedicated Solutions Architect &amp; Slack</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
+                    <span>Complete Source Code Upgrade Option</span>
+                  </li>
+                </ul>
+              </div>
+
+              <Button
+                type="button"
+                render={<a href="#contact" />}
+                className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-white !text-black hover:!bg-zinc-200"
+              >
+                Contact Enterprise Engineering →
+              </Button>
+            </article>
+          </div>
+
+          {/* Cloud Applications Direct Access Banner */}
+          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#80ddd1]/10 border border-[#80ddd1]/20 flex items-center justify-center text-[#80ddd1] shrink-0">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-white">Looking for online deployed software?</h4>
+                <p className="text-xs text-zinc-400">Access our cloud directory to launch Free Tier instances or manage monthly subscriptions with zero hardware setup.</p>
+              </div>
+            </div>
+            <Link
+              href="/cloud"
+              className="shrink-0 px-4 py-2 rounded-full border border-white/15 bg-white/[0.04] text-xs font-semibold text-white hover:bg-white/10 flex items-center gap-1.5 transition-colors"
+            >
+              <span>View Cloud Apps &amp; Limits</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#80ddd1]" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* MODE 2: SOVEREIGN ONE-TIME LICENSES (PERPETUAL BUYOUT)        */}
       {/* ------------------------------------------------------------- */}
       {billingModel === "sovereign" && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16 animate-in fade-in duration-300">
@@ -384,194 +694,14 @@ export function StorefrontPricingSection() {
         </div>
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* MODE 2: CLOUD SAAS SUBSCRIPTIONS (MANAGED CLOUD TIERS)        */}
-      {/* ------------------------------------------------------------- */}
-      {billingModel === "saas" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16 animate-in fade-in duration-300">
-          {/* Tier 1: Starter */}
-          <article
-            className="rounded-2xl border border-white/[0.08] bg-[#050505] p-7 flex flex-col justify-between transition-all duration-300 hover:border-white/25 spotlight-card relative"
-            onMouseMove={handleCardSpotlight}
-          >
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-zinc-400 block mb-4">
-                Starter Tier
-              </span>
-              <h3 className="text-xl font-bold text-white mb-2">Core Node</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                For single locations or growing operations that need dependable software with managed cloud hosting.
-              </p>
-
-              <div className="mb-6 pb-6 border-b border-white/[0.08]">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">
-                    $49
-                  </span>
-                  <span className="text-xs font-mono text-zinc-400">/month</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Billed monthly · Cancel anytime
-                </p>
-              </div>
-
-              <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>1 Active Edge Node or Store Terminal</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Up to 5 Team Members included</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Continuous Cloud Backup &amp; Sync</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>99.9% Uptime Guarantee</span>
-                </li>
-              </ul>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => setCheckoutProduct("Core Node SaaS ($49/mo)")}
-              className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-white !text-black hover:!bg-zinc-200"
-            >
-              Start 14-Day Free Trial →
-            </Button>
-          </article>
-
-          {/* Tier 2: Professional / Growth (Highlighted) */}
-          <article
-            className="rounded-2xl border border-[#80ddd1]/40 bg-[#08080c] p-7 flex flex-col justify-between transition-all duration-300 hover:border-[#80ddd1]/70 shadow-[0_0_35px_rgba(128,221,209,0.07)] spotlight-card relative"
-            onMouseMove={handleCardSpotlight}
-          >
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#80ddd1] text-black text-[10px] font-mono font-bold uppercase tracking-wider shadow-sm">
-              Recommended
-            </div>
-
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-[#80ddd1] block mb-4">
-                Professional
-              </span>
-              <h3 className="text-xl font-bold text-white mb-2">Growth Cluster</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                Multi-location operations needing real-time cross-store mesh synchronization and automated event pipelines.
-              </p>
-
-              <div className="mb-6 pb-6 border-b border-white/[0.08]">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">
-                    $199
-                  </span>
-                  <span className="text-xs font-mono text-zinc-400">/month</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Includes up to 10 edge terminals
-                </p>
-              </div>
-
-              <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Up to 10 Edge Registers &amp; Nodes</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Unlimited Staff Accounts (Zero seat tax)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Sub-second multi-store delta replication</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Real-time Telemetry &amp; Error Sandboxing</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Priority 4-hour SLA response</span>
-                </li>
-              </ul>
-            </div>
-
-            <Button
-              type="button"
-              onClick={() => setCheckoutProduct("Growth Cluster SaaS ($199/mo)")}
-              className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-[#80ddd1] !text-black hover:!bg-[#9eeae0]"
-            >
-              Start 14-Day Free Trial →
-            </Button>
-          </article>
-
-          {/* Tier 3: Enterprise */}
-          <article
-            className="rounded-2xl border border-white/[0.08] bg-[#050505] p-7 flex flex-col justify-between transition-all duration-300 hover:border-white/25 spotlight-card relative"
-            onMouseMove={handleCardSpotlight}
-          >
-            <div>
-              <span className="text-xs font-mono uppercase tracking-widest text-zinc-400 block mb-4">
-                Enterprise
-              </span>
-              <h3 className="text-xl font-bold text-white mb-2">Dedicated VPC</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed mb-6">
-                For regional chains and regulated operations requiring single-tenant isolation, compliance audits, and custom pipelines.
-              </p>
-
-              <div className="mb-6 pb-6 border-b border-white/[0.08]">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-white tracking-tight">
-                    $899
-                  </span>
-                  <span className="text-xs font-mono text-zinc-400">/month</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Dedicated isolated cloud infrastructure
-                </p>
-              </div>
-
-              <ul className="space-y-2.5 text-xs text-zinc-300 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Unlimited Edge Nodes &amp; Store Clusters</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Isolated Single-Tenant AWS/GCP VPC</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>99.999% Fault-Tolerant Guaranteed SLA</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-[#80ddd1] shrink-0" />
-                  <span>Dedicated Solutions Architect &amp; Slack</span>
-                </li>
-              </ul>
-            </div>
-
-            <Button
-              type="button"
-              render={<a href="#contact" />}
-              className="w-full !h-10 !text-xs !font-semibold !rounded-full !bg-white !text-black hover:!bg-zinc-200"
-            >
-              Contact Enterprise Engineering →
-            </Button>
-          </article>
-        </div>
-      )}
-
-      {/* Trust & Guarantee Banner */}
+      {/* Guarantee Banner */}
       <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 max-w-3xl mx-auto text-center flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-left">
           <p className="text-sm font-semibold text-white">
             100% Sovereign Code Ownership Guarantee
           </p>
           <p className="text-xs text-zinc-400 mt-0.5">
-            When you purchase sovereign software from Stack &amp; Scale, you receive unencumbered source code rights. No vendor lock-in. Ever.
+            Whether starting in the cloud or self-hosting on-premises, your data is always sovereign and exportable.
           </p>
         </div>
         <a
@@ -581,6 +711,198 @@ export function StorefrontPricingSection() {
           View System Architecture <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* CLOUD SAAS SELF-SERVE PROVISIONING MODAL                      */}
+      {/* ------------------------------------------------------------- */}
+      {provisionPlan && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="provision-modal-title"
+        >
+          <div className="relative w-full max-w-md rounded-2xl border border-white/20 bg-[#0c0c10] shadow-[0_25px_70px_rgba(0,0,0,0.95)] p-6 text-white">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+              <div className="flex items-center gap-2">
+                <Server className="w-5 h-5 text-[#80ddd1]" />
+                <h3 id="provision-modal-title" className="text-base font-bold text-white">
+                  Launch Cloud Workspace
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setProvisionPlan(null);
+                  setProvisioningStatus("idle");
+                }}
+                className="text-zinc-400 hover:text-white p-1"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {provisioningStatus === "idle" ? (
+              <form onSubmit={handleStartProvisioning} className="space-y-4">
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-[#80ddd1]">Selected Tier</span>
+                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">
+                      14-Day Free Trial
+                    </span>
+                  </div>
+                  <div className="text-sm font-semibold text-white mt-1">{provisionPlan}</div>
+                  <p className="text-[11px] text-zinc-400 mt-1">
+                    Zero hardware or dedicated server expense. Managed PostgreSQL &amp; Edge Sync included.
+                  </p>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-zinc-300 mb-1 font-medium">Organization / Store Name</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="company"
+                        required
+                        value={provisionCompany}
+                        onChange={(e) => setProvisionCompany(e.target.value)}
+                        placeholder="e.g. Apex Retail"
+                        className="w-full h-9 rounded-lg bg-black border border-white/15 px-3 text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-[#80ddd1]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-300 mb-1 font-medium">Work Email Address</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={provisionEmail}
+                        onChange={(e) => setProvisionEmail(e.target.value)}
+                        placeholder="alex@apexretail.com"
+                        className="w-full h-9 rounded-lg bg-black border border-white/15 px-3 text-white text-xs placeholder:text-zinc-600 focus:outline-none focus:border-[#80ddd1]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-300 mb-1 font-medium">Initial Application Module</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setProvisionProduct("pos")}
+                        className={`p-2 rounded-lg border text-center transition-all ${
+                          provisionProduct === "pos"
+                            ? "border-[#80ddd1] bg-[#80ddd1]/10 text-white"
+                            : "border-white/10 bg-black text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        <div className="text-[11px] font-semibold">Retail POS</div>
+                        <div className="text-[9px] text-zinc-500 mt-0.5">Shop Floor</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProvisionProduct("crm")}
+                        className={`p-2 rounded-lg border text-center transition-all ${
+                          provisionProduct === "crm"
+                            ? "border-[#80ddd1] bg-[#80ddd1]/10 text-white"
+                            : "border-white/10 bg-black text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        <div className="text-[11px] font-semibold">CRM Hub</div>
+                        <div className="text-[9px] text-zinc-500 mt-0.5">Pipeline</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProvisionProduct("workflow")}
+                        className={`p-2 rounded-lg border text-center transition-all ${
+                          provisionProduct === "workflow"
+                            ? "border-[#80ddd1] bg-[#80ddd1]/10 text-white"
+                            : "border-white/10 bg-black text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        <div className="text-[11px] font-semibold">Workflow</div>
+                        <div className="text-[9px] text-zinc-500 mt-0.5">Automations</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Subdomain Preview */}
+                  <div className="p-2.5 rounded-lg border border-white/10 bg-black flex items-center justify-between font-mono text-[11px]">
+                    <span className="text-zinc-500 flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-[#80ddd1]" /> Subdomain:
+                    </span>
+                    <span className="text-[#80ddd1] truncate max-w-[200px]">
+                      {computedSlug}.stackandscale.cloud
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    className="w-full !h-11 !text-xs !font-semibold !rounded-full !bg-[#80ddd1] !text-black hover:!bg-[#9eeae0] shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <span>Launch Free Cloud Workspace →</span>
+                  </Button>
+                </div>
+
+                <div className="text-center">
+                  <Link
+                    href="/cloud"
+                    className="text-[11px] text-zinc-400 hover:text-white underline underline-offset-2"
+                  >
+                    Or browse the Cloud Application Directory &amp; Free Tiers directly →
+                  </Link>
+                </div>
+              </form>
+            ) : (
+              /* Animated Provisioning HUD */
+              <div className="py-8 space-y-6 text-center">
+                <div className="w-12 h-12 rounded-full border border-[#80ddd1]/30 bg-[#80ddd1]/10 flex items-center justify-center mx-auto text-[#80ddd1]">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-white">Provisioning Cloud Workspace</h4>
+                  <p className="text-xs text-zinc-400 font-mono mt-1">{computedSlug}.stackandscale.cloud</p>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-black p-4 text-left font-mono text-xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${provisioningStep >= 1 ? "text-[#80ddd1]" : "text-zinc-600"}`} />
+                    <span className={provisioningStep >= 1 ? "text-zinc-200" : "text-zinc-600"}>
+                      1. Allocating multi-tenant PostgreSQL schema
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${provisioningStep >= 2 ? "text-[#80ddd1]" : "text-zinc-600"}`} />
+                    <span className={provisioningStep >= 2 ? "text-zinc-200" : "text-zinc-600"}>
+                      2. Generating secure API credentials &amp; tokens
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${provisioningStep >= 3 ? "text-[#80ddd1]" : "text-zinc-600"}`} />
+                    <span className={provisioningStep >= 3 ? "text-zinc-200" : "text-zinc-600"}>
+                      3. Routing live subdomain endpoint...
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-zinc-500 animate-pulse">
+                  Redirecting to your live workspace console in a moment...
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* INTERACTIVE IN-BROWSER "TRY LIVE DEMO" SANDBOX MODAL          */}
@@ -754,9 +1076,13 @@ export function StorefrontPricingSection() {
 
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
-              <span className="text-xs text-zinc-400">
-                Ready to deploy this to your own hardware?
-              </span>
+              <Link
+                href="/cloud"
+                className="text-xs text-[#80ddd1] hover:underline flex items-center gap-1 font-medium"
+              >
+                <span>Open Full Cloud Workspace Console</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
               <Button
                 type="button"
                 onClick={() => {
@@ -777,7 +1103,7 @@ export function StorefrontPricingSection() {
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* INSTANT SELF-SERVICE CHECKOUT / ONBOARDING FLOW MODAL         */}
+      {/* INSTANT SELF-SERVICE CHECKOUT / SOVEREIGN LICENSE BUYOUT      */}
       {/* ------------------------------------------------------------- */}
       {checkoutProduct && (
         <div

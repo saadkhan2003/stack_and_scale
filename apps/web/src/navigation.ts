@@ -53,86 +53,59 @@ export type MegaMenuSection = {
   };
 };
 
-/**
- * 1. AUTOMATION & AI
- * Modular sub-menu items for Autonomous AI pipelines, workflow engines, and edge sync.
- * Easily add or modify automation items here.
- */
 export const automationNavItems: readonly NavSubItem[] = [
   {
     title: "Autonomous AI Agents",
     href: "/solutions",
-    description: "Sovereign on-prem agent pipelines, background task workers, and tool orchestrators.",
+    description: "On-prem agent pipelines, background task workers, and tool orchestrators.",
     badge: "AI / Edge",
   },
   {
     title: "Workflow Automation Hub",
     href: "/products/workflow-hub",
-    description: "Turn repeatable requests into visible, accountable hand-offs and approval chains.",
+    description: "Repeatable operational routing, event triggers, and approval chains.",
     badge: "v2.4",
   },
   {
     title: "Offline-to-Cloud Sync Engine",
     href: "/work",
-    description: "Local SQLite with conflict-free background replication and zero network locks.",
+    description: "Conflict-free local SQLite replication to cloud Postgres vault.",
     badge: "Offline",
-  },
-  {
-    title: "Self-Healing Webhooks",
-    href: "/services",
-    description: "Automated event ingest, retry policies, and transaction error self-recovery.",
-  },
-  {
-    title: "Edge Pipeline Optimization",
-    href: "/solutions",
-    description: "Sub-50ms distributed computing for local retail counters and remote field teams.",
   },
 ] as const;
 
 /**
  * 2. WEB DEVELOPMENT & APPS
  * Modular sub-menu items for custom mission-critical web applications.
- * Easily add or modify web developing items here.
  */
 export const webDevNavItems: readonly NavSubItem[] = [
   {
     title: "Mission-Critical Web Apps",
     href: "/services",
-    description: "Ultra-fast Next.js & React enterprise applications engineered with zero bloat.",
+    description: "Ultra-fast Next.js enterprise web applications with zero bloat.",
     badge: "Custom",
   },
   {
     title: "Sovereign Client Portals",
     href: "/signin",
-    description: "Role-based customer dashboards for delivery tracking, milestones, and invoicing.",
+    description: "Role-based customer dashboards for delivery tracking and invoicing.",
   },
   {
     title: "Product Discovery & Blueprint",
     href: "/services/product-discovery",
     description: "Architecture roadmaps, service blueprinting, and smallest useful releases.",
   },
-  {
-    title: "Experience Design & Tokens",
-    href: "/services/experience-design",
-    description: "Dense, zero-friction work interfaces built on a unified sovereign design system.",
-  },
-  {
-    title: "Offline-First PWAs",
-    href: "/services",
-    description: "Resilient progressive web apps that maintain full transaction capability offline.",
-  },
 ] as const;
 
 /**
  * 3. CASE STUDIES & PRODUCTION WORK
  * Modular sub-menu items for real client deployments and verified architectures.
- * Easily add or modify case studies here.
  */
 export const caseStudiesNavItems: readonly NavSubItem[] = [
   {
     title: "Connected Retail Operations",
     href: "/work/connected-retail-demo",
-    description: "Multi-register shop-floor POS, live stock reconciliations, and instant checkout.",
+    description: "Multi-register shop-floor POS, live stock reconciliation, and instant checkout.",
     badge: "Production",
   },
   {
@@ -142,35 +115,28 @@ export const caseStudiesNavItems: readonly NavSubItem[] = [
     badge: "Case Study",
   },
   {
-    title: "Distributed Field Operations",
-    href: "/industries/field-operations",
-    description: "Coordinating approvals, job dispatches, and exceptions in low-connectivity zones.",
-  },
-  {
     title: "Zero-Downtime SaaS Migration",
     href: "/work",
-    description: "Replacing brittle per-seat SaaS tools with sovereign single-tenant infrastructure.",
-  },
-  {
-    title: "Browse All Case Studies ↗",
-    href: "/work",
-    description: "Explore the full index of production architectures and verified delivery stories.",
-    badge: "All Work",
-    external: false,
+    description: "Replacing brittle per-seat SaaS tools with sovereign infrastructure.",
   },
 ] as const;
 
 /**
- * 4. SOVEREIGN SOFTWARE PRODUCTS
+ * 4. SOVEREIGN SOFTWARE PRODUCTS & CLOUD ACCESS
  * Modular sub-menu items for ready-to-deploy software and self-serve storefront.
- * Easily add or modify products and store items here.
  */
 export const productsNavItems: readonly NavSubItem[] = [
   {
-    title: "Retail Operations Suite",
+    title: "Retail Operations & POS",
     href: "/products/retail-operations",
-    description: "A connected view of sales, stock, and offline checkout terminals.",
+    description: "Offline-first shop floor register with SQLite local transactions & cloud sync.",
     badge: "v2.4",
+  },
+  {
+    title: "Autonomous CRM & Pipeline",
+    href: "/#pricing",
+    description: "Customer relationship ledger and automated dispatch with zero seat fees.",
+    badge: "v3.1",
   },
   {
     title: "Workflow Hub",
@@ -178,55 +144,53 @@ export const productsNavItems: readonly NavSubItem[] = [
     description: "Visible, accountable operational routing and multi-team collaboration.",
     badge: "Core App",
   },
+] as const;
+
+export const cloudStoreNavItems: readonly NavSubItem[] = [
   {
-    title: "Operating Insight",
-    href: "/products/operating-insight",
-    description: "Calm executive dashboard bringing the few metrics that matter into focus.",
-    badge: "Core App",
+    title: "Cloud SaaS (Monthly)",
+    href: "/#pricing",
+    description: "Zero setup or hardware needed. Instant access in managed cloud clusters.",
+    badge: "Cloud",
   },
   {
-    title: "Self-Serve Storefront & Pricing",
-    href: "/#storefront",
-    description: "Buy one-time perpetual sovereign licenses or configure monthly cloud instances.",
-    badge: "Storefront",
+    title: "One-Time Sovereign License",
+    href: "/#pricing",
+    description: "Complete source code custody + Docker blueprints for private deployment.",
+    badge: "Own Forever",
   },
   {
-    title: "Interactive Deployment CLI",
-    href: "/#deployment-terminal",
-    description: "Run `npx @stack-and-scale/cli init` in your browser sandbox or local machine.",
-    badge: "CLI",
+    title: "Cloud Software Directory",
+    href: "/cloud",
+    description: "Launch online projects with generous Free Tiers or unlimited Pro Subscriptions.",
+    badge: "Free Tier",
   },
 ] as const;
+
 
 export const megaMenuConfig: Record<string, MegaMenuSection> = {
   "/services": {
     navLabel: "Services",
     navHref: "/services",
-    summary: "Engineering, automation, and bespoke software systems built for complete operational sovereignty.",
+    summary: "Engineering, automation, and bespoke software systems built for operational sovereignty.",
     categories: [
       {
         id: "automation",
         title: "Automation & AI",
-        summary: "Autonomous workflows, agent pipelines, and local edge sync engines.",
+        summary: "Autonomous workflows, agent pipelines, and local edge sync.",
         items: automationNavItems,
       },
       {
         id: "web-development",
         title: "Web Development",
-        summary: "Mission-critical applications, client portals, and blueprint architectures.",
+        summary: "Mission-critical applications and sovereign client portals.",
         items: webDevNavItems,
-      },
-      {
-        id: "case-studies",
-        title: "Case Studies",
-        summary: "Verified deployments running on live shop floors and enterprise operations.",
-        items: caseStudiesNavItems,
       },
     ],
     featured: {
       eyebrow: "Architecture Blueprint",
       title: "Zero Per-Seat Taxes",
-      description: "Replace recurring SaaS seat costs with sovereign single-tenant infrastructure you own forever.",
+      description: "Replace recurring SaaS seat costs with single-tenant infrastructure you own forever.",
       href: "/approach",
       badge: "Sovereign",
       ctaText: "Read the Approach →",
@@ -240,86 +204,56 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
       {
         id: "automation",
         title: "Automation & AI",
-        summary: "Autonomous workflows, agent pipelines, and local edge sync engines.",
+        summary: "Autonomous workflows and local edge sync engines.",
         items: automationNavItems,
       },
       {
-        id: "web-development",
-        title: "Web Development",
-        summary: "Mission-critical applications, client portals, and blueprint architectures.",
-        items: webDevNavItems,
-      },
-      {
-        id: "case-studies",
-        title: "Case Studies",
-        summary: "Verified deployments running on live shop floors and enterprise operations.",
+        id: "engineering",
+        title: "Engineering & Work",
+        summary: "Verified architectures running on live shop floors.",
         items: caseStudiesNavItems,
       },
     ],
     featured: {
-      eyebrow: "Architecture Blueprint",
-      title: "Zero Per-Seat Taxes",
-      description: "Replace recurring SaaS seat costs with sovereign single-tenant infrastructure you own forever.",
-      href: "/approach",
-      badge: "Sovereign",
-      ctaText: "Read the Approach →",
+      eyebrow: "Field Architecture",
+      title: "Connected Retail Demo",
+      description: "How an omnichannel retail chain runs multi-register POS with sub-millisecond sync.",
+      href: "/work/connected-retail-demo",
+      badge: "Case Study",
+      ctaText: "Read Case Study →",
     },
   },
   "/products": {
     navLabel: "Products",
     navHref: "/products",
-    summary: "Production-ready sovereign software platforms and developer tooling with transparent pricing.",
+    summary: "Production-ready sovereign software and cloud-hosted operational platforms.",
     categories: [
       {
         id: "core-software",
-        title: "Sovereign Software",
-        summary: "Pre-built operational suites ready to deploy on your own domain and cloud.",
-        items: productsNavItems.slice(0, 3),
+        title: "Core Platforms",
+        summary: "Ready-to-use business software for retail, CRM, and automation.",
+        items: productsNavItems,
       },
       {
-        id: "commercial-pricing",
-        title: "Commercial & Storefront",
-        summary: "Self-serve licenses, transparent tier pricing, and instant checkout.",
-        items: [
-          {
-            title: "Storefront & Pricing Plans",
-            href: "/#storefront",
-            description: "Choose between Starter ($49/mo), Pro ($199/mo), or Sovereign ($4,900 one-time).",
-            badge: "Storefront",
-          },
-          {
-            title: "Interactive POS Sandbox",
-            href: "/#storefront",
-            description: "Test the offline-first SQLite POS transaction simulation live in your browser.",
-            badge: "Interactive",
-          },
-          {
-            title: "Client Self-Serve Portal",
-            href: "/signin",
-            description: "Access licenses, deployment credentials, and technical documentation.",
-          },
-        ],
-      },
-      {
-        id: "automation-engines",
-        title: "Automation Engines",
-        summary: "Autonomous event-driven pipelines integrated into every product tier.",
-        items: automationNavItems.slice(0, 3),
+        id: "cloud-storefront",
+        title: "Cloud & Storefront",
+        summary: "Zero-setup cloud subscriptions and one-time perpetual licenses.",
+        items: cloudStoreNavItems,
       },
     ],
     featured: {
-      eyebrow: "Live Sandbox",
-      title: "Try the Storefront Demo",
-      description: "Experience our offline SQLite POS sandbox and transparent pricing matrix directly on the homepage.",
-      href: "/#storefront",
-      badge: "Try Demo",
-      ctaText: "Open Storefront →",
+      eyebrow: "Cloud Access",
+      title: "Zero Hardware Costs",
+      description: "Launch in 60 seconds with our managed cloud cluster. 14-day free trial included.",
+      href: "/#pricing",
+      badge: "Managed",
+      ctaText: "Explore Cloud Plans →",
     },
   },
   "/work": {
     navLabel: "Work",
     navHref: "/work",
-    summary: "Production case studies, real-world deployment metrics, and architectural field guides.",
+    summary: "Production case studies, verified deployment metrics, and architectural field guides.",
     categories: [
       {
         id: "production-case-studies",
@@ -349,34 +283,11 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
           },
         ],
       },
-      {
-        id: "technical-guides",
-        title: "Architecture & Guides",
-        summary: "Principles and research on building durable, useful enterprise software.",
-        items: [
-          {
-            title: "Operational Clarity Guide",
-            href: "/resources/operational-clarity",
-            description: "Questions to ask before adding another dashboard, tool, or approval loop.",
-          },
-          {
-            title: "What Makes Software Useful?",
-            href: "/resources/useful-software",
-            description: "A pragmatic guide for engineering leaders simplifying team workflows.",
-          },
-          {
-            title: "Design System Catalog",
-            href: "/design-system",
-            description: "Explore all tokens, components, and responsive layout primitives.",
-            badge: "Tokens",
-          },
-        ],
-      },
     ],
     featured: {
       eyebrow: "Verified Results",
       title: "Connected Retail Demo",
-      description: "See how an omnichannel retailer eliminated sync delays and inventory drift across 12 locations.",
+      description: "See how an omnichannel retailer eliminated sync delays across 12 locations.",
       href: "/work/connected-retail-demo",
       badge: "Case Study",
       ctaText: "View Case Study →",
