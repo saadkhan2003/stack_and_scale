@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { authContentModel } from "../../src/auth-content";
 import { SiteHeader } from "../../src/site-header";
+import { SiteFooter } from "../../src/site-footer";
 import { SigninView } from "../../src/signin-view";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default function SignInPage() {
     <main className="site-shell">
       <SiteHeader currentPath="/signin" />
       <SigninView model={authContentModel} />
+      <SiteFooter />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { approachPageModel } from "../../src/approach-content";
 import { SiteHeader } from "../../src/site-header";
+import { SiteFooter } from "../../src/site-footer";
 import { Button } from "@/components/ui/button";
 
 export default function ApproachPage() {
@@ -30,6 +31,7 @@ export default function ApproachPage() {
           {approachPageModel.action} <span aria-hidden="true">→</span>
         </Button>
       </section>
+      <SiteFooter />
     </main>
   );
 }

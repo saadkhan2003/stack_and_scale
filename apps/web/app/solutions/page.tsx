@@ -1,5 +1,6 @@
 import { solutionsPageModel } from "../../src/solutions-content";
 import { SiteHeader } from "../../src/site-header";
+import { SiteFooter } from "../../src/site-footer";
 import { Button } from "@/components/ui/button";
 
 export default function SolutionsPage() {
@@ -41,6 +42,7 @@ export default function SolutionsPage() {
           Discuss your needs <span aria-hidden="true">→</span>
         </Button>
       </section>
+      <SiteFooter />
     </main>
   );
 }
