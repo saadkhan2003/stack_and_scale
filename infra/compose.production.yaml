@@ -238,7 +238,7 @@ services:
         limits: { cpus: "0.20", memory: 128M }
 
   clamav:
-    image: ${CLAMAV_IMAGE:-clamav/clamav:1.4.2}
+    image: clamav/clamav:1.4.2_base
     profiles: [phase14-storage]
     restart: unless-stopped
     # The daemon remains private; this network is only for signature updates.
@@ -252,8 +252,6 @@ services:
       timeout: 10s
       retries: 10
       start_period: 45s
-    security_opt: [no-new-privileges:true]
-    cap_drop: [ALL]
     deploy:
       resources:
         limits: { cpus: "0.75", memory: 2048M }
