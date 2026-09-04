@@ -238,7 +238,7 @@ services:
         limits: { cpus: "0.20", memory: 128M }
 
   clamav:
-    image: clamav/clamav:1.4.2_base
+    image: ${CLAMAV_IMAGE:-clamav/clamav:1.4.2}
     profiles: [phase14-storage]
     restart: unless-stopped
     # The daemon remains private; this network is only for signature updates.
@@ -248,15 +248,15 @@ services:
     healthcheck:
       test:
         ["CMD-SHELL", "clamdscan --config-file=/etc/clamav/clamd.conf --ping 1"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 90s
+      start_period: 45s
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     deploy:
       resources:
-        limits: { cpus: "0.75", memory: 1024M }
+        limits: { cpus: "0.75", memory: 2048M }
 
   documenso:
     image: ${DOCUMENSO_IMAGE:-documenso/documenso:2.0.0}

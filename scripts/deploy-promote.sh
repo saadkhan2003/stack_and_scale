@@ -61,6 +61,7 @@ rollback_on_failure() {
   # Preserve the failed service's startup error in the protected workflow log
   # before the rollback replaces the container.
   ssh "${remote}" "docker inspect --format '{{.Name}} exit={{.State.ExitCode}} error={{.State.Error}}' stack-and-scale-production-api-1 2>&1 || true; docker logs --tail 100 stack-and-scale-production-api-1 2>&1 || true" || true
+  ssh "${remote}" "docker inspect --format '{{.Name}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} exit={{.State.ExitCode}} error={{.State.Error}}' stack-and-scale-production-clamav-1 2>&1 || true; docker logs --tail 50 stack-and-scale-production-clamav-1 2>&1 || true" || true
   if [[ -n "${previous_tag}" && "${previous_tag}" != "${image_tag}" ]]; then
     echo "Promotion check failed; restoring previous compatible image ${previous_tag}." >&2
     ssh "${remote}" "IMAGE_TAG=${previous_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production ${compose_flags} up -d web api cms workers keycloak postgres" || true
