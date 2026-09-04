@@ -217,6 +217,8 @@ services:
         mc admin policy create local private-files /tmp/private-files-policy.json || true;
         mc admin policy attach local private-files --user "$$(cat /run/secrets/minio_api_access_key)"
     environment:
+      HOME: /tmp
+      MC_CONFIG_DIR: /tmp/.mc
       PRIVATE_STORAGE_S3_BUCKET: ${PRIVATE_STORAGE_S3_BUCKET:-stack-and-scale-private}
     networks: [storage]
     secrets:
