@@ -34,15 +34,21 @@ export default function HomePage() {
           </div>
           <div className="hero-trust-bar">
             <div className="trust-item">
-              <span className="trust-check" aria-hidden="true">✓</span>
+              <span className="trust-check" aria-hidden="true">
+                ✓
+              </span>
               <span>99.99% Uptime SLA</span>
             </div>
             <div className="trust-item">
-              <span className="trust-check" aria-hidden="true">✓</span>
+              <span className="trust-check" aria-hidden="true">
+                ✓
+              </span>
               <span>Zero Vendor Lock-in</span>
             </div>
             <div className="trust-item">
-              <span className="trust-check" aria-hidden="true">✓</span>
+              <span className="trust-check" aria-hidden="true">
+                ✓
+              </span>
               <span>Self-Hosted &amp; Sovereign</span>
             </div>
           </div>
@@ -103,7 +109,9 @@ export default function HomePage() {
                   <p>New lead routed to sales · Synced across inventory</p>
                 </div>
               </div>
-              <span className="text-xs font-mono text-[#80ddd1] hidden sm:inline-block">Active</span>
+              <span className="text-xs font-mono text-[#80ddd1] hidden sm:inline-block">
+                Active
+              </span>
             </article>
             <div className="ecosystem-core">
               <span>Stack &amp; Scale</span>
@@ -136,29 +144,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="approach" id="approach" aria-labelledby="approach-heading">
+      <section
+        className="approach"
+        id="approach"
+        aria-labelledby="approach-heading"
+      >
         <p className="eyebrow">The Stack &amp; Scale standard</p>
-        <h2 id="approach-heading">Clear thinking. Dependable delivery. Software that earns trust.</h2>
+        <h2 id="approach-heading">
+          Clear thinking. Dependable delivery. Software that earns trust.
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 relative z-10">
           <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
-            <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">01 · Sovereignty</div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">Zero Vendor Lock-in</h3>
+            <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">
+              01 · Sovereignty
+            </div>
+            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+              Zero Vendor Lock-in
+            </h3>
             <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
-              Complete ownership of your database, storage, and models. Self-hosted on your own hardware or VPC with no artificial per-seat fees.
+              Complete ownership of your database, storage, and models.
+              Self-hosted on your own hardware or VPC with no artificial
+              per-seat fees.
             </p>
           </div>
           <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
-            <div className="text-xs font-mono text-[#f4c542] tracking-widest uppercase mb-3">02 · Velocity</div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">Sub-Second Operations</h3>
+            <div className="text-xs font-mono text-[#f4c542] tracking-widest uppercase mb-3">
+              02 · Velocity
+            </div>
+            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+              Sub-Second Operations
+            </h3>
             <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
-              Real-time point-of-sale synchronization, automated event queues, and instant customer handoffs without latency bottlenecks.
+              Real-time point-of-sale synchronization, automated event queues,
+              and instant customer handoffs without latency bottlenecks.
             </p>
           </div>
           <div className="p-7 rounded-2xl bg-[#0f1d1d] border border-[#80ddd1]/15">
-            <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">03 · Security</div>
-            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">Defense in Depth</h3>
+            <div className="text-xs font-mono text-[#80ddd1] tracking-widest uppercase mb-3">
+              03 · Security
+            </div>
+            <h3 className="text-xl font-bold text-[#f5f2e8] mb-2">
+              Defense in Depth
+            </h3>
             <p className="text-sm text-[#f5f2e8]/70 leading-relaxed">
-              Automated ClamAV antivirus file scanning, encrypted private MinIO S3 object storage, and Keycloak enterprise single sign-on.
+              Automated ClamAV antivirus file scanning, encrypted private MinIO
+              S3 object storage, and Keycloak enterprise single sign-on.
             </p>
           </div>
         </div>

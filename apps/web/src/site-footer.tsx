@@ -20,7 +20,10 @@ export function SiteFooter() {
         <a href="/terms">Terms</a>
       </nav>
       <div>
-        <a className="button-secondary text-sm inline-flex items-center gap-2" href="/contact">
+        <a
+          className="button-secondary text-sm inline-flex items-center gap-2"
+          href="/contact"
+        >
           Contact us <span aria-hidden="true">→</span>
         </a>
       </div>
