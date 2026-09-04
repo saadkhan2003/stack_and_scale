@@ -32,14 +32,14 @@ export default function HomePage() {
 
       {/* 1. HERO SECTION WITH LINEAR HORIZON, GRID MESH & CONSOLE */}
       <section
-        className="relative pt-16 sm:pt-24 pb-16 sm:pb-20 overflow-hidden"
+        className="isolate relative pt-16 sm:pt-24 pb-16 sm:pb-20 overflow-hidden"
         id="top"
         aria-labelledby="hero-heading"
       >
         {/* Dynamic Architectural Mesh & Celestial Horizon Backdrop */}
         <HeroBackdrop />
 
-        <div className="w-full max-w-[1360px] mx-auto text-center px-5 sm:px-8 lg:px-12">
+        <div className="relative z-10 w-full max-w-[1360px] mx-auto text-center px-5 sm:px-8 lg:px-12">
           <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-md border border-white/10 bg-white/[0.03] text-xs text-zinc-300 backdrop-blur-md mb-6 sm:mb-8 hover:border-white/20 transition-colors linear-shimmer-badge max-w-[95vw]">
             <span
               className="w-2 h-2 rounded-full bg-[#80ddd1] animate-pulse shrink-0"
