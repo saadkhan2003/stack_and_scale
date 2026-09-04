@@ -17,6 +17,8 @@ import {
   InteractiveExploreStrip,
   AuroraBottomCta,
 } from "../src/landing-interactive";
+import { LinearFiguresSection } from "../src/linear-figures";
+import { StorefrontPricingSection } from "../src/storefront-pricing";
 
 export const metadata = metadataForPath(
   "/",
@@ -98,6 +100,9 @@ export default function HomePage() {
       {/* 2. ENTERPRISE CLIENT LOGOS */}
       <ClientLogos />
 
+      {/* 2.5 LINEAR ARCHITECTURAL WIREFRAME FIGURES (FIG 0.1 - FIG 0.3) */}
+      <LinearFiguresSection />
+
       {/* 3. CAPABILITIES / CORE SOLUTIONS */}
       <section
         className="max-w-6xl mx-auto px-6 py-24 border-t border-white/[0.06]"
@@ -151,6 +156,9 @@ export default function HomePage() {
 
       {/* 8. COMPARISON MATRIX (Stack & Scale vs Legacy SaaS vs DIY) */}
       <ComparisonMatrix />
+
+      {/* 8.5 DIRECT PRICING & SOVEREIGN STOREFRONT */}
+      <StorefrontPricingSection />
 
       {/* 9. TESTIMONIALS / CASE STUDIES */}
       <TestimonialCards />

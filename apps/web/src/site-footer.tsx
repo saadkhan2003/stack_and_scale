@@ -1,3 +1,5 @@
+"use client";
+
 export function SiteFooter() {
   return (
     <footer className="w-full border-t border-white/[0.08] bg-[#050505] text-zinc-400">
@@ -175,6 +177,17 @@ export function SiteFooter() {
             <a href="/cookies" className="hover:text-zinc-300 transition-colors">
               Cookies
             </a>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("open-cookie-settings"));
+                }
+              }}
+              className="hover:text-zinc-300 transition-colors cursor-pointer text-left"
+            >
+              Consent Settings
+            </button>
           </div>
         </div>
       </div>
