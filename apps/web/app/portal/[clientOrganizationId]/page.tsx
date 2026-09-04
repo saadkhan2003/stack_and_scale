@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { PortalControls } from "./portal-controls";
 
 export const metadata: Metadata = {
@@ -70,10 +71,13 @@ export default async function PortalPage(
     (access.role !== "client_admin" && access.role !== "client_member")
   ) {
     return (
-      <main className="site-shell">
-        <h1>Client portal</h1>
-        <p>Sign in with an authorized client account to access this portal.</p>
-        <Link href="/signin">Sign in</Link>
+      <main className="portal-unauth-container">
+        <div className="portal-unauth-card">
+          <p className="eyebrow">Client portal</p>
+          <h1>Client portal</h1>
+          <p>Sign in with an authorized client account to access this portal.</p>
+          <Button render={<Link href="/signin">Sign in</Link>} />
+        </div>
       </main>
     );
   }
@@ -89,7 +93,7 @@ export default async function PortalPage(
     nextAction: string | null;
   }>;
   return (
-    <main className="site-shell" aria-labelledby="portal-heading">
+    <main className="portal-layout" aria-labelledby="portal-heading">
       <p className="eyebrow">Client portal</p>
       <h1 id="portal-heading">Your work with Stack &amp; Scale</h1>
       <p>

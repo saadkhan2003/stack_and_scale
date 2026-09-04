@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 export const metadata: Metadata = {
   title: "Product account | Stack & Scale",
   robots: { index: false, follow: false },
@@ -55,12 +57,15 @@ export default async function ProductAccountPage(
   ]);
   if (!home)
     return (
-      <main className="site-shell">
-        <h1>Product account</h1>
-        <p>
-          Sign in with an authorized product-account member to access this area.
-        </p>
-        <Link href="/signin">Sign in</Link>
+      <main className="portal-unauth-container">
+        <div className="portal-unauth-card">
+          <p className="eyebrow">Product account</p>
+          <h1>Product account</h1>
+          <p>
+            Sign in with an authorized product-account member to access this area.
+          </p>
+          <Button render={<Link href="/signin">Sign in</Link>} />
+        </div>
       </main>
     );
   const account =
@@ -72,7 +77,7 @@ export default async function ProductAccountPage(
       ? account["display_name"]
       : "Your product account";
   return (
-    <main className="site-shell" aria-labelledby="account-heading">
+    <main className="portal-layout" aria-labelledby="account-heading">
       <p className="eyebrow">Product account</p>
       <h1 id="account-heading">{accountName}</h1>
       <p>
