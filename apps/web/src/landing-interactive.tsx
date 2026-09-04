@@ -23,6 +23,17 @@ import {
 import { Button } from "@/components/ui/button";
 
 // ---------------------------------------------------------------------------
+// 0. SPOTLIGHT MOUSE TRACKING HELPER (Linear & Vercel design system)
+// ---------------------------------------------------------------------------
+export function handleCardSpotlight(e: React.MouseEvent<HTMLElement>) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+  e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+}
+
+// ---------------------------------------------------------------------------
 // 1. HERO ARCHITECTURE CONSOLE (Vercel / Linear signature code window)
 // ---------------------------------------------------------------------------
 export function HeroConsole() {
@@ -123,7 +134,10 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
 
   return (
     <div className="hero-console-container">
-      <div className="hero-console-window">
+      <div 
+        className="hero-console-window spotlight-card shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
+        onMouseMove={handleCardSpotlight}
+      >
         {/* Window Chrome Header */}
         <div className="hero-console-header">
           <div className="window-dots" aria-hidden="true">
@@ -154,14 +168,14 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
           </div>
           <button
             type="button"
-            className="copy-button"
+            className="copy-button transition-transform active:scale-95"
             onClick={copyCode}
             aria-label="Copy code to clipboard"
           >
             {copied ? (
               <>
                 <Check className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs text-emerald-400">Copied</span>
+                <span className="text-xs text-emerald-400 font-medium">Copied</span>
               </>
             ) : (
               <>
@@ -174,9 +188,12 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
 
         {/* Window Content */}
         <div className="hero-console-body">
-          <pre className="code-block">
-            <code>{snippets[activeTab].code}</code>
-          </pre>
+          <div key={activeTab} className="code-block-wrapper tab-content-enter overflow-hidden">
+            <pre className="code-block">
+              <code>{snippets[activeTab].code}</code>
+              <span className="terminal-cursor" aria-hidden="true" />
+            </pre>
+          </div>
 
           {/* Right Floating Operational Telemetry Widget */}
           <div className="telemetry-widget">
@@ -187,19 +204,19 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
             <div className="telemetry-grid">
               <div className="telemetry-stat">
                 <span className="telemetry-label">Cluster Health</span>
-                <span className="telemetry-value text-emerald-400">99.999% SLA</span>
+                <span className="telemetry-value text-emerald-400 font-mono">99.999% SLA</span>
               </div>
               <div className="telemetry-stat">
                 <span className="telemetry-label">Edge Latency</span>
-                <span className="telemetry-value text-white">1.84ms median</span>
+                <span className="telemetry-value text-white font-mono">1.84ms median</span>
               </div>
               <div className="telemetry-stat">
                 <span className="telemetry-label">Active Nodes</span>
-                <span className="telemetry-value text-white">48 regions</span>
+                <span className="telemetry-value text-white font-mono">48 regions</span>
               </div>
               <div className="telemetry-stat">
                 <span className="telemetry-label">Security Shield</span>
-                <span className="telemetry-value text-teal-300">ClamAV Active</span>
+                <span className="telemetry-value text-teal-300 font-mono">ClamAV Active</span>
               </div>
             </div>
           </div>
@@ -230,7 +247,11 @@ export function ClientLogos() {
         </p>
         <div className="client-logos-grid">
           {clients.map((c) => (
-            <div key={c.name} className="client-logo-item">
+            <div 
+              key={c.name} 
+              className="client-logo-item spotlight-card"
+              onMouseMove={handleCardSpotlight}
+            >
               <span className="client-logo-text">{c.name}</span>
               <span className="client-logo-sub">{c.industry}</span>
             </div>
@@ -238,6 +259,58 @@ export function ClientLogos() {
         </div>
       </div>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 2.5. INTERACTIVE CAPABILITIES GRID
+// ---------------------------------------------------------------------------
+export function InteractiveCapabilitiesGrid({
+  capabilities,
+}: {
+  capabilities: readonly { title: string; description: string }[];
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {capabilities.map((capability, index) => (
+        <article
+          className="group relative p-8 rounded-2xl bg-[#09090b] border border-white/[0.08] hover:border-white/20 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex flex-col justify-between spotlight-card scroll-reveal"
+          key={capability.title}
+          onMouseMove={handleCardSpotlight}
+        >
+          <div className="absolute top-0 right-0 p-6 z-10">
+            <span className="font-mono text-xs text-zinc-600 group-hover:text-[#80ddd1] transition-colors">
+              0{index + 1}
+            </span>
+          </div>
+          <div className="relative z-10">
+            <div className="w-10 h-10 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-center mb-6 text-zinc-300 group-hover:text-white group-hover:border-white/25 transition-all">
+              {index === 0 && <span className="text-base font-mono">POS</span>}
+              {index === 1 && <span className="text-base font-mono">&lt;/&gt;</span>}
+              {index === 2 && <span className="text-base font-mono">AI</span>}
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-3 tracking-tight">
+              {capability.title}
+            </h3>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+              {capability.description}
+            </p>
+          </div>
+          <div className="relative z-10">
+            <a
+              href="#contact"
+              aria-label={`Explore ${capability.title}`}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-zinc-300 group-hover:text-white transition-colors"
+            >
+              <span>Deploy capability</span>
+              <span aria-hidden="true" className="group-hover:translate-x-0.5 transition-transform">
+                ↗
+              </span>
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -258,7 +331,10 @@ export function BentoGrid() {
 
       <div className="bento-grid">
         {/* Bento 1 - Big Feature Card */}
-        <div className="bento-card bento-span-2 bento-glow-teal">
+        <div 
+          className="bento-card bento-span-2 bento-glow-teal spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="bento-header">
             <div className="bento-icon-pill">
               <Database className="h-5 w-5 text-teal-300" />
@@ -287,7 +363,10 @@ export function BentoGrid() {
         </div>
 
         {/* Bento 2 - Autonomous Agents */}
-        <div className="bento-card bento-glow-purple">
+        <div 
+          className="bento-card bento-glow-purple spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="bento-header">
             <div className="bento-icon-pill">
               <Cpu className="h-5 w-5 text-indigo-400" />
@@ -306,7 +385,10 @@ export function BentoGrid() {
         </div>
 
         {/* Bento 3 - Security & Antivirus */}
-        <div className="bento-card bento-glow-cyan">
+        <div 
+          className="bento-card bento-glow-cyan spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="bento-header">
             <div className="bento-icon-pill">
               <Shield className="h-5 w-5 text-cyan-300" />
@@ -326,7 +408,10 @@ export function BentoGrid() {
         </div>
 
         {/* Bento 4 - Keycloak SSO */}
-        <div className="bento-card bento-glow-gold">
+        <div 
+          className="bento-card bento-glow-gold spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="bento-header">
             <div className="bento-icon-pill">
               <Lock className="h-5 w-5 text-amber-300" />
@@ -345,7 +430,10 @@ export function BentoGrid() {
         </div>
 
         {/* Bento 5 - Wide Observability Card */}
-        <div className="bento-card bento-span-2 bento-glow-blue">
+        <div 
+          className="bento-card bento-span-2 bento-glow-blue spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="bento-header">
             <div className="bento-icon-pill">
               <Layers className="h-5 w-5 text-blue-400" />
@@ -497,26 +585,38 @@ export function ArchitectureExplorer() {
       </div>
 
       <div className="architecture-grid">
-        <div className="architecture-steps">
-          <div className="steps-header">
-            <h3>{current.title}</h3>
-            <p className="steps-sub">{current.subtitle}</p>
-          </div>
+        <div 
+          className="architecture-steps spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
+          <div key={activeWorkflow} className="tab-content-enter">
+            <div className="steps-header">
+              <h3>{current.title}</h3>
+              <p className="steps-sub">{current.subtitle}</p>
+            </div>
 
-          <div className="steps-timeline">
-            {current.steps.map((step) => (
-              <div key={step.name} className="timeline-node">
-                <span className="timeline-badge">{step.num}</span>
-                <div className="timeline-content">
-                  <h4>{step.name}</h4>
-                  <p>{step.desc}</p>
+            <div className="steps-timeline">
+              {current.steps.map((step, sIdx) => (
+                <div 
+                  key={step.name} 
+                  className="timeline-node"
+                  style={{ animationDelay: `${sIdx * 70}ms` }}
+                >
+                  <span className="timeline-badge">{step.num}</span>
+                  <div className="timeline-content">
+                    <h4>{step.name}</h4>
+                    <p>{step.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="architecture-terminal">
+        <div 
+          className="architecture-terminal spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
           <div className="terminal-bar">
             <div className="window-dots" aria-hidden="true">
               <span className="dot dot-red" />
@@ -525,10 +625,11 @@ export function ArchitectureExplorer() {
             </div>
             <span className="terminal-title">bash — stack-and-scale cli</span>
           </div>
-          <div className="terminal-body">
+          <div key={activeWorkflow} className="terminal-body tab-content-enter">
             <div className="terminal-prompt-line">
               <span className="prompt-sign">$</span>
               <span className="prompt-cmd">{current.terminalCmd}</span>
+              <span className="terminal-cursor" aria-hidden="true" />
             </div>
             <pre className="terminal-output">{current.terminalOut}</pre>
           </div>
@@ -592,7 +693,10 @@ export function ComparisonMatrix() {
         </p>
       </div>
 
-      <div className="comparison-table-wrapper">
+      <div 
+        className="comparison-table-wrapper spotlight-card scroll-reveal"
+        onMouseMove={handleCardSpotlight}
+      >
         <table className="comparison-table">
           <thead>
             <tr>
@@ -604,7 +708,7 @@ export function ComparisonMatrix() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.feature}>
+              <tr key={row.feature} className="hover:bg-white/[0.02] transition-colors">
                 <td className="td-feature font-medium text-white">{row.feature}</td>
                 <td className="td-highlight">
                   <div className="flex items-center gap-2">
@@ -638,7 +742,11 @@ export function MetricsBar() {
     <section className="metrics-banner" aria-label="Key statistics">
       <div className="metrics-container">
         {stats.map((s) => (
-          <div key={s.label} className="metric-card">
+          <div 
+            key={s.label} 
+            className="metric-card spotlight-card scroll-reveal"
+            onMouseMove={handleCardSpotlight}
+          >
             <span className="metric-figure">{s.value}</span>
             <strong className="metric-name">{s.label}</strong>
             <p className="metric-sub">{s.desc}</p>
@@ -646,6 +754,56 @@ export function MetricsBar() {
         ))}
       </div>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 6.5. INTERACTIVE APPROACH & SOVEREIGNTY GRID
+// ---------------------------------------------------------------------------
+export function InteractiveApproachGrid() {
+  const pillars = [
+    {
+      num: "01 · Sovereignty",
+      color: "text-[#80ddd1]",
+      title: "Zero Vendor Lock-in",
+      desc: "Complete ownership of your database, storage, and models. Self-hosted on your own hardware or VPC with no artificial per-seat fees or telemetry tracking.",
+    },
+    {
+      num: "02 · Velocity",
+      color: "text-[#f4c542]",
+      title: "Sub-Second Operations",
+      desc: "Real-time point-of-sale synchronization, automated event queues, and instant customer handoffs without latency bottlenecks or multi-tenant degradation.",
+    },
+    {
+      num: "03 · Security",
+      color: "text-[#80ddd1]",
+      title: "Defense in Depth",
+      desc: "Automated ClamAV antivirus file scanning, encrypted private MinIO S3 object storage, and Keycloak enterprise single sign-on with multi-factor authentication.",
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {pillars.map((pillar) => (
+        <div
+          key={pillar.title}
+          className="p-8 rounded-2xl bg-[#09090b] border border-white/[0.08] hover:border-white/20 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex flex-col justify-between spotlight-card scroll-reveal"
+          onMouseMove={handleCardSpotlight}
+        >
+          <div className="relative z-10">
+            <div className={`text-xs font-mono ${pillar.color} tracking-widest uppercase mb-4 font-semibold`}>
+              {pillar.num}
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3 tracking-tight">
+              {pillar.title}
+            </h3>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              {pillar.desc}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -690,7 +848,11 @@ export function TestimonialCards() {
 
       <div className="testimonials-grid">
         {testimonials.map((t) => (
-          <div key={t.author} className="testimonial-card">
+          <div 
+            key={t.author} 
+            className="testimonial-card spotlight-card scroll-reveal"
+            onMouseMove={handleCardSpotlight}
+          >
             <div className="testimonial-metric-pill">{t.metric}</div>
             <p className="testimonial-quote">&ldquo;{t.quote}&rdquo;</p>
             <div className="testimonial-footer">
@@ -756,28 +918,80 @@ export function FaqAccordion() {
           return (
             <div
               key={faq.q}
-              className={`faq-item ${isOpen ? "open" : ""}`}
-              onClick={() => setOpenIndex(isOpen ? null : index)}
+              className={`faq-item spotlight-card ${isOpen ? "open" : ""}`}
+              onMouseMove={handleCardSpotlight}
             >
               <button
                 type="button"
                 className="faq-question-btn"
                 aria-expanded={isOpen}
+                onClick={() => setOpenIndex(isOpen ? null : index)}
               >
                 <span>{faq.q}</span>
                 <ChevronDown
-                  className={`faq-chevron ${isOpen ? "rotate-180" : ""}`}
+                  className={`faq-chevron ${isOpen ? "rotate-180 text-white" : ""}`}
                   aria-hidden="true"
                 />
               </button>
-              {isOpen && (
-                <div className="faq-answer">
-                  <p>{faq.a}</p>
+              <div className={`faq-answer-wrapper ${isOpen ? "open" : ""}`}>
+                <div className="faq-answer-inner">
+                  <div className="faq-answer">
+                    <p>{faq.a}</p>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 8.5. INTERACTIVE PRACTICE EXPLORATION STRIP
+// ---------------------------------------------------------------------------
+export function InteractiveExploreStrip() {
+  return (
+    <section className="max-w-6xl mx-auto px-6 py-16 border-t border-white/[0.06]" aria-labelledby="explore-heading">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#09090b] p-8 rounded-2xl border border-white/[0.08] hover:border-white/20 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.6)] spotlight-card scroll-reveal"
+        onMouseMove={handleCardSpotlight}
+      >
+        <div className="relative z-10">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#80ddd1] font-mono mb-2 font-semibold">
+            Explore the practice
+          </p>
+          <h2 id="explore-heading" className="text-2xl font-bold text-white">
+            Start where your operational friction is greatest.
+          </h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 relative z-10">
+          <a
+            href="/products"
+            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+          >
+            Products →
+          </a>
+          <a
+            href="/services"
+            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+          >
+            Services →
+          </a>
+          <a
+            href="/industries"
+            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+          >
+            Industries →
+          </a>
+          <a
+            href="/work"
+            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+          >
+            Our work →
+          </a>
+        </div>
       </div>
     </section>
   );
@@ -799,9 +1013,12 @@ export function AuroraBottomCta() {
     <section className="aurora-cta-section" id="contact">
       <div className="aurora-glow-backdrop" aria-hidden="true" />
 
-      <div className="aurora-content">
+      <div 
+        className="aurora-content spotlight-card scroll-reveal"
+        onMouseMove={handleCardSpotlight}
+      >
         <div className="aurora-pill">
-          <Sparkles className="h-4 w-4 text-teal-300" />
+          <Sparkles className="h-4 w-4 text-teal-300 animate-pulse" />
           <span>Ready to deploy your sovereign infrastructure?</span>
         </div>
 
@@ -819,7 +1036,7 @@ export function AuroraBottomCta() {
         <div className="aurora-buttons">
           <Button
             size="lg"
-            className="!bg-white !text-black hover:!bg-[#e5e5e5] font-semibold text-base px-6 h-12 shadow-[0_0_30px_rgba(255,255,255,0.25)]"
+            className="!bg-white !text-black hover:!bg-[#e5e5e5] font-semibold text-base px-6 h-12 shadow-[0_0_30px_rgba(255,255,255,0.25)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all duration-300"
             render={<a href="/contact" />}
           >
             <span>Book a platform demo</span>
@@ -829,7 +1046,7 @@ export function AuroraBottomCta() {
           <Button
             size="lg"
             variant="outline"
-            className="!bg-black/60 !text-white border-white/20 hover:!bg-white/10 font-medium text-base px-6 h-12"
+            className="!bg-black/60 !text-white border-white/20 hover:!bg-white/10 font-medium text-base px-6 h-12 transition-all duration-300"
             render={<a href="/solutions" />}
           >
             Explore technical solutions
@@ -843,7 +1060,7 @@ export function AuroraBottomCta() {
           </code>
           <button
             type="button"
-            className="cli-copy-btn"
+            className="cli-copy-btn transition-transform active:scale-90"
             onClick={copyInstall}
             aria-label="Copy CLI init command"
           >
