@@ -8,16 +8,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "!bg-white !text-black font-semibold hover:!bg-[#ededed]",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        default:
+          "!bg-white !text-black font-semibold hover:!bg-[#e5e5e5] border border-white/20 shadow-[0_1px_2px_rgba(0,0,0,0.2)]",
         secondary:
-          "!bg-[#1a1a1a] !text-[#ededed] border border-[rgba(255,255,255,0.15)] hover:!bg-[#262626] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "!bg-[#18181b] !text-[#f4f4f5] border border-white/15 hover:!bg-[#27272a] hover:!text-white hover:border-white/25 font-medium shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+        outline:
+          "!bg-black/50 !text-[#f4f4f5] border border-white/15 hover:!bg-white/[0.08] hover:!text-white hover:border-white/30 font-medium backdrop-blur-sm",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "!bg-transparent !text-[#a1a1aa] hover:!bg-white/[0.06] hover:!text-white font-medium",
+        linear:
+          "!bg-gradient-to-b !from-[#5e6ad2] !to-[#4c57c2] !text-white border border-white/20 font-semibold shadow-[0_0_24px_rgba(94,106,210,0.4)] hover:!from-[#6b77df] hover:!to-[#5561ce]",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-destructive/15 text-destructive hover:bg-destructive/25 border border-destructive/30 focus-visible:border-destructive/40 font-medium",
+        link: "text-primary underline-offset-4 hover:underline font-medium",
       },
       size: {
         default:
