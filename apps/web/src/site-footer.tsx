@@ -1,6 +1,25 @@
 "use client";
 
+import * as React from "react";
+
 export function SiteFooter() {
+  const [isStaff, setIsStaff] = React.useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    fetch("/api/auth/session")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && data?.authenticated) {
+          setIsStaff(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <footer className="w-full border-t border-white/[0.08] bg-[#050505] text-zinc-400">
       {/* Main Footer Container */}
@@ -119,25 +138,28 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Column 4: Governance & Portal */}
+          {/* Column 4: Platform (Public Only by Default) */}
           <div className="flex flex-col gap-3">
-            <span className="text-xs font-mono uppercase tracking-widest text-white font-semibold">
-              Platform
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono uppercase tracking-widest text-white font-semibold">
+                Platform
+              </span>
+              {isStaff && (
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  STAFF
+                </span>
+              )}
+            </div>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400">
-              <li>
-                <a href="/admin" className="hover:text-white transition-colors">
-                  Admin &amp; CMS Console
-                </a>
-              </li>
-              <li>
-                <a href="/portal/demo" className="hover:text-white transition-colors">
-                  Client Portal
-                </a>
-              </li>
+              {/* Public links always shown to everyone */}
               <li>
                 <a href="/#architecture" className="hover:text-white transition-colors">
                   Architecture &amp; Specs
+                </a>
+              </li>
+              <li>
+                <a href="/approach" className="hover:text-white transition-colors">
+                  Sovereign Cloud
                 </a>
               </li>
               <li>
@@ -150,6 +172,46 @@ export function SiteFooter() {
                   Contact Us →
                 </a>
               </li>
+
+              {/* Private employee/staff links: ONLY visible when authenticated as staff */}
+              {isStaff && (
+                <>
+                  <li className="pt-2.5 mt-1 border-t border-white/[0.08]">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-semibold block mb-1">
+                      Private Portals
+                    </span>
+                  </li>
+                  <li>
+                    <a href="/admin" className="hover:text-emerald-300 text-zinc-300 transition-colors flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                      Admin &amp; CMS Console
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/staff/leads" className="hover:text-emerald-300 text-zinc-300 transition-colors flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                      Staff CRM &amp; Leads
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/portal/demo" className="hover:text-emerald-300 text-zinc-300 transition-colors flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                      Client Project Portal
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/account/demo" className="hover:text-emerald-300 text-zinc-300 transition-colors flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                      Sovereign Account
+                    </a>
+                  </li>
+                  <li className="pt-1">
+                    <a href="/api/auth/logout" className="text-[11px] text-zinc-500 hover:text-rose-400 transition-colors">
+                      Sign Out (Staff)
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
