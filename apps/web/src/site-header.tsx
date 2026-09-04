@@ -26,6 +26,7 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
       <div className="flex items-center gap-2 sm:gap-2.5">
         {/* Desktop actions matching Vercel screenshot */}
         <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+          <SearchDialog entries={searchEntries} />
           <a
             href="/#contact"
             className="text-[13px] font-medium text-white/90 hover:text-white bg-black hover:bg-neutral-900 border border-white/[0.18] hover:border-white/[0.32] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap"
@@ -46,13 +47,9 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
           </a>
         </div>
 
-        {/* Global ⌘K Search dialog mounted for shortcut support */}
-        <div className="hidden">
-          <SearchDialog entries={searchEntries} />
-        </div>
-
-        {/* Mobile menu trigger and fast sign-in */}
+        {/* Mobile menu trigger, fast search, and sign-in */}
         <div className="flex items-center gap-1.5 md:hidden">
+          <SearchDialog entries={searchEntries} />
           <a
             href="/signin"
             className="text-xs font-medium text-neutral-400 hover:text-white px-2 py-1"
