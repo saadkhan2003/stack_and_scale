@@ -6,6 +6,23 @@ export const primaryNavigation = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
+export type SimpleNavItem = {
+  readonly label: string;
+  readonly href: string;
+  readonly hasSubmenu?: boolean;
+};
+
+/**
+ * Minimalist top navbar navigation matching Vercel's clean aesthetic:
+ * Products ∨ | Resources ∨ | Enterprise | Pricing
+ */
+export const simpleNavItems: readonly SimpleNavItem[] = [
+  { label: "Products", href: "/products", hasSubmenu: true },
+  { label: "Resources", href: "/resources", hasSubmenu: true },
+  { label: "Enterprise", href: "/approach", hasSubmenu: false },
+  { label: "Pricing", href: "/#storefront", hasSubmenu: false },
+] as const;
+
 export type NavSubItem = {
   readonly title: string;
   readonly href: string;
@@ -186,6 +203,39 @@ export const megaMenuConfig: Record<string, MegaMenuSection> = {
     navLabel: "Services",
     navHref: "/services",
     summary: "Engineering, automation, and bespoke software systems built for complete operational sovereignty.",
+    categories: [
+      {
+        id: "automation",
+        title: "Automation & AI",
+        summary: "Autonomous workflows, agent pipelines, and local edge sync engines.",
+        items: automationNavItems,
+      },
+      {
+        id: "web-development",
+        title: "Web Development",
+        summary: "Mission-critical applications, client portals, and blueprint architectures.",
+        items: webDevNavItems,
+      },
+      {
+        id: "case-studies",
+        title: "Case Studies",
+        summary: "Verified deployments running on live shop floors and enterprise operations.",
+        items: caseStudiesNavItems,
+      },
+    ],
+    featured: {
+      eyebrow: "Architecture Blueprint",
+      title: "Zero Per-Seat Taxes",
+      description: "Replace recurring SaaS seat costs with sovereign single-tenant infrastructure you own forever.",
+      href: "/approach",
+      badge: "Sovereign",
+      ctaText: "Read the Approach →",
+    },
+  },
+  "/resources": {
+    navLabel: "Resources",
+    navHref: "/resources",
+    summary: "Engineering blueprints, automation pipelines, and verified production case studies.",
     categories: [
       {
         id: "automation",

@@ -13,22 +13,54 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
       <div className="flex items-center gap-6 lg:gap-8">
         <a className="brand flex items-center" href="/" aria-label="Stack & Scale home">
           <img
-            src="/brand/stack-and-scale-logo-horizontal.png"
-            alt="Stack & Scale Technologies"
-            width={188}
-            height={40}
-            className="h-9 w-auto object-contain hover:opacity-95 transition-opacity"
+            src="/brand/stack-and-scale-mark.png"
+            alt="Stack & Scale"
+            width={24}
+            height={24}
+            className="h-5 w-5 sm:h-6 sm:w-6 object-contain hover:opacity-85 transition-opacity"
           />
         </a>
         <SiteDesktopNav currentPath={currentPath} />
       </div>
 
-      <div className="flex items-center gap-2.5 sm:gap-3">
-        <SearchDialog entries={searchEntries} />
-        <SiteMobileNav currentPath={currentPath} />
-        <a className="header-cta" href="/#contact">
-          Book a demo <span aria-hidden="true">↗</span>
-        </a>
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Desktop actions matching Vercel screenshot */}
+        <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+          <a
+            href="/#contact"
+            className="text-[13px] font-medium text-white/90 hover:text-white bg-black hover:bg-neutral-900 border border-white/[0.18] hover:border-white/[0.32] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap"
+          >
+            Get a Demo
+          </a>
+          <a
+            href="/signin"
+            className="text-[13px] font-medium text-[#888888] hover:text-white px-2.5 py-1.5 transition-colors duration-150 whitespace-nowrap"
+          >
+            Log In
+          </a>
+          <a
+            href="/#storefront"
+            className="text-[13px] font-semibold text-black bg-white hover:bg-[#e6e6e6] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap shadow-sm"
+          >
+            Sign Up
+          </a>
+        </div>
+
+        {/* Global ⌘K Search dialog mounted for shortcut support */}
+        <div className="hidden">
+          <SearchDialog entries={searchEntries} />
+        </div>
+
+        {/* Mobile menu trigger and fast sign-in */}
+        <div className="flex items-center gap-1.5 md:hidden">
+          <a
+            href="/signin"
+            className="text-xs font-medium text-neutral-400 hover:text-white px-2 py-1"
+          >
+            Log In
+          </a>
+          <SiteMobileNav currentPath={currentPath} />
+        </div>
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import * as React from "react";
 import { ArrowRight, ChevronDown, MenuIcon } from "lucide-react";
 import {
   primaryNavigation,
+  simpleNavItems,
   megaMenuConfig,
   automationNavItems,
   webDevNavItems,
@@ -90,26 +91,26 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
       className="desktop-navigation-wrapper hidden md:flex items-center"
       onMouseLeave={handleMouseLeave}
     >
-      {/* Desktop Main Navigation Bar */}
-      <nav aria-label="Main navigation" className="desktop-navigation flex items-center gap-1">
-        {primaryNavigation.map((item) => {
-          const hasMega = Boolean(megaMenuConfig[item.href]);
+      {/* Desktop Main Navigation Bar - Simple Vercel Minimalist Aesthetic */}
+      <nav aria-label="Main navigation" className="desktop-navigation flex items-center gap-6 lg:gap-7">
+        {simpleNavItems.map((item) => {
+          const hasMega = item.hasSubmenu && Boolean(megaMenuConfig[item.href]);
           const isOpen = activeMenu === item.href;
           const isCurrent = currentPath === item.href;
 
           return (
             <div
-              key={item.href}
+              key={item.label}
               className="relative flex items-center py-2"
               onMouseEnter={() => handleMouseEnter(item.href)}
             >
               <a
                 href={item.href}
                 className={cn(
-                  "nav-top-link flex items-center gap-1 text-[13px] px-3 py-1.5 rounded-md transition-colors font-normal select-none tracking-normal",
+                  "nav-top-link flex items-center gap-1 text-[14px] leading-none select-none tracking-normal transition-colors duration-150 py-1 font-normal",
                   isOpen || isCurrent
-                    ? "text-white bg-white/[0.08]"
-                    : "text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.04]",
+                    ? "text-white font-medium"
+                    : "text-[#888888] hover:text-white",
                 )}
                 aria-current={isCurrent ? "page" : undefined}
                 aria-expanded={hasMega ? isOpen : undefined}
@@ -124,8 +125,8 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                 {hasMega && (
                   <ChevronDown
                     className={cn(
-                      "w-3 h-3 text-neutral-500 transition-transform duration-200 ease-out",
-                      isOpen && "rotate-180 text-white",
+                      "w-3 h-3 text-[#777777] transition-transform duration-200 ease-out",
+                      isOpen ? "rotate-180 text-white" : "group-hover:text-white",
                     )}
                     aria-hidden="true"
                   />
@@ -425,13 +426,27 @@ export function SiteMobileNav({ currentPath }: NavProps) {
             </a>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2.5">
             <a
-              href="/#contact"
-              className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md bg-white text-black font-medium text-sm hover:bg-neutral-200 transition-colors"
+              href="/#storefront"
+              className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md bg-white text-black font-semibold text-sm hover:bg-neutral-200 transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              Book a demo ↗
+              Sign Up
+            </a>
+            <a
+              href="/#contact"
+              className="w-full inline-flex items-center justify-center py-2 px-4 rounded-md bg-black text-white border border-white/20 font-medium text-sm hover:bg-neutral-900 transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Get a Demo
+            </a>
+            <a
+              href="/signin"
+              className="w-full inline-flex items-center justify-center py-1.5 px-4 text-neutral-400 font-medium text-sm hover:text-white transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Log In
             </a>
           </div>
         </div>
