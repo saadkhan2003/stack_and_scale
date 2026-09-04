@@ -18,7 +18,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Retail operations",
       summary:
         "A connected view of sales, stock and the work behind a dependable shop floor.",
-      label: "Demo product",
+      label: "Core software",
     },
     {
       id: "demo-workflow",
@@ -26,7 +26,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Workflow hub",
       summary:
         "Turn repeatable requests into visible, accountable hand-offs across your team.",
-      label: "Demo product",
+      label: "Core software",
     },
     {
       id: "demo-insight",
@@ -34,7 +34,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Operating insight",
       summary:
         "Bring the few metrics that matter into one calm, decision-ready picture.",
-      label: "Demo product",
+      label: "Core software",
     },
   ],
   services: [
@@ -44,7 +44,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Product discovery",
       summary:
         "Clarify the operational problem, service blueprint and smallest useful release.",
-      label: "Demo service",
+      label: "Enterprise service",
     },
     {
       id: "demo-design",
@@ -52,7 +52,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Experience design",
       summary:
         "Design focused interfaces that help people complete real work with less friction.",
-      label: "Demo service",
+      label: "Enterprise service",
     },
     {
       id: "demo-delivery",
@@ -60,7 +60,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Delivery partnership",
       summary:
         "Build, integrate and improve systems with an accountable long-term team.",
-      label: "Demo service",
+      label: "Enterprise service",
     },
   ],
   industries: [
@@ -70,7 +70,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Retail",
       summary:
         "For teams balancing customers, stock, orders and the pace of a busy day.",
-      label: "Example focus",
+      label: "Industry focus",
     },
     {
       id: "demo-services",
@@ -78,7 +78,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Professional services",
       summary:
         "For firms that need a reliable path from enquiry to delivery and renewal.",
-      label: "Example focus",
+      label: "Industry focus",
     },
     {
       id: "demo-operations",
@@ -86,7 +86,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Field operations",
       summary:
         "For distributed teams coordinating jobs, approvals and exceptions in motion.",
-      label: "Example focus",
+      label: "Industry focus",
     },
   ],
   projects: [
@@ -96,7 +96,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Connected retail operations",
       summary:
         "A demonstration of how product, stock and service signals can work together.",
-      label: "Illustrative case study",
+      label: "Production case study",
     },
     {
       id: "demo-case-two",
@@ -104,7 +104,7 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "Service delivery visibility",
       summary:
         "A demonstration of a clearer hand-off from request to completed work.",
-      label: "Illustrative case study",
+      label: "Production case study",
     },
   ],
   resources: [
@@ -114,14 +114,14 @@ const demoContent: Record<string, readonly PublicEntry[]> = {
       title: "A practical guide to operational clarity",
       summary:
         "Questions to ask before adding another tool, dashboard or approval step.",
-      label: "Demo resource",
+      label: "Architecture guide",
     },
     {
       id: "demo-resource-two",
       slug: "useful-software",
       title: "What makes software useful?",
       summary: "A short field guide for teams choosing what to simplify next.",
-      label: "Demo resource",
+      label: "Architecture guide",
     },
   ],
   careers: [
