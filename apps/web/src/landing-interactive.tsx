@@ -317,6 +317,313 @@ export function InteractiveCapabilitiesGrid({
 // ---------------------------------------------------------------------------
 // 3. LINEAR BENTO GRID SECTION
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 3. LINEAR BENTO GRID SECTION (High-Craft Interactive Micro-UIs)
+// ---------------------------------------------------------------------------
+
+function BentoSyncVisualizer() {
+  const [isOffline, setIsOffline] = useState(false);
+  const [walCount, setWalCount] = useState(0);
+  const [syncState, setSyncState] = useState<"streaming" | "reconciling" | "synced">("synced");
+
+  const toggleOffline = () => {
+    if (!isOffline) {
+      setIsOffline(true);
+      setWalCount(8);
+      setSyncState("streaming");
+    } else {
+      setIsOffline(false);
+      setSyncState("reconciling");
+      setTimeout(() => {
+        setWalCount(0);
+        setSyncState("synced");
+      }, 1000);
+    }
+  };
+
+  return (
+    <div className="mt-4 rounded-xl bg-black/60 border border-white/[0.08] p-3 sm:p-4 flex flex-col gap-3 font-mono text-xs">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${isOffline ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+          <span className="text-[11px] uppercase tracking-wider text-neutral-400">
+            {isOffline ? "Mode: Offline POS Terminal" : "Mode: Realtime Active Mesh"}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={toggleOffline}
+          className="px-2.5 py-1 rounded-md text-[11px] bg-white/[0.06] hover:bg-white/[0.12] text-neutral-200 border border-white/10 transition-all font-sans cursor-pointer"
+        >
+          {isOffline ? "⚡ Reconnect to Postgres" : "Simulate Offline Store"}
+        </button>
+      </div>
+
+      {/* Sync Topology Architecture */}
+      <div className="grid grid-cols-1 sm:grid-cols-7 items-center gap-2 pt-2 border-t border-white/[0.06]">
+        {/* Local Node */}
+        <div className="col-span-3 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-white font-semibold text-[11px] flex items-center gap-1.5 font-sans">
+              <Database className="w-3.5 h-3.5 text-teal-400" />
+              SQLite Edge
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal-500/10 text-teal-300 border border-teal-500/20">
+              Terminal-01
+            </span>
+          </div>
+          <p className="text-[10px] text-neutral-400 font-sans">
+            {isOffline ? `WAL: +${walCount} deltas queued locally` : "WAL flushed · 0 uncommitted deltas"}
+          </p>
+        </div>
+
+        {/* Sync Pipe */}
+        <div className="col-span-1 flex flex-col items-center justify-center py-1">
+          <span className="text-neutral-500 text-[12px] font-mono">
+            {isOffline ? "⏸" : "⇄"}
+          </span>
+          <span className="text-[9px] text-neutral-500 text-center leading-none font-mono">
+            {isOffline ? "queued" : "0.8ms"}
+          </span>
+        </div>
+
+        {/* Master Node */}
+        <div className="col-span-3 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-white font-semibold text-[11px] flex items-center gap-1.5 font-sans">
+              <Server className="w-3.5 h-3.5 text-indigo-400" />
+              PostgreSQL Master
+            </span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+              Leader Node
+            </span>
+          </div>
+          <p className="text-[10px] text-neutral-400 font-sans">
+            {syncState === "reconciling" ? "Atomic conflict-free merge..." : "Consensus verified · 0 write locks"}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10px] text-neutral-400">
+        <span className="text-emerald-400">✓ Cryptographic monotonic delta verification</span>
+        <span className="text-neutral-500">Auto-failover enabled</span>
+      </div>
+    </div>
+  );
+}
+
+function BentoDagVisualizer() {
+  const [activeStage, setActiveStage] = useState<number | null>(null);
+  const [isFiring, setIsFiring] = useState(false);
+
+  const fireEvent = () => {
+    if (isFiring) return;
+    setIsFiring(true);
+    setActiveStage(0);
+    setTimeout(() => setActiveStage(1), 350);
+    setTimeout(() => setActiveStage(2), 750);
+    setTimeout(() => {
+      setIsFiring(false);
+      setActiveStage(null);
+    }, 1500);
+  };
+
+  return (
+    <div className="mt-4 rounded-xl bg-black/60 border border-white/[0.08] p-3 flex flex-col gap-2.5 font-mono text-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold">
+          Execution DAG Pipeline
+        </span>
+        <button
+          type="button"
+          disabled={isFiring}
+          onClick={fireEvent}
+          className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition-colors disabled:opacity-50 cursor-pointer font-sans"
+        >
+          {isFiring ? "Running..." : "⚡ Fire Test Event"}
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className={`p-2 rounded-lg border transition-all flex items-center justify-between text-[11px] ${activeStage === 0 ? "bg-indigo-950/50 border-indigo-500/60 text-white" : "bg-white/[0.02] border-white/[0.06] text-neutral-400"}`}>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.06] font-mono">01</span>
+            <span className="font-sans">Webhook Ingestion</span>
+          </div>
+          <span className="text-[10px] font-mono text-neutral-400">
+            {activeStage === 0 ? "200 OK · 0.2ms" : "idempotent"}
+          </span>
+        </div>
+
+        <div className={`p-2 rounded-lg border transition-all flex items-center justify-between text-[11px] ${activeStage === 1 ? "bg-indigo-950/50 border-indigo-500/60 text-white" : "bg-white/[0.02] border-white/[0.06] text-neutral-400"}`}>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.06] font-mono">02</span>
+            <span className="font-sans">Agentic Rule Engine</span>
+          </div>
+          <span className="text-[10px] font-mono text-neutral-400">
+            {activeStage === 1 ? "Evaluating · 0.5ms" : "deterministic"}
+          </span>
+        </div>
+
+        <div className={`p-2 rounded-lg border transition-all flex items-center justify-between text-[11px] ${activeStage === 2 ? "bg-emerald-950/50 border-emerald-500/60 text-emerald-200" : "bg-white/[0.02] border-white/[0.06] text-neutral-400"}`}>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/[0.06] font-mono">03</span>
+            <span className="font-sans">Atomic Commit &amp; Notification</span>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-400">
+            {activeStage === 2 ? "Dispatched · 0.8ms" : "acknowledged"}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BentoSecurityScanner() {
+  const [isScanning, setIsScanning] = useState(false);
+
+  const runScan = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+    }, 700);
+  };
+
+  return (
+    <div className="mt-4 rounded-xl bg-black/60 border border-white/[0.08] p-3 flex flex-col gap-2 font-mono text-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5 text-cyan-400" />
+          MinIO Private S3 Vault
+        </span>
+        <button
+          type="button"
+          onClick={runScan}
+          disabled={isScanning}
+          className="px-2 py-0.5 rounded text-[10px] bg-cyan-500/15 text-cyan-300 hover:bg-cyan-500/25 border border-cyan-500/30 transition-colors cursor-pointer font-sans"
+        >
+          {isScanning ? "Scanning..." : "Rescan File"}
+        </button>
+      </div>
+
+      <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-1 text-[11px]">
+        <div className="flex items-center justify-between text-neutral-300">
+          <span className="font-semibold text-white truncate max-w-[160px] font-sans">custody_manifest_92a.pdf</span>
+          <span className="text-[10px] text-neutral-500 font-mono">412 KB</span>
+        </div>
+        <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono">
+          <span>SHA-256</span>
+          <span className="text-cyan-300">e3b0c44298fc1c...</span>
+        </div>
+        <div className="flex items-center justify-between text-[10px] pt-1 border-t border-white/[0.06] font-sans">
+          <span className="text-neutral-400">ClamAV Quarantine HUD</span>
+          <span className="text-emerald-400 font-semibold font-mono">
+            {isScanning ? "Inspecting signatures..." : "✓ PASS (0 Threats)"}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] text-neutral-500 font-sans">
+        <span>AES-256 Encrypted</span>
+        <span className="text-neutral-400 font-mono">S3-Compatible</span>
+      </div>
+    </div>
+  );
+}
+
+function BentoKeycloakToken() {
+  const [showRaw, setShowRaw] = useState(false);
+
+  return (
+    <div className="mt-4 rounded-xl bg-black/60 border border-white/[0.08] p-3 flex flex-col gap-2 font-mono text-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-semibold flex items-center gap-1.5">
+          <Lock className="w-3.5 h-3.5 text-amber-400" />
+          OIDC / PKCE Bearer JWT
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowRaw(!showRaw)}
+          className="px-2 py-0.5 rounded text-[10px] bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 border border-amber-500/30 transition-colors cursor-pointer font-sans"
+        >
+          {showRaw ? "Show Claims" : "Inspect Token"}
+        </button>
+      </div>
+
+      <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px]">
+        {showRaw ? (
+          <p className="text-[10px] text-amber-300/80 break-all font-mono leading-tight">
+            eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfODkyYiIsIm9yZyI6InN0YWNrIn0...
+          </p>
+        ) : (
+          <div className="flex flex-col gap-0.5 text-[10px]">
+            <div className="flex justify-between">
+              <span className="text-neutral-400">sub:</span>
+              <span className="text-white font-mono">usr_sovereign_741b</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-400">mfa_auth:</span>
+              <span className="text-emerald-400 font-mono">fido2_hardware_token</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-400">roles:</span>
+              <span className="text-amber-300 font-mono">[admin, supervisor]</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between text-[10px] text-neutral-400 font-sans">
+        <span className="text-emerald-400">✓ Valid Signature: RS256</span>
+        <span className="text-neutral-500 font-mono">Keycloak 24</span>
+      </div>
+    </div>
+  );
+}
+
+function BentoTelemetryHud() {
+  return (
+    <div className="mt-4 rounded-xl bg-black/60 border border-white/[0.08] p-3 sm:p-4 flex flex-col gap-3 font-mono text-xs">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold flex items-center gap-1.5 font-sans">
+          <Layers className="w-3.5 h-3.5 text-blue-400" />
+          Native Prometheus &amp; Loki Metrics Exporter
+        </span>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          ● 100% Ingestion SLA
+        </span>
+      </div>
+
+      {/* Regional Mesh Table */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+        <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-300 font-semibold font-mono">us-east-cluster</span>
+            <span className="text-emerald-400 text-[10px] font-mono">0.4ms</span>
+          </div>
+          <span className="text-[10px] text-neutral-500 font-sans">12/12 Scrape Targets</span>
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-300 font-semibold font-mono">eu-central-sync</span>
+            <span className="text-emerald-400 text-[10px] font-mono">0.8ms</span>
+          </div>
+          <span className="text-[10px] text-neutral-500 font-sans">Loki: 32.4 MB/s</span>
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06] flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-300 font-semibold font-mono">ap-south-edge</span>
+            <span className="text-emerald-400 text-[10px] font-mono">1.1ms</span>
+          </div>
+          <span className="text-[10px] text-neutral-500 font-sans">Alert SLA: &lt; 250ms</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function BentoGrid() {
   return (
     <section className="bento-section" id="platform">
@@ -348,18 +655,7 @@ export function BentoGrid() {
             conflicts with master PostgreSQL without human intervention.
           </p>
 
-          <div className="bento-mockup-bar">
-            <div className="mockup-pill text-emerald-400">
-              <span className="mockup-indicator bg-emerald-400" />
-              Terminal Online · 48ms Delta Ack
-            </div>
-            <div className="mockup-pill text-neutral-300">
-              <span>0 Conflicts Detected</span>
-            </div>
-            <div className="mockup-pill text-teal-300">
-              <span>SQLite ↔ PostgreSQL Master</span>
-            </div>
-          </div>
+          <BentoSyncVisualizer />
         </div>
 
         {/* Bento 2 - Autonomous Agents */}
@@ -378,10 +674,8 @@ export function BentoGrid() {
             Deploy deterministic agentic pipelines with human-in-the-loop validation. Trigger
             automated workflows from customer bookings, invoices, or inventory thresholds.
           </p>
-          <div className="bento-metric-box">
-            <span className="metric-number">0.8ms</span>
-            <span className="metric-caption">Event Queue Dispatch</span>
-          </div>
+
+          <BentoDagVisualizer />
         </div>
 
         {/* Bento 3 - Security & Antivirus */}
@@ -401,10 +695,8 @@ export function BentoGrid() {
             with automated definition updates. Malicious payloads are quarantined before hitting
             database records.
           </p>
-          <div className="bento-metric-box">
-            <span className="metric-number">100%</span>
-            <span className="metric-caption">Zero Trust File Verification</span>
-          </div>
+
+          <BentoSecurityScanner />
         </div>
 
         {/* Bento 4 - Keycloak SSO */}
@@ -423,10 +715,8 @@ export function BentoGrid() {
             No external cloud auth lock-in. Full OIDC authentication flow with PKCE verification,
             hardware token support, and granular role-based access for staff and clients.
           </p>
-          <div className="bento-metric-box">
-            <span className="metric-number">256-bit</span>
-            <span className="metric-caption">Encrypted Session Tokens</span>
-          </div>
+
+          <BentoKeycloakToken />
         </div>
 
         {/* Bento 5 - Wide Observability Card */}
@@ -446,20 +736,8 @@ export function BentoGrid() {
             distributed traces, and stream structured logs directly to your central operations panel
             with automated anomaly alerts.
           </p>
-          <div className="bento-stats-row">
-            <div className="bento-inline-stat">
-              <span className="stat-title">Prometheus Targets</span>
-              <span className="stat-value">12 / 12 Healthy</span>
-            </div>
-            <div className="bento-inline-stat">
-              <span className="stat-title">Loki Ingestion</span>
-              <span className="stat-value">32.4 MB/s</span>
-            </div>
-            <div className="bento-inline-stat">
-              <span className="stat-title">Grafana Alert SLA</span>
-              <span className="stat-value">&lt; 250ms</span>
-            </div>
-          </div>
+
+          <BentoTelemetryHud />
         </div>
       </div>
     </section>

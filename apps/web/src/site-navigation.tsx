@@ -1,16 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, ChevronDown, MenuIcon } from "lucide-react";
+import { ChevronDown, MenuIcon } from "lucide-react";
 import {
   primaryNavigation,
   simpleNavItems,
-  megaMenuConfig,
+  linearDropdowns,
+  type LinearDropdownData,
   automationNavItems,
   webDevNavItems,
   caseStudiesNavItems,
   productsNavItems,
-  type MegaMenuSection,
 } from "./navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +37,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
     }
-    if (megaMenuConfig[href]) {
+    if (linearDropdowns[href]) {
       setActiveMenu(href);
     } else {
       setActiveMenu(null);
@@ -81,51 +81,56 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
     };
   }, []);
 
-  const currentSection: MegaMenuSection | undefined = activeMenu
-    ? megaMenuConfig[activeMenu]
+  const activeDropdown: LinearDropdownData | undefined = activeMenu
+    ? linearDropdowns[activeMenu]
     : undefined;
 
   return (
     <div
       ref={navContainerRef}
-      className="desktop-navigation-wrapper hidden md:flex items-center"
+      className="desktop-navigation-wrapper relative hidden md:flex items-center justify-center"
       onMouseLeave={handleMouseLeave}
     >
-      {/* Desktop Main Navigation Bar - Simple Vercel Minimalist Aesthetic */}
-      <nav aria-label="Main navigation" className="desktop-navigation flex items-center gap-6 lg:gap-7">
+      {/* Centered Floating Pill Capsule matching Linear */}
+      <nav
+        aria-label="Main navigation"
+        className="desktop-navigation flex items-center gap-0.5 bg-[#09090b]/80 border border-white/[0.08] hover:border-white/[0.16] backdrop-blur-xl rounded-full px-2 py-1 transition-all shadow-[0_2px_12px_rgba(0,0,0,0.5)]"
+      >
         {simpleNavItems.map((item) => {
-          const hasMega = item.hasSubmenu && Boolean(megaMenuConfig[item.href]);
+          const hasDropdown = item.hasSubmenu && Boolean(linearDropdowns[item.href]);
           const isOpen = activeMenu === item.href;
           const isCurrent = currentPath === item.href;
 
           return (
             <div
               key={item.label}
-              className="relative flex items-center py-2"
+              className="relative flex items-center"
               onMouseEnter={() => handleMouseEnter(item.href)}
             >
               <a
                 href={item.href}
                 className={cn(
-                  "nav-top-link flex items-center gap-1 text-[14px] leading-none select-none tracking-normal transition-colors duration-150 py-1 font-normal",
-                  isOpen || isCurrent
+                  "nav-top-link flex items-center gap-1 text-[13px] leading-none select-none tracking-tight transition-all duration-150 px-3 py-1.5 rounded-full font-normal",
+                  isOpen
+                    ? "text-white bg-white/[0.08] font-medium"
+                    : isCurrent
                     ? "text-white font-medium"
-                    : "text-[#888888] hover:text-white",
+                    : "text-neutral-400 hover:text-white hover:bg-white/[0.04]",
                 )}
                 aria-current={isCurrent ? "page" : undefined}
-                aria-expanded={hasMega ? isOpen : undefined}
-                aria-haspopup={hasMega ? "menu" : undefined}
+                aria-expanded={hasDropdown ? isOpen : undefined}
+                aria-haspopup={hasDropdown ? "menu" : undefined}
                 onClick={() => {
-                  if (hasMega && isOpen) {
+                  if (hasDropdown && isOpen) {
                     setActiveMenu(null);
                   }
                 }}
               >
                 <span>{item.label}</span>
-                {hasMega && (
+                {hasDropdown && (
                   <ChevronDown
                     className={cn(
-                      "w-3 h-3 text-[#777777] transition-transform duration-200 ease-out",
+                      "w-3 h-3 text-neutral-500 transition-transform duration-200 ease-out",
                       isOpen ? "rotate-180 text-white" : "group-hover:text-white",
                     )}
                     aria-hidden="true"
@@ -137,125 +142,123 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
         })}
       </nav>
 
-      {/* Desktop Mega-Menu Dropdown Panel - Solid Opaque Background & Compact Linear Aesthetic */}
+      {/* Linear-style floating dropdown card (anchored under the pill) */}
       <div
         className={cn(
-          "mega-menu-panel absolute top-full left-0 w-full bg-[#09090b] border-b border-white/10 shadow-[0_30px_70px_rgba(0,0,0,0.98)] transition-all duration-200 z-50 overflow-hidden",
-          activeMenu
-            ? "opacity-100 translate-y-0 pointer-events-auto visible max-h-[min(460px,calc(100vh-70px))] overflow-y-auto"
-            : "opacity-0 -translate-y-1 pointer-events-none invisible max-h-0",
+          "linear-dropdown-panel absolute top-[calc(100%+10px)] left-1/2 -translate-x-1/2 w-[760px] max-w-[94vw] bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/[0.12] rounded-2xl p-5 shadow-[0_24px_64px_rgba(0,0,0,0.95)] z-50 text-left transition-all duration-200",
+          activeDropdown && activeMenu
+            ? "opacity-100 translate-y-0 pointer-events-auto visible"
+            : "opacity-0 -translate-y-2 pointer-events-none invisible",
         )}
         onMouseEnter={handlePanelMouseEnter}
         onMouseLeave={handleMouseLeave}
         role="region"
         aria-label="Navigation sub-menu"
       >
-        {/* Subtle top hairline */}
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        {/* Subtle top hairline highlight */}
+        <div className="absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
 
-        {currentSection && (
-          <div className="max-w-[1120px] mx-auto px-6 py-4">
-            {/* Header / Summary Bar */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-200 bg-white/[0.08] border border-white/[0.12] px-2 py-0.5 rounded">
-                  {currentSection.navLabel}
+        {activeDropdown && (
+          <>
+            {/* 3 Columns Layout */}
+            <div className="grid grid-cols-12 gap-5 pb-4 border-b border-white/[0.08]">
+              {/* Col 1 */}
+              <div className="col-span-5 flex flex-col gap-2.5">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-semibold px-2">
+                  Featured Capabilities
                 </span>
-                <p className="text-xs text-neutral-400 font-normal">
-                  {currentSection.summary}
-                </p>
+                <div className="flex flex-col gap-1">
+                  {activeDropdown.col1.map((item) => (
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      onClick={() => setActiveMenu(null)}
+                      className="group/item flex flex-col p-2.5 rounded-xl hover:bg-white/[0.05] transition-all duration-150"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-white/95 group-hover/item:text-white transition-colors">
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-neutral-500 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all">
+                          →
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-neutral-400 group-hover/item:text-neutral-300 leading-relaxed mt-0.5 transition-colors font-normal">
+                        {item.description}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Col 2 */}
+              <div className="col-span-4 flex flex-col gap-2.5">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-semibold px-2">
+                  Infrastructure
+                </span>
+                <div className="flex flex-col gap-1">
+                  {activeDropdown.col2.map((item) => (
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      onClick={() => setActiveMenu(null)}
+                      className="group/item flex flex-col p-2.5 rounded-xl hover:bg-white/[0.05] transition-all duration-150"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-white/95 group-hover/item:text-white transition-colors">
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-neutral-500 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-0.5 transition-all">
+                          →
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-neutral-400 group-hover/item:text-neutral-300 leading-relaxed mt-0.5 transition-colors font-normal">
+                        {item.description}
+                      </p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Links Column */}
+              <div className="col-span-3 flex flex-col gap-2.5 pl-3 border-l border-white/[0.08]">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
+                  Explore
+                </span>
+                <div className="flex flex-col gap-1">
+                  {activeDropdown.quickLinks.map((link) => (
+                    <a
+                      key={link.title}
+                      href={link.href}
+                      onClick={() => setActiveMenu(null)}
+                      className="text-[12px] text-neutral-400 hover:text-white hover:translate-x-0.5 transition-all py-1 font-medium flex items-center justify-between group/link"
+                    >
+                      <span>{link.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Announcement Bar */}
+            <div className="pt-3 px-2 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5 text-neutral-300">
+                <span className="text-[9px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-white border border-white/15">
+                  {activeDropdown.bottomBar.badge}
+                </span>
+                <span className="text-[12px] text-neutral-300 font-normal">
+                  {activeDropdown.bottomBar.text}
+                </span>
               </div>
               <a
-                href={currentSection.navHref}
-                className="text-xs text-neutral-400 hover:text-white flex items-center gap-1.5 group/all transition-colors font-medium"
+                href={activeDropdown.bottomBar.ctaHref}
                 onClick={() => setActiveMenu(null)}
+                className="text-[12px] text-white hover:text-neutral-200 font-medium inline-flex items-center gap-1 group/bar"
               >
-                <span>View all {currentSection.navLabel}</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover/all:translate-x-0.5 transition-transform" />
+                <span>{activeDropdown.bottomBar.ctaText}</span>
               </a>
             </div>
-
-            {/* Categorized Columns - 3 Columns (2 Categories + 1 Featured Card) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-stretch">
-              {currentSection.categories.map((category) => (
-                <div key={category.id} className="flex flex-col gap-2">
-                  {/* Category Title with badge counter */}
-                  <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06]">
-                    <h3 className="text-[11px] font-semibold tracking-wider text-neutral-400 uppercase font-mono">
-                      {category.title}
-                    </h3>
-                    <span className="text-[10px] text-neutral-500 font-mono">
-                      0{category.items.length}
-                    </span>
-                  </div>
-                  {category.summary && (
-                    <p className="text-[11px] text-neutral-500 line-clamp-1 mb-0.5">
-                      {category.summary}
-                    </p>
-                  )}
-
-                  {/* Sub-Menu Items */}
-                  <div className="flex flex-col gap-0.5">
-                    {category.items.map((subItem) => (
-                      <a
-                        key={subItem.title}
-                        href={subItem.href}
-                        className="group/item flex flex-col p-2 -mx-2 rounded-md hover:bg-white/[0.06] transition-all duration-150"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-medium text-neutral-200 group-hover/item:text-white transition-colors">
-                            {subItem.title}
-                          </span>
-                          {subItem.badge && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/[0.06] border border-white/10 text-neutral-400 group-hover/item:text-neutral-200 group-hover/item:border-white/25 transition-colors">
-                              {subItem.badge}
-                            </span>
-                          )}
-                        </div>
-                        {subItem.description && (
-                          <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5 group-hover/item:text-neutral-300 transition-colors leading-relaxed font-normal">
-                            {subItem.description}
-                          </p>
-                        )}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Featured Spotlight Card */}
-              {currentSection.featured && (
-                <div className="flex flex-col justify-between p-4 rounded-lg bg-[#0e0e12] border border-white/10 hover:border-white/20 transition-all group/card">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-medium">
-                        {currentSection.featured.eyebrow}
-                      </span>
-                      {currentSection.featured.badge && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                          {currentSection.featured.badge}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-xs font-semibold text-white group-hover/card:text-white transition-colors">
-                      {currentSection.featured.title}
-                    </h4>
-                    <p className="text-[11px] text-neutral-400 leading-relaxed font-normal">
-                      {currentSection.featured.description}
-                    </p>
-                  </div>
-                  <a
-                    href={currentSection.featured.href}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-white hover:text-neutral-200 mt-3 pt-2.5 border-t border-white/[0.08] group/feat transition-colors"
-                    onClick={() => setActiveMenu(null)}
-                  >
-                    <span>{currentSection.featured.ctaText || "Explore Details →"}</span>
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -10,40 +10,42 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
   const searchEntries = await getPublicSearchIndex();
   return (
     <header className="site-header">
-      <div className="flex items-center gap-6 lg:gap-8">
-        <a className="brand flex items-center" href="/" aria-label="Stack & Scale home">
+      {/* Left zone: Brand */}
+      <div className="flex items-center gap-3">
+        <a className="brand flex items-center gap-2 text-white/95 hover:text-white transition-opacity" href="/" aria-label="Stack & Scale home">
           <img
             src="/brand/stack-and-scale-mark.png"
             alt="Stack & Scale"
-            width={24}
-            height={24}
-            className="h-5 w-5 sm:h-6 sm:w-6 object-contain hover:opacity-85 transition-opacity"
+            width={22}
+            height={22}
+            className="h-5 w-5 object-contain"
           />
+          <span className="font-semibold text-[14px] tracking-tight text-white hidden sm:inline-block">
+            Stack &amp; Scale
+          </span>
         </a>
+      </div>
+
+      {/* Center zone: Linear Floating Capsule Navigation */}
+      <div className="hidden md:flex items-center justify-center">
         <SiteDesktopNav currentPath={currentPath} />
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-2.5">
-        {/* Desktop actions matching Vercel screenshot */}
-        <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+      {/* Right zone: Actions matching Linear */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="hidden md:flex items-center gap-2.5">
           <SearchDialog entries={searchEntries} />
           <a
-            href="/#contact"
-            className="text-[13px] font-medium text-white/90 hover:text-white bg-black hover:bg-neutral-900 border border-white/[0.18] hover:border-white/[0.32] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap"
-          >
-            Get a Demo
-          </a>
-          <a
             href="/signin"
-            className="text-[13px] font-medium text-[#888888] hover:text-white px-2.5 py-1.5 transition-colors duration-150 whitespace-nowrap"
+            className="text-[13px] font-medium text-neutral-400 hover:text-white transition-colors px-2 py-1 whitespace-nowrap"
           >
-            Log In
+            Log in
           </a>
           <a
-            href="/#storefront"
-            className="text-[13px] font-semibold !text-black !bg-white hover:!bg-[#e6e6e6] px-3.5 py-1.5 rounded-md transition-all duration-150 whitespace-nowrap shadow-sm"
+            href="/cloud"
+            className="text-[13px] font-medium text-black bg-white hover:bg-neutral-200 px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap shadow-sm"
           >
-            Sign Up
+            Sign up
           </a>
         </div>
 
@@ -54,7 +56,7 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
             href="/signin"
             className="text-xs font-medium text-neutral-400 hover:text-white px-2 py-1"
           >
-            Log In
+            Log in
           </a>
           <SiteMobileNav currentPath={currentPath} />
         </div>

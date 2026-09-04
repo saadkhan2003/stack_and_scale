@@ -13,15 +13,122 @@ export type SimpleNavItem = {
 };
 
 /**
- * Minimalist top navbar navigation matching Vercel's clean aesthetic:
- * Products ∨ | Resources ∨ | Enterprise | Pricing
+ * Top navbar navigation matching Linear's exact floating pill aesthetic:
+ * Product ∨ | Resources ∨ | Customers | Pricing | Cloud Apps | Contact
  */
 export const simpleNavItems: readonly SimpleNavItem[] = [
-  { label: "Products", href: "/products", hasSubmenu: true },
+  { label: "Product", href: "/products", hasSubmenu: true },
   { label: "Resources", href: "/resources", hasSubmenu: true },
-  { label: "Enterprise", href: "/approach", hasSubmenu: false },
-  { label: "Pricing", href: "/#storefront", hasSubmenu: false },
+  { label: "Customers", href: "/work", hasSubmenu: false },
+  { label: "Pricing", href: "/#pricing", hasSubmenu: false },
+  { label: "Cloud Apps", href: "/cloud", hasSubmenu: false },
+  { label: "Contact", href: "/#contact", hasSubmenu: false },
 ] as const;
+
+export type LinearDropdownItem = {
+  readonly title: string;
+  readonly href: string;
+  readonly description: string;
+  readonly badge?: string;
+};
+
+export type LinearQuickLink = {
+  readonly title: string;
+  readonly href: string;
+  readonly external?: boolean;
+};
+
+export type LinearDropdownData = {
+  readonly col1: readonly LinearDropdownItem[];
+  readonly col2: readonly LinearDropdownItem[];
+  readonly quickLinks: readonly LinearQuickLink[];
+  readonly bottomBar: {
+    readonly badge: string;
+    readonly text: string;
+    readonly ctaText: string;
+    readonly ctaHref: string;
+  };
+};
+
+export const linearDropdowns: Record<string, LinearDropdownData> = {
+  "/products": {
+    col1: [
+      {
+        title: "Retail POS & Edge Sync",
+        href: "/products/retail-operations",
+        description: "Offline-first shop floor register with SQLite sync",
+      },
+      {
+        title: "Autonomous CRM & Pipeline",
+        href: "/cloud",
+        description: "High-density deal Kanban and qualification",
+      },
+    ],
+    col2: [
+      {
+        title: "Workflow Automation Hub",
+        href: "/products/workflow-hub",
+        description: "Resilient event-driven automation engine",
+      },
+      {
+        title: "Sovereign Cloud Deploy",
+        href: "/#pricing",
+        description: "Private VPC and air-gapped deployments",
+      },
+    ],
+    quickLinks: [
+      { title: "Cloud Software Directory ↗", href: "/cloud" },
+      { title: "Architecture Explorer", href: "/#architecture" },
+      { title: "System Health & SLA", href: "/health" },
+      { title: "Keycloak SSO & Security", href: "/#platform" },
+    ],
+    bottomBar: {
+      badge: "New",
+      text: "Cloud Workspaces live online with generous Free Tier",
+      ctaText: "Launch apps →",
+      ctaHref: "/cloud",
+    },
+  },
+  "/resources": {
+    col1: [
+      {
+        title: "Architecture Blueprints",
+        href: "/#architecture",
+        description: "Sub-second edge replication and DAG pipelines",
+      },
+      {
+        title: "Design System & Tokens",
+        href: "/design-system",
+        description: "Accessible UI components and micro-interactions",
+      },
+    ],
+    col2: [
+      {
+        title: "Verified Case Studies",
+        href: "/work",
+        description: "Real production metrics from live retail floors",
+      },
+      {
+        title: "Zero-Trust Storage",
+        href: "/#platform",
+        description: "MinIO S3 custody with ClamAV inspection",
+      },
+    ],
+    quickLinks: [
+      { title: "Interactive Hero Console", href: "/#top" },
+      { title: "SaaS vs Sovereign Matrix", href: "/#comparison" },
+      { title: "Frequently Asked Questions", href: "/#faq" },
+      { title: "Staff CRM Portal ↗", href: "/staff" },
+    ],
+    bottomBar: {
+      badge: "Update",
+      text: "Stack & Scale v2.4 Enterprise Architecture Released",
+      ctaText: "Read specs →",
+      ctaHref: "/#architecture",
+    },
+  },
+};
+
 
 export type NavSubItem = {
   readonly title: string;
