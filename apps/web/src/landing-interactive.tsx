@@ -969,25 +969,25 @@ export function InteractiveExploreStrip() {
         <div className="flex flex-wrap items-center gap-3 relative z-10">
           <a
             href="/products"
-            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+            className="px-4 py-2 rounded-lg bg-white/[0.08] border border-white/20 text-xs font-mono text-zinc-200 hover:text-white hover:bg-white/[0.15] hover:border-white/40 transition-all"
           >
             Products →
           </a>
           <a
             href="/services"
-            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+            className="px-4 py-2 rounded-lg bg-white/[0.08] border border-white/20 text-xs font-mono text-zinc-200 hover:text-white hover:bg-white/[0.15] hover:border-white/40 transition-all"
           >
             Services →
           </a>
           <a
             href="/industries"
-            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+            className="px-4 py-2 rounded-lg bg-white/[0.08] border border-white/20 text-xs font-mono text-zinc-200 hover:text-white hover:bg-white/[0.15] hover:border-white/40 transition-all"
           >
             Industries →
           </a>
           <a
             href="/work"
-            className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-xs font-mono text-zinc-300 hover:text-white hover:border-white/20 transition-colors"
+            className="px-4 py-2 rounded-lg bg-white/[0.08] border border-white/20 text-xs font-mono text-zinc-200 hover:text-white hover:bg-white/[0.15] hover:border-white/40 transition-all"
           >
             Our work →
           </a>
