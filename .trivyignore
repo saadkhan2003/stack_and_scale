@@ -4,18 +4,18 @@
 # exploitable in our Node.js runtime or have no available fix yet.
 
 # --- npm bundled packages (inside /usr/local/lib/node_modules/npm) ---
-# tar — path traversal / DoS in npm's bundled tar
+# tar - path traversal / DoS in npm's bundled tar
 CVE-2026-59873
 CVE-2026-59874
 CVE-2026-53655
-# brace-expansion — ReDoS in npm's bundled brace-expansion
+# brace-expansion - ReDoS in npm's bundled brace-expansion
 CVE-2026-13149
 CVE-2026-14257
-# undici — HTTP/2 issues in npm's bundled undici
+# undici - HTTP/2 issues in npm's bundled undici
 CVE-2026-12151
 
 # --- Debian OS packages (perl, util-linux, etc.) ---
-# perl-base — not used by Node.js runtime; no fix available in bookworm
+# perl-base - not used by Node.js runtime; no fix available in bookworm
 CVE-2026-12087
 CVE-2026-48959
 CVE-2026-48962
@@ -27,19 +27,23 @@ CVE-2026-42497
 CVE-2026-57432
 CVE-2026-57433
 CVE-2026-9538
-# systemd / libsystemd0 / libudev1 — systemd-homed not running in container; no fix in bookworm
+# systemd / libsystemd0 / libudev1 - systemd-homed not running in container; no fix in bookworm
 CVE-2026-16742
-# util-linux / bsdutils — mount/blkid not used in container
+# util-linux / bsdutils - mount/blkid not used in container
 CVE-2022-0563
 CVE-2026-53613
 CVE-2026-53615
+CVE-2026-76642
+CVE-2026-78408
+CVE-2026-78409
+CVE-2026-78410
 # libacl1
 CVE-2026-54369
-# ncurses — terminal libs not used in Node.js container
+# ncurses - terminal libs not used in Node.js container
 CVE-2025-69720
-# gzip — not exploitable in container context
+# gzip - not exploitable in container context
 CVE-2026-41992
-# zlib1g — upstream will_not_fix; not exploitable via Node.js
+# zlib1g - upstream will_not_fix; not exploitable via Node.js
 CVE-2023-45853
 # libgcrypt20
 CVE-2024-2236

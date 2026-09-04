@@ -35,7 +35,7 @@ rsync -az --delete infra/ "${remote}:${remote_root}/infra/"
 rsync -az scripts/backup-production.sh scripts/bootstrap-phase14-storage.sh \
   "${remote}:${remote_root}/scripts/"
 ssh "${remote}" "chmod 0750 ${remote_root}/scripts/backup-production.sh ${remote_root}/scripts/bootstrap-phase14-storage.sh"
-compose="IMAGE_TAG=${image_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production -f ${remote_root}/infra/compose.production.yaml"
+compose_flags="-f ${remote_root}/infra/compose.production.yaml"
 phase14_storage_enabled=0
 # The private storage lane is an explicit production opt-in. When its API
 # configuration is selected, every protected deployment must bring MinIO and
@@ -43,15 +43,16 @@ phase14_storage_enabled=0
 # boot with S3 configured but no private object store.
 if ssh "${remote}" "grep -qx 'PRIVATE_STORAGE_PROVIDER=s3' ${remote_root}/.env.production || grep -qx 'MALWARE_SCAN_PROVIDER=clamav' ${remote_root}/.env.production"; then
   phase14_storage_enabled=1
-  compose+=" -f ${remote_root}/infra/compose.phase14-storage.yaml --profile phase14-storage"
+  compose_flags+=" -f ${remote_root}/infra/compose.phase14-storage.yaml --profile phase14-storage"
 fi
 if [[ "${observability_enabled}" == "1" ]]; then
   ssh "${remote}" "test -s ${remote_root}/secrets/metrics-bearer-token && test -s ${remote_root}/secrets/grafana-admin-password" || {
     echo "Refusing observability deployment: protected metrics and Grafana secret files are missing." >&2
     exit 2
   }
-  compose+=" -f ${remote_root}/infra/compose.observability.yaml"
+  compose_flags+=" -f ${remote_root}/infra/compose.observability.yaml"
 fi
+compose="IMAGE_TAG=${image_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production ${compose_flags}"
 printf '%s' "${REGISTRY_READ_TOKEN}" | ssh "${remote}" "docker login $(printf '%q' "${IMAGE_REGISTRY%%/*}") --username $(printf '%q' "${REGISTRY_READ_USER}") --password-stdin"
 
 previous_tag="$(ssh "${remote}" "test -f ${remote_root}/deployments/current.json && sed -n 's/.*\"imageTag\":\"\([a-f0-9]*\)\".*/\1/p' ${remote_root}/deployments/current.json" || true)"
@@ -62,7 +63,10 @@ rollback_on_failure() {
   ssh "${remote}" "docker inspect --format '{{.Name}} exit={{.State.ExitCode}} error={{.State.Error}}' stack-and-scale-production-api-1 2>&1 || true; docker logs --tail 100 stack-and-scale-production-api-1 2>&1 || true" || true
   if [[ -n "${previous_tag}" && "${previous_tag}" != "${image_tag}" ]]; then
     echo "Promotion check failed; restoring previous compatible image ${previous_tag}." >&2
-    ssh "${remote}" "IMAGE_TAG=${previous_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production -f ${remote_root}/infra/compose.production.yaml up -d web api cms workers keycloak" || true
+    ssh "${remote}" "IMAGE_TAG=${previous_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production ${compose_flags} up -d web api cms workers keycloak postgres" || true
+    if [[ "${observability_enabled}" == "1" ]]; then
+      ssh "${remote}" "IMAGE_TAG=${previous_tag} IMAGE_REGISTRY=${IMAGE_REGISTRY} docker compose --env-file ${remote_root}/.env.production ${compose_flags} up -d prometheus loki promtail grafana node-exporter cadvisor" || true
+    fi
   else
     echo "Promotion check failed before a known-good release was available." >&2
   fi
@@ -79,7 +83,7 @@ if [[ "${phase14_storage_enabled}" == "1" ]]; then
   }
   ssh "${remote}" "${compose} up -d minio clamav"
   ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-minio-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
-  ssh "${remote}" "for attempt in \$(seq 1 30); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-clamav-1 | grep -qx healthy && break; test \$attempt -eq 30 && exit 1; sleep 3; done"
+  ssh "${remote}" "for attempt in \$(seq 1 70); do docker inspect --format '{{.State.Health.Status}}' stack-and-scale-production-clamav-1 | grep -qx healthy && break; test \$attempt -eq 70 && exit 1; sleep 3; done"
   ssh "${remote}" "${compose} run --rm minio-init"
 fi
 # tsconfig.build.json emits the database package source directly into dist/.
