@@ -7,50 +7,29 @@
 
 ## 1. High-Level Lifecycle Map
 
+### Quick Pipeline Overview
+
 ```mermaid
-flowchart TD
-    subgraph Phase1["Phase 1: Discovery & Evaluation"]
-        A["Visitor arrives at Homepage (/)"] --> B["Explores Products & Interactive Consoles"]
-        B --> C["Tours Public Portal Demo (/portal/demo)"]
-        C --> D["Submits Demo / Consultation Request (/contact)"]
-    end
-
-    subgraph Phase2["Phase 2: Lead Intake & Qualification"]
-        D --> E["Lead Recorded in Database with Correlation ID"]
-        E --> F["Instant Transactional Confirmation Email (Resend)"]
-        F --> G["Staff Alerted in CRM Inbox (/staff/leads)"]
-    end
-
-    subgraph Phase3["Phase 3: Proposal & Digital E-Signature"]
-        G --> H["Staff Scopes Proposal & Milestones (PROP-2026-xxxx)"]
-        H --> I["Keycloak Client Organization Provisioned (org-client-prod)"]
-        I --> J["Client Reviews Agreement & Executes Digital E-Sign"]
-        J --> K["State transitions to EXECUTED + SHA-256 Audit Fingerprint"]
-        K --> L["Milestone 1 Deposit Invoice Generated (INV-2026-001)"]
-    end
-
-    subgraph Phase4["Phase 4: Client Portal & Team Onboarding"]
-        L --> M["Client Signs In via Keycloak OIDC PKCE (/signin)"]
-        M --> N["Lands on Authorized Portal (/portal/org-client-prod)"]
-        N --> O["Client Admin Invites Team Members & Sets Preferences"]
-    end
-
-    subgraph Phase5["Phase 5: Development Tracking & Deliverables"]
-        O --> P["Client Tracks Live Build Progress & Next Actions"]
-        P --> Q["Developers Ship Milestone Build (v2.4.x)"]
-        Q --> R["Client Decision Gate: Reviews & Approves SHA-256 Manifest"]
-        R --> S["MinIO S3 Vault + ClamAV Scan Ensures 0 Threats"]
-        S --> T["Client Downloads Signed Release Tarball (.tar.gz)"]
-    end
-
-    subgraph Phase6["Phase 6: Billing, Support & SLA Operations"]
-        T --> U["Milestone Settled & PDF Invoice Downloaded"]
-        U --> V["Support Tickets Handled Directly in Portal"]
-        V --> W["Continuous 99.999% SLA Monitoring (/health)"]
-    end
-
-    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Phase5 --> Phase6
+flowchart LR
+    P1["1. Discovery<br/>(Public Web)"] --> P2["2. Lead Intake<br/>(Demo Booking)"]
+    P2 --> P3["3. Commercial Agreement<br/>(Proposal & E-Sign)"]
+    P3 --> P4["4. Portal Onboarding<br/>(Keycloak SSO)"]
+    P4 --> P5["5. Milestone Delivery<br/>(Builds & SHA-256)"]
+    P5 --> P6["6. Ongoing Ops<br/>(Billing & 99.999% SLA)"]
 ```
+
+---
+
+### Phase Summary Matrix
+
+| Phase | Primary Actor | Key Surface / Tool | What Happens | Concrete Result |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Discovery & Evaluation** | Prospective Client | [`/`](file:///media/saad/Data/stack_and_scale/apps/web/app/page.tsx), [`/portal/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) | Client tours public site, checks edge latency, tests code console, previews demo portals | Verifies 99.999% SLA and zero lock-in architecture |
+| **2. Lead Intake & Scheduling** | Prospective Client & System | [`/contact`](file:///media/saad/Data/stack_and_scale/apps/web/app/contact/page.tsx), Resend API | Submits project inquiry and selects live demo slot | Lead stored in PostgreSQL; client gets email confirmation; staff alerted |
+| **3. Proposal & Digital E-Sign** | Solutions Lead & Client Signatory | [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts), Client Portal | Staff drafts proposal (`PROP-2026-xxxx`); client reviews scope and signs digitally | Contract transitions to `EXECUTED` with SHA-256 fingerprint; initial invoice issued |
+| **4. Onboarding & Member Setup** | Client Admin | [`/signin`](file:///media/saad/Data/stack_and_scale/apps/web/app/signin/page.tsx), [`/portal/[orgId]`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) | Client signs in via Keycloak OIDC PKCE; invites auditors and engineers | Multi-tenant team provisioned with role-based access |
+| **5. Build Tracking & Delivery** | Developers & Client Auditors | Client Portal, MinIO S3, ClamAV | Client monitors development in real time; reviews and approves SHA-256 checksums | Client downloads signed, malware-scanned release tarballs (`.tar.gz`) |
+| **6. Billing, Support & SLA** | Finance, Support & Client | Client Portal, [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx) | Automated milestone billing, PDF receipts, ticketing, and live cluster health | Long-term operational relationship maintained under SLA |
 
 ---
 
@@ -60,182 +39,145 @@ flowchart TD
 
 ### Step 1: Anonymous Discovery & Evaluation
 
-```
-[ Prospective Enterprise Client ]
-                │
-                ▼
-   https://stackandscale.org
-```
+> **Flow Sequence**:  
+> `1. Visitor Visits Homepage` ➔ `2. Interacts with Code Console` ➔ `3. Tours Portal Demo` ➔ `4. Verifies 99.999% SLA`
 
-1. **Exploring the Homepage**:
-   - The prospect lands on the homepage (`/`), experiencing the Vercel/Linear dark engineering aesthetic.
-   - They explore the **Interactive Code Architecture Console**, switching tabs (`agent-pipeline.ts`, `edge-sync.sql`, `keycloak-realm.json`, `telemetry-stream.json`) to inspect code samples, edge replication, and ClamAV malware protection.
-   - They browse **Products** (`/products/retail-operations`, `/products/workflow-automation`, `/products/ai-crm`, `/products/sovereign-cloud`) and **Services** (`/services`).
-2. **Reviewing Sovereign Specs & Health**:
-   - The client views the `/approach` and `/health` pages to verify the **99.999% SLA** and the 14 global Edge PoP network latency (iad1, sfo1, cdg1, sin1).
-3. **Interactive Demo Preview**:
-   - Without needing to create an account or provide credentials, the prospect clicks **Client Portal** in the navigation bar to preview [`/portal/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) and [`/account/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/account/[accountOrganizationId]/page.tsx).
-   - They see how active projects, deliverables, milestones, and support tickets look in real life using dummy data.
+1. **Exploring the Public Platform**:
+   - The prospective client lands on [`https://stackandscale.org`](file:///media/saad/Data/stack_and_scale/apps/web/app/page.tsx), greeted by the high-performance Vercel/Linear dark engineering aesthetic.
+   - They interact with the **Live Architecture Console**, toggling between tabs:
+     - `agent-pipeline.ts`: Edge microsecond event dispatching.
+     - `edge-sync.sql`: Bidirectional SQLite ↔ PostgreSQL sync.
+     - `keycloak-realm.json`: Sovereign authentication configuration.
+     - `telemetry-stream.json`: Real-time Prometheus metrics.
+   - They explore dedicated product solutions ([Retail POS Suite](file:///media/saad/Data/stack_and_scale/apps/web/app/products/retail-operations/page.tsx), [Workflow Hub](file:///media/saad/Data/stack_and_scale/apps/web/app/products/workflow-hub/page.tsx), and [Sovereign Cloud](file:///media/saad/Data/stack_and_scale/apps/web/app/approach/page.tsx)).
+2. **Reviewing System Health & Transparency**:
+   - They navigate to [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx) to inspect real-time latency across 14 Edge PoPs (`iad1`, `sfo1`, `cdg1`, `sin1`) and verify the active **99.999% SLA**.
+3. **Exploring the Public Interactive Demo**:
+   - Without needing to sign up or input credit card details, they click **Client Portal** in the navigation bar to preview [`/portal/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) and [`/account/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/account/[accountOrganizationId]/page.tsx).
+   - They see exactly how active projects, milestones, deliverables, and support tickets look in production using mock data.
 
 ---
 
 ### Step 2: Ingestion & Lead Capture
 
-```
-[ Client fills form ] ──▶ [ Next.js API Route ] ──▶ [ PostgreSQL Lead Record ]
-                                                            │
-                         ┌──────────────────────────────────┴──────────────────────────────────┐
-                         ▼                                                                     ▼
-             [ Client Confirmation Email ]                                           [ Staff CRM Pipeline ]
-```
+> **Flow Sequence**:  
+> `1. Client Fills Form` ➔ `2. Strict Zod Validation` ➔ `3. PostgreSQL Lead Created` ➔ `4. Confirmation Email & Staff CRM Alert`
 
-1. **Submitting the Consultation / Demo Form**:
+1. **Submitting the Consultation Request**:
    - On [`/contact`](file:///media/saad/Data/stack_and_scale/apps/web/app/contact/page.tsx), the client enters:
-     - **Name & Work Email** (e.g., `alex.mercer@acmecorp.com`)
-     - **Organization Name** (e.g., `Acme Corp`)
-     - **Selected Product/Service Area**
-     - **Preferred Demo Time Slot** (from live available slots via `/api/demo-slots`)
-     - **Project Overview & Privacy Consent Checkbox**
-2. **Server-Side Processing**:
-   - The request hits `/api/contact` with CSRF headers and unique `x-correlation-id`.
-   - The server validates input using strict Zod schemas, ensuring zero SQL or script injection.
-   - The lead is inserted into PostgreSQL with status `NEW_INQUIRY`.
+     - **Full Name & Corporate Email**: (e.g., `alex.mercer@acmecorp.com`)
+     - **Organization Name**: (e.g., `Acme Corp`)
+     - **Product Area & Project Description**
+     - **Demo Time Slot**: Selected from real available calendar slots (`/api/demo-slots`)
+     - **Privacy & Data Consent**: Confirmed via checkbox.
+2. **Backend Processing & Security**:
+   - The form submits to `/api/contact` with an automated correlation ID and CSRF tokens.
+   - Input is validated against strict TypeScript Zod schemas.
+   - A new lead record is stored in PostgreSQL with status `NEW_INQUIRY`.
 3. **Automated Communications**:
-   - The client receives an instant branded confirmation email with calendar invites.
-   - A notification is dispatched to the internal staff notification inbox.
+   - **Client**: Receives an instant, branded confirmation email with calendar invites (via Resend/SMTP).
+   - **Internal Staff**: A real-time notification is routed to the staff CRM notification channel.
 
 ---
 
 ### Step 3: Staff Qualification & Commercial Proposal
 
-```
-[ Staff Admin Console (/staff/leads) ]
-                │
-                ├─▶ Review lead history, company scale, and desired scope
-                ├─▶ Schedule technical discovery call
-                └─▶ Issue Commercial Proposal (PROP-2026-xxxx)
-```
+> **Flow Sequence**:  
+> `1. Staff Qualifies Lead in CRM` ➔ `2. Structures Milestones` ➔ `3. Provisions Keycloak Org` ➔ `4. Issues PROP-2026-xxxx`
 
-1. **Staff Review**:
-   - The Platform Owner or Solutions Architect logs into the Staff CRM at [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts).
-   - *Note*: Anonymous visitors cannot access this page; it requires Keycloak authentication with `manager`, `admin`, or `owner` privileges.
-2. **Drafting the Proposal**:
-   - Staff structures the project deliverables (e.g., `$45,000 USD` total contract):
-     - **Milestone 1**: Sovereign Cloud Architecture & Security Hardening (`$15,000`)
-     - **Milestone 2**: Edge Sync Engine & Keycloak mTLS Gateway Integration (`$20,000`)
-     - **Milestone 3**: Final Production Attestation & ClamAV File Vault (`$10,000`)
-3. **Issuing the Agreement**:
-   - Proposal status is set to `ISSUED`.
-   - The system provisions the client's dedicated organization ID in Keycloak: `org-acme-prod`.
+1. **Staff Lead Review**:
+   - The Solutions Architect logs into the Staff CRM at [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts).
+   - *Security Note*: This console is strictly protected by Keycloak; anonymous visitors receive an unauthorized denial.
+2. **Scoping the Commercial Agreement**:
+   - Staff structures the project deliverables (e.g., `$45,000 USD` total scope):
+     - **Milestone 1 ($15,000)**: Sovereign Cloud Infrastructure & Security Hardening
+     - **Milestone 2 ($20,000)**: Edge Sync Engine & Keycloak mTLS Gateway Integration
+     - **Milestone 3 ($10,000)**: Attestation Audit & ClamAV Protected File Vault
+3. **Tenant Provisioning**:
+   - Staff creates the client's dedicated organization ID in Keycloak (e.g., `org-acme-prod`).
+   - The proposal is issued (`PROP-2026-0089`) with status `ISSUED`.
 
 ---
 
 ### Step 4: Digital Contract E-Signature & Deposit
 
-```
-[ Client in Portal ] ──▶ [ Review Scope & Milestones ] ──▶ [ Input Legal Name & Title ]
-                                                                       │
-                                                                       ▼
-                                                          [ Accept & Sign Agreement ]
-                                                                       │
-                                      ┌────────────────────────────────┴────────────────────────────────┐
-                                      ▼                                                                 ▼
-                        [ Proposal Status: EXECUTED ]                                      [ Milestone 1 Invoice: DUE ]
-                      (SHA-256 Audit Hash Recorded)                                          ($15,000 USD, Net-15)
-```
+> **Flow Sequence**:  
+> `1. Client Reviews Agreement` ➔ `2. Signs Digitally` ➔ `3. SHA-256 Audit Fingerprint Stamped` ➔ `4. Milestone 1 Invoice Issued`
 
-1. **Reviewing the Agreement**:
-   - The client signatory opens their secure review link: `https://stackandscale.org/portal/org-acme-prod`.
-   - Under the **Documents & Proposals** tab, proposal `PROP-2026-xxxx` is listed as `ISSUED`.
-   - The client reviews the comprehensive legal terms, IP assignment (100% client data custody), zero vendor lock-in guarantee, and milestone schedules.
+1. **Reviewing the Agreement in the Portal**:
+   - The client signatory opens their dedicated review link: `https://stackandscale.org/portal/org-acme-prod`.
+   - Under the **Documents & Proposals** tab, they review proposal `PROP-2026-0089`:
+     - Scope, deliverables, and SLA commitments.
+     - 100% intellectual property ownership and data custody.
+     - Transparent milestone billing schedule.
 2. **Executing the Digital Signature**:
-   - Signatory types their **Legal Full Name** (e.g., `Alex Mercer`) and **Title** (e.g., `VP of Infrastructure`).
-   - Checks the legal consent: *"I confirm that I am an authorized representative and agree to these commercial terms."*
-   - Clicks **"Accept & Sign Agreement"**.
-3. **Cryptographic State Transition**:
-   - The system computes a SHA-256 digital fingerprint of the contract terms, signatory identity, and UTC timestamp.
-   - Status transitions to green **`EXECUTED`**.
-   - An immutable audit trail is stamped into the database.
-4. **Initial Deposit Invoice**:
-   - Signing immediately triggers **Invoice `INV-2026-001`** ($15,000 USD, Milestone 1 Deposit).
-   - Client downloads the formal PDF invoice with tax breakdown and wire instructions directly from the **Invoices & Billing** tab.
+   - Signatory enters their **Legal Full Name** (e.g., `Alex Mercer`) and **Title** (e.g., `VP of Infrastructure`).
+   - Checks the legal consent checkbox: *"I confirm that I am an authorized representative and agree to these commercial terms."*
+   - Clicks the green **"Accept & Sign Agreement"** button.
+3. **Cryptographic Transition**:
+   - The system computes an immutable SHA-256 digital fingerprint across the agreement text, signatory name, title, and UTC timestamp.
+   - Status transitions from `ISSUED` to green **`EXECUTED`**.
+4. **Deposit Invoicing**:
+   - Signing triggers **Invoice `INV-2026-001`** ($15,000 USD, Net-15 terms).
+   - The client downloads the formal PDF invoice with itemized tax and banking wire details directly from **Invoices & Billing**.
 
 ---
 
-### Step 5: Client Portal Access & Team Management
+### Step 5: Client Portal Access & Team Onboarding
 
-```
-[ Client Admin ] ──▶ [/portal/org-acme-prod] ──▶ [ Add Team Members ]
-                                                         │
-                         ┌───────────────────────────────┴───────────────────────────────┐
-                         ▼                                                               ▼
-            [ Senior Security Engineer ]                                    [ QA / Product Manager ]
-             (Role: client_member)                                           (Role: client_member)
-```
+> **Flow Sequence**:  
+> `1. Client SSO Sign-In` ➔ `2. Access Private Portal` ➔ `3. Invite Team Members` ➔ `4. Set Notification Preferences`
 
-1. **Secure OIDC Authentication**:
-   - Client signs in at [`/signin`](file:///media/saad/Data/stack_and_scale/apps/web/app/signin/page.tsx) using Keycloak Enterprise Single Sign-On (OIDC PKCE + mTLS).
-   - They are redirected directly to their sovereign workspace: `/portal/org-acme-prod`.
-2. **Managing Organization Members**:
-   - As a `client_admin`, they can invite team members (e.g., security leads, QA auditors) with `client_member` permissions.
-   - Team members receive access to review builds and file tickets without having billing or contract modification permissions.
-3. **Configuring Notification Preferences**:
-   - Client selects alert categories (Security alerts, Milestone build ready, Billing updates) and delivery channels (Email, Webhook).
+1. **Enterprise Single Sign-On**:
+   - The client team authenticates at [`/signin`](file:///media/saad/Data/stack_and_scale/apps/web/app/signin/page.tsx) using Keycloak OIDC PKCE.
+   - The server verifies their organization role (`client_admin` or `client_member`) and directs them into their sovereign portal: `/portal/org-acme-prod`.
+2. **Multi-Tenant URL Security**:
+   - If an unauthorized user attempts to open this URL, they are blocked with a locked access prompt.
+3. **Inviting Client Team Members**:
+   - As `client_admin`, the client lead invites internal colleagues (security engineers, product managers).
+   - Team members receive tailored access to test builds and log support tickets without accessing financial contracts.
+4. **Setting Notification Preferences**:
+   - The client selects email or webhook alert channels for build releases, security updates, and billing notifications.
 
 ---
 
 ### Step 6: Tracking Development & Deliverables ("How Much Is Built?")
 
-```
-Client Portal Dashboard:
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ Active Projects (2 Total)                                                       │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│ • Edge Mesh POS Replication Pipeline               [ Status: In Production ]    │
-│   Next Action: Annual SLA renewal audit scheduled for Q4                        │
-│                                                                                 │
-│ • Keycloak mTLS Zero-Trust Gateway                 [ Status: Under Development] │
-│   Next Action: Milestone 2 Canary Build deployment scheduled for Sept 18        │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
+> **Flow Sequence**:  
+> `1. Track Live Project Progress` ➔ `2. Developers Ship Build` ➔ `3. Client Approves Checksum` ➔ `4. Secure Tarball Download`
 
-1. **Viewing Real-Time Development Status**:
-   - Every project contracted under the client organization is displayed with:
-     - **Project Title & Scope**
-     - **Live Deployment Status**: `Planning`, `Under Development`, `Testing / Staging`, `In Production`.
-     - **Next Concrete Action**: Clear schedule of what the development team is currently shipping.
-2. **Reviewing Code & Milestone Releases (Decision Gate)**:
-   - When developers complete a build, a review item appears in the client's **Reviews** tab:
-     - **Target Release Version**: e.g., `v2.4.19`
-     - **Rendered Attestation Checksum**: `SHA-256: 7e2b8...a941c`
-   - The client can click **"Accept Release"** or **"Request Revisions"**.
-   - Accepting records cryptographic approval, unlocking the next development stage.
+1. **Real-Time Project Dashboard**:
+   - The client logs in at any time to inspect **Active Projects**:
+     - **Project Name**: e.g., *Edge Mesh POS Replication Pipeline*
+     - **Live Status**: `Planning` ➔ `Under Development` ➔ `Staging` ➔ `In Production`
+     - **Next Action**: Clear, transparent milestones (e.g., *"Canary build deployment scheduled for Sept 18"*).
+2. **Reviewing Deliverables (Client Decision Gate)**:
+   - When a development milestone is completed, it appears under **Reviews & Decisions**:
+     - **Target Release Version**: `v2.4.19`
+     - **Attestation Checksum**: `SHA-256: 7e2b8c9d...`
+   - The client reviews release notes and clicks **"Accept Review"** or **"Request Revisions"**.
+   - Acceptance records a cryptographic approval event, advancing the project to the next stage.
 3. **Downloading Signed Release Bundles**:
-   - In the **Deliverables & Files** tab, the client accesses production files:
+   - In the **Deliverables & Files** tab, the client downloads production software packages:
      - `stack-scale-agent-bundle-v2.4.19.tar.gz`
      - `audit-manifest-sha256.json`
-   - **MinIO S3 + ClamAV Virus Quarantine**:
-     - All files are hosted on private S3 MinIO storage.
-     - Downloads are served via temporary, signed URLs.
-     - Files undergo continuous background ClamAV scanning to guarantee zero malicious payloads.
+   - **MinIO Storage & ClamAV Quarantine**:
+     - Files are retrieved via temporary signed URLs from private MinIO S3 storage.
+     - Background ClamAV daemon scanning ensures all downloads are verified free of threats.
 
 ---
 
 ### Step 7: Ongoing Invoicing, Support & Health SLA
 
-```
-[ Client Portal ] ──▶ Submit Support Ticket ──▶ Staff Response in <15 min
-                  ──▶ Milestone 2 Invoiced  ──▶ Automated Payment Receipt
-                  ──▶ Check System Health   ──▶ 99.999% SLA Verified
-```
+> **Flow Sequence**:  
+> `1. Milestone Invoices Settled` ➔ `2. Support Tickets Resolved in <15m` ➔ `3. Continuous 99.999% SLA Monitoring`
 
-1. **Invoicing Cycles**:
-   - As each milestone passes client review, the corresponding invoice (`INV-2026-002`, `INV-2026-003`) automatically transitions to `DUE` and then `PAID` upon settlement.
-2. **Support & Operations**:
-   - Clients submit support and feature requests directly under **Support Tickets**.
-   - Real-time status (`Submitted`, `Under Review`, `Resolved`) keeps communications transparent.
-3. **Transparent SLA**:
-   - The client can verify system health at any time at [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx), verifying zero packet loss and edge uptime across all regional clusters.
+1. **Invoicing Lifecycle**:
+   - As each milestone is approved, subsequent invoices (`INV-2026-002`, `INV-2026-003`) transition to `DUE` and then green `PAID` upon wire settlement.
+2. **Support & Communication**:
+   - Clients submit tickets directly under **Support Tickets** with status tracking (`Under Review`, `In Progress`, `Resolved`).
+3. **SLA Transparency**:
+   - Both client and platform staff can monitor cluster health at [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx) 24/7.
 
 ---
 
@@ -278,7 +220,7 @@ Client Portal Dashboard:
 
 ## 4. Verification & Testing Evidence
 
-* **TypeScript Compilation**: Clean pass across all monorepo packages (`tsc --noEmit`).
-* **Test Suite**: **268 automated unit, integration, and E2E tests** passing.
-* **Mobile Responsiveness**: 24/24 routes tested with **0 horizontal overflow** down to 320px screens.
-* **Security & Antivirus**: Verified MinIO storage with active ClamAV daemon scanning.
+* **TypeScript Strict Compilation**: Clean pass across all monorepo packages (`tsc --noEmit`).
+* **Automated Test Suite**: **268 automated tests** passing across unit, integration, and Keycloak E2E.
+* **Mobile Responsiveness**: 24/24 routes verified with **0 horizontal overflow** down to 320px screens.
+* **Security & Antivirus**: MinIO private S3 storage verified with active ClamAV daemon virus scanner.
