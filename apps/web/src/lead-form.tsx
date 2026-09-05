@@ -54,7 +54,8 @@ export function LeadForm() {
     event.preventDefault();
     setStatus("sending");
     setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const body = {
       name: form.get("name"),
       email: form.get("email"),
@@ -124,7 +125,7 @@ export function LeadForm() {
         return;
       }
       setStatus("success");
-      event.currentTarget.reset();
+      formElement.reset();
       setIntakeType("project");
     } catch (submissionError) {
       setError(

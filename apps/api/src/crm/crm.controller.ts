@@ -131,6 +131,7 @@ function parseUpdate(body: Record<string, unknown>) {
     throw new BadRequestException("Probability must be a number.");
   if (
     estimatedValue !== undefined &&
+    estimatedValue !== null &&
     (typeof estimatedValue !== "number" || !Number.isFinite(estimatedValue))
   )
     throw new BadRequestException("Estimated value must be a finite number.");

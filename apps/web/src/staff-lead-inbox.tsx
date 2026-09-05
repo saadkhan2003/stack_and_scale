@@ -133,6 +133,7 @@ export function StaffLeadInbox() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [suggestions, setSuggestions] = useState<KnowledgeSuggestion[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [stageValue, setStageValue] = useState<string>("new");
 
   const refresh = async () => {
     const response = await fetch("/api/staff/crm/leads", { cache: "no-store" });
@@ -169,6 +170,7 @@ export function StaffLeadInbox() {
     }
     const payload = (await response.json()) as { data: Detail };
     setSelected(payload.data);
+    setStageValue(payload.data.stage.toLowerCase());
     const suggestionsResponse = await fetch(
       `/api/staff/operations/knowledge/suggestions?leadId=${encodeURIComponent(leadId)}`,
       { cache: "no-store" },
@@ -189,15 +191,26 @@ export function StaffLeadInbox() {
     setIsUpdating(true);
     const ownerId = form.get("ownerId");
     const nextActionAt = form.get("nextActionAt");
+    const rawEst = form.get("estimatedValue");
+    const estimatedValue =
+      rawEst !== null && String(rawEst).trim() !== "" && !Number.isNaN(Number(rawEst))
+        ? Number(rawEst)
+        : null;
+    const rawProb = form.get("probability");
+    const probability =
+      rawProb !== null && String(rawProb).trim() !== "" && !Number.isNaN(Number(rawProb))
+        ? Number(rawProb)
+        : 0;
+    const chosenStage = stageValue || (typeof form.get("stage") === "string" ? form.get("stage") : undefined);
     const response = await fetch(
       `/api/staff/crm/leads/${encodeURIComponent(selected.id)}`,
       {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          stage: form.get("stage"),
-          probability: Number(form.get("probability")),
-          estimatedValue: Number(form.get("estimatedValue")) || null,
+          stage: chosenStage,
+          probability,
+          estimatedValue,
           ownerId:
             typeof ownerId === "string" && ownerId.trim()
               ? ownerId.trim()
@@ -542,7 +555,13 @@ export function StaffLeadInbox() {
                 </Label>
                 <Label>
                   Stage
-                  <Select defaultValue={selected.stage} name="stage">
+                  <Select
+                    value={stageValue}
+                    onValueChange={(val) => {
+                      if (typeof val === "string") setStageValue(val);
+                    }}
+                    name="stage"
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>

@@ -36,7 +36,15 @@ export function StaffProposals() {
     void fetch("/api/staff/proposals", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) {
-          setNotice("Unable to load proposals.");
+          if (response.status === 401) {
+            setNotice("Sign in with authorized staff credentials to manage commercial proposals.");
+          } else if (response.status === 403) {
+            setNotice("You do not have staff permissions to view commercial proposals.");
+          } else if (response.status === 503) {
+            setNotice("Proposal service is temporarily unavailable.");
+          } else {
+            setNotice("Unable to load proposals.");
+          }
           return;
         }
         const data = (await response.json()) as { data: Proposal[] };
@@ -58,12 +66,22 @@ export function StaffProposals() {
       </div>
 
       {notice ? (
-        <div className="staff-notice-banner" role="status">
-          <AlertCircle
-            className="h-4 w-4 shrink-0 text-petrol"
-            aria-hidden="true"
-          />
-          <span>{notice}</span>
+        <div className="staff-notice-banner flex items-center justify-between gap-4" role="status">
+          <div className="flex items-center gap-2">
+            <AlertCircle
+              className="h-4 w-4 shrink-0 text-petrol"
+              aria-hidden="true"
+            />
+            <span>{notice}</span>
+          </div>
+          {notice.includes("Sign in") ? (
+            <a
+              href="/signin"
+              className="px-3 py-1 bg-white text-black text-xs font-semibold rounded hover:bg-neutral-200 transition-colors whitespace-nowrap"
+            >
+              Sign in →
+            </a>
+          ) : null}
         </div>
       ) : null}
 
