@@ -69,6 +69,9 @@
         --line: rgba(255, 255, 255, 0.08);
         --line-strong: rgba(255, 255, 255, 0.12);
         --input-bg: #141414;
+        --pf-v5-c-login__main--MinHeight: 0;
+        --pf-v5-c-login__container--MinHeight: 0;
+        --pf-v5-c-login__container--Height: auto;
       }
 
       *, *::before, *::after {
@@ -203,88 +206,93 @@
         position: relative !important;
         z-index: 5 !important;
         min-height: 100vh !important;
+        height: auto !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        padding: 72px 16px 28px !important;
+        justify-content: center !important;
+        padding: 76px 16px 36px !important;
         box-sizing: border-box !important;
       }
 
-      .pf-v5-c-login__container {
+      .pf-v5-c-login__container,
+      .pf-v5-c-login .pf-v5-c-login__container {
+        display: block !important;
         width: 100% !important;
         max-width: 440px !important;
-        margin: auto auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+        margin: auto !important;
         padding: 0 !important;
-        grid-template-columns: 1fr !important;
-        grid-template-areas: "header" "main" "footer" !important;
+        grid-template-columns: none !important;
+        grid-template-rows: none !important;
+        grid-template-areas: none !important;
       }
 
-      .pf-v5-c-login__header {
+      .pf-v5-c-login__header,
+      .pf-v5-c-login__main-footer,
+      .pf-v5-c-login__footer {
         display: none !important;
       }
 
-      /* Hero Pill */
-      .sso-hero-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 12px;
-        border-radius: 9999px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        margin-bottom: 12px;
-      }
-
-      .sso-hero-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #80ddd1;
-        box-shadow: 0 0 8px #80ddd1;
-      }
-
-      .sso-hero-text {
-        font-size: 11.5px;
-        font-weight: 500;
-        color: #d4d4d8;
-        letter-spacing: -0.01em;
-      }
-
       /* The Main Signin Card (Exact match to .signin-card in globals.css) */
-      .pf-v5-c-login__main {
-        width: 100% !important;
-        max-width: 440px !important;
-        background: #0c0c0c !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 14px !important;
-        padding: 1.5rem !important;
-        box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+      .pf-v5-c-login__main,
+      .pf-v5-c-login .pf-v5-c-login__main {
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
+        grid-area: auto !important;
+        grid-column: auto !important;
+        grid-row: auto !important;
+        align-self: auto !important;
+        width: 100% !important;
+        max-width: 440px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+        flex-grow: 0 !important;
+        flex-shrink: 0 !important;
+        background: #0c0c0c !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        padding: 2rem !important;
+        box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
         box-sizing: border-box !important;
+      }
+
+      .pf-v5-c-login__main > :first-child,
+      .pf-v5-c-login__main > :first-child:not(.pf-v5-c-login__main-header),
+      .sso-card-header {
+        padding-top: 0 !important;
+        padding-block-start: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      .pf-v5-c-login__main > :last-child,
+      .pf-v5-c-login__main > :last-child:not(.pf-v5-c-login__main-footer) {
+        padding-block-end: 0 !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
       }
 
       /* Card Header */
       .sso-card-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        gap: 0.875rem;
+        margin-bottom: 1.5rem;
       }
 
       .sso-icon-wrap {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: #80ddd1;
@@ -298,7 +306,7 @@
 
       .sso-card-title, h1#kc-page-title {
         font-family: var(--font-brand) !important;
-        font-size: 1.05rem !important;
+        font-size: 1.125rem !important;
         font-weight: 600 !important;
         color: #ffffff !important;
         margin: 0 !important;
@@ -318,22 +326,68 @@
         display: none !important;
       }
 
-      /* Form Structure */
+      /* Form Structure — Zero out all PatternFly double paddings and gaps */
       .pf-v5-c-login__main-body,
+      .pf-v5-c-login .pf-v5-c-login__main-body {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 0 !important;
+        padding-inline-start: 0 !important;
+        padding-inline-end: 0 !important;
+        padding-block-start: 0 !important;
+        padding-block-end: 0 !important;
+        margin: 0 !important;
+      }
+
       #kc-content, #kc-content-wrapper,
       #kc-form, #kc-form-wrapper,
       .pf-v5-c-form, #kc-form-login {
         width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+        row-gap: 0 !important;
       }
 
       .pf-v5-c-form__group {
         width: 100% !important;
+        margin-top: 0 !important;
         margin-bottom: 1.25rem !important;
         display: flex !important;
         flex-direction: column !important;
+        padding: 0 !important;
+      }
+
+      .pf-v5-c-form__group:empty,
+      input[type="hidden"] {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .pf-v5-c-form__group:last-child {
+        margin-bottom: 0 !important;
+      }
+
+      .pf-v5-c-form__actions {
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
       }
 
       .pf-v5-c-form__label, label {
@@ -506,71 +560,7 @@
         background: #e4e4e7 !important;
       }
 
-      /* Enterprise helper callout */
-      .sso-helper-callout {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 0.75rem 0.875rem;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        margin-top: 1.125rem;
-      }
 
-      .sso-helper-icon {
-        color: #80ddd1;
-        flex-shrink: 0;
-        margin-top: 2px;
-      }
-
-      .sso-helper-title {
-        font-size: 0.8125rem;
-        font-weight: 600;
-        color: #ffffff;
-        margin: 0 0 0.25rem 0;
-      }
-
-      .sso-helper-text {
-        font-size: 0.75rem;
-        color: #888888;
-        line-height: 1.5;
-        margin: 0;
-      }
-
-      /* Security Trust Badges */
-      .sso-card-notes {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding-top: 0.875rem;
-        margin-top: 1.125rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .sso-note-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .sso-note-icon {
-        flex-shrink: 0;
-      }
-
-      .text-seafoam {
-        color: #80ddd1;
-      }
-
-      .text-muted {
-        color: #888888;
-      }
-
-      .sso-note-text {
-        font-size: 0.75rem;
-        color: #888888;
-        letter-spacing: -0.01em;
-      }
 
       /* Mobile Adaptation */
       @media (max-width: 480px) {
