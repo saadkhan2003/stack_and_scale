@@ -136,6 +136,7 @@ services:
     networks: [edge, application, database]
     volumes:
       - ./keycloak/realm-stack-and-scale.production.json.tmpl:/opt/keycloak/realm-template/realm-stack-and-scale.production.json.tmpl:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
       test:
         [

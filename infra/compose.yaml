@@ -37,6 +37,7 @@ services:
     volumes:
       - stack-and-scale-keycloak-data:/opt/keycloak/data
       - ./keycloak/realm-stack-and-scale.json:/opt/keycloak/data/import/realm-stack-and-scale.json:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
     healthcheck:
       test:
         - CMD-SHELL

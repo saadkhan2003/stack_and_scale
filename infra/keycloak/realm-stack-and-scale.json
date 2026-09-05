@@ -16,6 +16,7 @@
     "starttls": "false"
   },
   "sslRequired": "external",
+  "loginTheme": "stack-and-scale",
   "roles": {
     "realm": [
       {
