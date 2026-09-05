@@ -39,9 +39,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+import { draftMode } from "next/headers";
+import { DraftPreviewBanner } from "../src/draft-preview-banner";
+
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  let isDraft = false;
+  try {
+    const draft = await draftMode();
+    isDraft = draft.isEnabled;
+  } catch {
+    isDraft = false;
+  }
+
   return (
     <html
       lang="en"
@@ -57,6 +68,7 @@ export default function RootLayout({
           }}
         />
         <TooltipProvider>{children}</TooltipProvider>
+        {isDraft ? <DraftPreviewBanner /> : null}
         <AnalyticsController />
       </body>
     </html>

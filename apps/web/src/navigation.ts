@@ -9,7 +9,8 @@ export const primaryNavigation = [
 export type SimpleNavItem = {
   readonly label: string;
   readonly href: string;
-  readonly hasSubmenu?: boolean;
+  readonly hasSubmenu?: boolean | undefined;
+  readonly badge?: string | undefined;
 };
 
 /**

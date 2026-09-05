@@ -8,6 +8,11 @@ function linkFields(): Field[] {
       required: true,
     },
     {
+      name: "badge",
+      type: "text",
+      label: "Badge (e.g. NEW, BETA)",
+    },
+    {
       name: "linkType",
       type: "radio",
       defaultValue: "internal",
@@ -55,6 +60,39 @@ export const navigation: CollectionConfig = {
     plural: "Navigation",
   },
   fields: [
+    {
+      name: "announcement",
+      type: "group",
+      label: "Global Announcement Bar",
+      fields: [
+        {
+          name: "enabled",
+          type: "checkbox",
+          defaultValue: false,
+          label: "Enable Announcement Bar",
+        },
+        {
+          name: "badge",
+          type: "text",
+          label: "Badge (e.g. NEW, RELEASE)",
+        },
+        {
+          name: "text",
+          type: "text",
+          label: "Announcement text",
+        },
+        {
+          name: "ctaText",
+          type: "text",
+          label: "Call to action label",
+        },
+        {
+          name: "ctaHref",
+          type: "text",
+          label: "Call to action destination URL / path",
+        },
+      ],
+    },
     {
       name: "items",
       type: "array",

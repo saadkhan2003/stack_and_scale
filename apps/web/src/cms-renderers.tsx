@@ -273,6 +273,111 @@ export function CmsPageBlocks({
               <p>{text(block.content)}</p>
             </section>
           );
+        if (type === "metricGroup")
+          return (
+            <section className="cms-metric-group my-12" key={index}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                {entries(block.items).map((item, itemIndex) => (
+                  <div
+                    key={itemIndex}
+                    className="p-5 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm text-center"
+                  >
+                    <div className="text-2xl sm:text-3xl font-mono font-bold text-white tracking-tight">
+                      {stringValue(item, "value")}
+                      {stringValue(item, "suffix")}
+                    </div>
+                    <p className="mt-1.5 text-xs sm:text-sm text-neutral-400 font-medium">
+                      {stringValue(item, "label")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        if (type === "testimonialGroup")
+          return (
+            <section className="cms-testimonial-group my-12" key={index}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {entries(block.items).map((item, itemIndex) => (
+                  <blockquote
+                    key={itemIndex}
+                    className="p-6 rounded-xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm flex flex-col justify-between"
+                  >
+                    <p className="text-sm sm:text-base text-neutral-300 italic leading-relaxed">
+                      &ldquo;{stringValue(item, "quote")}&rdquo;
+                    </p>
+                    <footer className="mt-4 pt-4 border-t border-white/[0.06] flex items-center justify-between">
+                      <div>
+                        <cite className="not-italic font-semibold text-white text-sm block">
+                          {stringValue(item, "authorName")}
+                        </cite>
+                        {stringValue(item, "authorRole") && (
+                          <span className="text-xs text-neutral-400">
+                            {stringValue(item, "authorRole")}
+                          </span>
+                        )}
+                      </div>
+                    </footer>
+                  </blockquote>
+                ))}
+              </div>
+            </section>
+          );
+        if (type === "productShowcase") {
+          const product = record(block["product"]);
+          const title = product
+            ? stringValue(product, "title")
+            : stringValue(block, "headline");
+          const summary = product ? stringValue(product, "summary") : null;
+          const slug = product ? stringValue(product, "slug") : null;
+          return (
+            <section
+              className="cms-product-showcase my-12 p-8 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent text-center"
+              key={index}
+            >
+              {stringValue(block, "headline") && (
+                <p className="text-xs uppercase font-mono tracking-widest text-blue-400 mb-2">
+                  Featured Product
+                </p>
+              )}
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                {title}
+              </h2>
+              {summary && (
+                <p className="text-neutral-300 max-w-2xl mx-auto mb-6 text-sm sm:text-base">
+                  {summary}
+                </p>
+              )}
+              {slug && (
+                <Button render={<a href={`/products/${slug}`} />}>
+                  Explore Product →
+                </Button>
+              )}
+            </section>
+          );
+        }
+        if (type === "mediaBlock") {
+          const media = record(block["media"]);
+          const url = media ? stringValue(media, "url") : null;
+          const alt = media
+            ? stringValue(media, "alt")
+            : stringValue(block, "caption");
+          if (!url) return null;
+          return (
+            <figure className="cms-media-block my-10 text-center" key={index}>
+              <img
+                src={url}
+                alt={alt ?? ""}
+                className="rounded-xl border border-white/10 max-h-[500px] w-auto mx-auto object-cover"
+              />
+              {stringValue(block, "caption") && (
+                <figcaption className="mt-2 text-xs text-neutral-400 font-mono">
+                  {stringValue(block, "caption")}
+                </figcaption>
+              )}
+            </figure>
+          );
+        }
         return null;
       })}
     </div>

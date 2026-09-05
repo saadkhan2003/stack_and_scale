@@ -7,6 +7,7 @@ import {
   simpleNavItems,
   linearDropdowns,
   type LinearDropdownData,
+  type SimpleNavItem,
   caseStudiesNavItems,
 } from "./navigation";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,11 @@ import { cn } from "@/lib/utils";
 
 type NavProps = {
   currentPath?: string | undefined;
+  navItems?: readonly SimpleNavItem[] | undefined;
 };
 
-export function SiteDesktopNav({ currentPath }: NavProps) {
+export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
+  const itemsToRender = navItems && navItems.length > 0 ? navItems : simpleNavItems;
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const leaveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const navContainerRef = React.useRef<HTMLDivElement | null>(null);
@@ -93,7 +96,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
         aria-label="Main navigation"
         className="desktop-navigation flex items-center gap-0.5 bg-[#09090b]/80 border border-white/[0.08] hover:border-white/[0.16] backdrop-blur-xl rounded-full px-2 py-1 transition-all shadow-[0_2px_12px_rgba(0,0,0,0.5)]"
       >
-        {simpleNavItems.map((item) => {
+        {itemsToRender.map((item) => {
           const hasDropdown =
             item.hasSubmenu && Boolean(linearDropdowns[item.href]);
           const isOpen = activeMenu === item.href;
@@ -108,7 +111,7 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
               <a
                 href={item.href}
                 className={cn(
-                  "nav-top-link flex items-center gap-1 text-[13px] leading-none select-none tracking-tight transition-all duration-150 px-3 py-1.5 rounded-full font-normal",
+                  "nav-top-link flex items-center gap-1.5 text-[13px] leading-none select-none tracking-tight transition-all duration-150 px-3 py-1.5 rounded-full font-normal",
                   isOpen
                     ? "text-white bg-white/[0.08] font-medium"
                     : isCurrent
@@ -125,6 +128,11 @@ export function SiteDesktopNav({ currentPath }: NavProps) {
                 }}
               >
                 <span>{item.label}</span>
+                {item.badge && (
+                  <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 tracking-wider leading-none">
+                    {item.badge}
+                  </span>
+                )}
                 {hasDropdown && (
                   <ChevronDown
                     className={cn(
