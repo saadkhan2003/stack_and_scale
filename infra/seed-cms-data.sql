@@ -238,4 +238,178 @@ ON CONFLICT (id) DO UPDATE SET
   version__status = EXCLUDED.version__status,
   latest = true;
 
+-- 7. FAQS
+INSERT INTO faqs (id, question, answer, category, "order", _status, updated_at, created_at)
+VALUES
+  (1, 'Can I deploy Stack & Scale on my own VPC or bare-metal servers?', 'Yes. Stack & Scale is 100% self-hosted and sovereign. You can run it on your own hardware, Hetzner, AWS, GCP, Azure, or any Kubernetes cluster using our standard Docker Compose configurations. You retain full cryptographic control of all data.', 'Deployment', 1, 'published', NOW(), NOW()),
+  (2, 'How does the point-of-sale terminal handle internet outages?', 'Our POS runtime runs an embedded local SQLite engine on each physical terminal. All transactions, receipts, and inventory changes write to local disk instantly. When internet connectivity returns, our automated delta engine synchronizes records with central PostgreSQL using idempotent conflict resolution.', 'Architecture', 2, 'published', NOW(), NOW()),
+  (3, 'Are there per-seat or per-user monthly subscription fees?', 'No. Unlike legacy enterprise SaaS platforms that charge $150–$250 per user per month, Stack & Scale offers unlimited staff and client access under your deployment. You never pay arbitrary user-count penalties.', 'Pricing', 3, 'published', NOW(), NOW()),
+  (4, 'How does Keycloak Single Sign-On integrate with our existing directory?', 'Keycloak natively bridges with Active Directory, Azure AD, Okta, Google Workspace, and SAML 2.0 / LDAP directories. We configure PKCE OIDC endpoints with hardware security key (FIDO2 / WebAuthn) support out of the box.', 'Security', 4, 'published', NOW(), NOW()),
+  (5, 'How does ClamAV file sandboxing work for client uploads?', 'Every document, invoice, and asset uploaded via the portal or staff workspace is routed through a dedicated ClamAV daemon mirror. The file is inspected for malware signatures before being written to private encrypted MinIO object storage.', 'Security', 5, 'published', NOW(), NOW()),
+  (6, 'What kind of support and service level agreements (SLAs) are available?', 'We provide dedicated enterprise partnership options with 24/7 incident response, guaranteed 99.999% uptime SLAs, custom module engineering, and hands-on migration assistance from legacy ERP and POS monoliths.', 'Operations', 6, 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  question = EXCLUDED.question,
+  answer = EXCLUDED.answer,
+  category = EXCLUDED.category,
+  "order" = EXCLUDED."order",
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _faqs_v (id, parent_id, version_question, version_answer, version_category, version_order, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Can I deploy Stack & Scale on my own VPC or bare-metal servers?', 'Yes. Stack & Scale is 100% self-hosted and sovereign. You can run it on your own hardware, Hetzner, AWS, GCP, Azure, or any Kubernetes cluster using our standard Docker Compose configurations. You retain full cryptographic control of all data.', 'Deployment', 1, 'published', NOW(), NOW(), true),
+  (2, 2, 'How does the point-of-sale terminal handle internet outages?', 'Our POS runtime runs an embedded local SQLite engine on each physical terminal. All transactions, receipts, and inventory changes write to local disk instantly. When internet connectivity returns, our automated delta engine synchronizes records with central PostgreSQL using idempotent conflict resolution.', 'Architecture', 2, 'published', NOW(), NOW(), true),
+  (3, 3, 'Are there per-seat or per-user monthly subscription fees?', 'No. Unlike legacy enterprise SaaS platforms that charge $150–$250 per user per month, Stack & Scale offers unlimited staff and client access under your deployment. You never pay arbitrary user-count penalties.', 'Pricing', 3, 'published', NOW(), NOW(), true),
+  (4, 4, 'How does Keycloak Single Sign-On integrate with our existing directory?', 'Keycloak natively bridges with Active Directory, Azure AD, Okta, Google Workspace, and SAML 2.0 / LDAP directories. We configure PKCE OIDC endpoints with hardware security key (FIDO2 / WebAuthn) support out of the box.', 'Security', 4, 'published', NOW(), NOW(), true),
+  (5, 5, 'How does ClamAV file sandboxing work for client uploads?', 'Every document, invoice, and asset uploaded via the portal or staff workspace is routed through a dedicated ClamAV daemon mirror. The file is inspected for malware signatures before being written to private encrypted MinIO object storage.', 'Security', 5, 'published', NOW(), NOW(), true),
+  (6, 6, 'What kind of support and service level agreements (SLAs) are available?', 'We provide dedicated enterprise partnership options with 24/7 incident response, guaranteed 99.999% uptime SLAs, custom module engineering, and hands-on migration assistance from legacy ERP and POS monoliths.', 'Operations', 6, 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_question = EXCLUDED.version_question,
+  version_answer = EXCLUDED.version_answer,
+  version_category = EXCLUDED.version_category,
+  version_order = EXCLUDED.version_order,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+-- 8. TESTIMONIALS
+INSERT INTO testimonials (id, quote, author_name, author_role, company, _status, updated_at, created_at)
+VALUES
+  (1, 'We migrated 45 retail stores off legacy monolithic POS systems to Stack & Scale. Our inventory sync dropped from 12 minutes to under 80 milliseconds, and we haven''t had a single register crash during network outages.', 'Elena Rostova', 'VP of Engineering', 'Apex Global Retail', 'published', NOW(), NOW()),
+  (2, 'Having our entire database, Keycloak SSO, and MinIO storage self-hosted within our sovereign VPC gave our audit committee 100% confidence. No per-seat penalties, no cloud vendor lock-in.', 'Marcus Vance', 'Chief Technology Officer', 'Vanguard Autonomous Labs', 'published', NOW(), NOW()),
+  (3, 'The automated CRM routing and WhatsApp dispatch replaced three fragmented SaaS tools. Our operations staff now handles twice the freight volume with zero operational confusion.', 'Dr. Julian Weber', 'Head of Operations', 'Nexus Logistics GmbH', 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  quote = EXCLUDED.quote,
+  author_name = EXCLUDED.author_name,
+  author_role = EXCLUDED.author_role,
+  company = EXCLUDED.company,
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _testimonials_v (id, parent_id, version_quote, version_author_name, version_author_role, version_company, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'We migrated 45 retail stores off legacy monolithic POS systems to Stack & Scale. Our inventory sync dropped from 12 minutes to under 80 milliseconds, and we haven''t had a single register crash during network outages.', 'Elena Rostova', 'VP of Engineering', 'Apex Global Retail', 'published', NOW(), NOW(), true),
+  (2, 2, 'Having our entire database, Keycloak SSO, and MinIO storage self-hosted within our sovereign VPC gave our audit committee 100% confidence. No per-seat penalties, no cloud vendor lock-in.', 'Marcus Vance', 'Chief Technology Officer', 'Vanguard Autonomous Labs', 'published', NOW(), NOW(), true),
+  (3, 3, 'The automated CRM routing and WhatsApp dispatch replaced three fragmented SaaS tools. Our operations staff now handles twice the freight volume with zero operational confusion.', 'Dr. Julian Weber', 'Head of Operations', 'Nexus Logistics GmbH', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_quote = EXCLUDED.version_quote,
+  version_author_name = EXCLUDED.version_author_name,
+  version_author_role = EXCLUDED.version_author_role,
+  version_company = EXCLUDED.version_company,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+-- 9. INDUSTRIES
+INSERT INTO industries (id, title, slug, _status, updated_at, created_at)
+VALUES
+  (1, 'Retail & Offline Point-of-Sale', 'retail-pos', 'published', NOW(), NOW()),
+  (2, 'Warehouse & Event-Driven Logistics', 'warehouse-logistics', 'published', NOW(), NOW()),
+  (3, 'Autonomous Infrastructure & Edge Energy', 'autonomous-energy', 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  slug = EXCLUDED.slug,
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _industries_v (id, parent_id, version_title, version_slug, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Retail & Offline Point-of-Sale', 'retail-pos', 'published', NOW(), NOW(), true),
+  (2, 2, 'Warehouse & Event-Driven Logistics', 'warehouse-logistics', 'published', NOW(), NOW(), true),
+  (3, 3, 'Autonomous Infrastructure & Edge Energy', 'autonomous-energy', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+-- 10. CAREERS
+INSERT INTO careers (id, title, slug, location, employment_type, is_open, _status, updated_at, created_at)
+VALUES
+  (1, 'Senior Distributed Systems Engineer (Edge POS)', 'senior-distributed-systems-engineer', 'Remote (Global)', 'full-time', true, 'published', NOW(), NOW()),
+  (2, 'Lead Infrastructure & Cloud Architect', 'lead-infrastructure-architect', 'Berlin / Remote', 'full-time', true, 'published', NOW(), NOW()),
+  (3, 'Retail Automation Solutions Engineer', 'retail-automation-solutions-engineer', 'London / Hybrid', 'full-time', true, 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  slug = EXCLUDED.slug,
+  location = EXCLUDED.location,
+  employment_type = EXCLUDED.employment_type,
+  is_open = EXCLUDED.is_open,
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _careers_v (id, parent_id, version_title, version_slug, version_location, version_employment_type, version_is_open, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Senior Distributed Systems Engineer (Edge POS)', 'senior-distributed-systems-engineer', 'Remote (Global)', 'full-time', true, 'published', NOW(), NOW(), true),
+  (2, 2, 'Lead Infrastructure & Cloud Architect', 'lead-infrastructure-architect', 'Berlin / Remote', 'full-time', true, 'published', NOW(), NOW(), true),
+  (3, 3, 'Retail Automation Solutions Engineer', 'retail-automation-solutions-engineer', 'London / Hybrid', 'full-time', true, 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version_location = EXCLUDED.version_location,
+  version_employment_type = EXCLUDED.version_employment_type,
+  version_is_open = EXCLUDED.version_is_open,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+-- 11. PROJECTS
+INSERT INTO projects (id, title, slug, client_name, industry_id, testimonial_quote, testimonial_author, _status, updated_at, created_at)
+VALUES
+  (1, '45-Store Offline-First POS Migration', 'pos-migration', 'Apex Global Retail', 1, 'Our inventory sync dropped from 12 minutes to under 80 milliseconds.', 'Elena Rostova', 'published', NOW(), NOW()),
+  (2, 'Zero-Downtime Telemetry Gateway', 'telemetry-gateway', 'Vanguard Autonomous Labs', 3, 'No per-seat penalties, no cloud vendor lock-in.', 'Marcus Vance', 'published', NOW(), NOW()),
+  (3, 'Omnichannel WhatsApp Order Dispatch', 'order-dispatch', 'Nexus Logistics GmbH', 2, 'Our staff now handles twice the freight volume with zero operational confusion.', 'Dr. Julian Weber', 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  slug = EXCLUDED.slug,
+  client_name = EXCLUDED.client_name,
+  industry_id = EXCLUDED.industry_id,
+  testimonial_quote = EXCLUDED.testimonial_quote,
+  testimonial_author = EXCLUDED.testimonial_author,
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _projects_v (id, parent_id, version_title, version_slug, version_client_name, version_industry_id, version_testimonial_quote, version_testimonial_author, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, '45-Store Offline-First POS Migration', 'pos-migration', 'Apex Global Retail', 1, 'Our inventory sync dropped from 12 minutes to under 80 milliseconds.', 'Elena Rostova', 'published', NOW(), NOW(), true),
+  (2, 2, 'Zero-Downtime Telemetry Gateway', 'telemetry-gateway', 'Vanguard Autonomous Labs', 3, 'No per-seat penalties, no cloud vendor lock-in.', 'Marcus Vance', 'published', NOW(), NOW(), true),
+  (3, 3, 'Omnichannel WhatsApp Order Dispatch', 'order-dispatch', 'Nexus Logistics GmbH', 2, 'Our staff now handles twice the freight volume with zero operational confusion.', 'Dr. Julian Weber', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version_client_name = EXCLUDED.version_client_name,
+  version_industry_id = EXCLUDED.version_industry_id,
+  version_testimonial_quote = EXCLUDED.version_testimonial_quote,
+  version_testimonial_author = EXCLUDED.version_testimonial_author,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+-- 12. RESOURCES
+INSERT INTO resources (id, title, slug, type, _status, updated_at, created_at)
+VALUES
+  (1, 'The Sovereign Retail Architecture Blueprint', 'sovereign-retail-architecture', 'whitepaper', 'published', NOW(), NOW()),
+  (2, 'Local SQLite Replication & Offline POS Sync Guide', 'sqlite-pos-sync-guide', 'guide', 'published', NOW(), NOW()),
+  (3, 'Keycloak SSO & FIDO2 WebAuthn Hardening Manual', 'keycloak-sso-hardening', 'article', 'published', NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  slug = EXCLUDED.slug,
+  type = EXCLUDED.type,
+  _status = EXCLUDED._status,
+  updated_at = NOW();
+
+INSERT INTO _resources_v (id, parent_id, version_title, version_slug, version_type, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'The Sovereign Retail Architecture Blueprint', 'sovereign-retail-architecture', 'whitepaper', 'published', NOW(), NOW(), true),
+  (2, 2, 'Local SQLite Replication & Offline POS Sync Guide', 'sqlite-pos-sync-guide', 'guide', 'published', NOW(), NOW(), true),
+  (3, 3, 'Keycloak SSO & FIDO2 WebAuthn Hardening Manual', 'keycloak-sso-hardening', 'article', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version_type = EXCLUDED.version_type,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
 COMMIT;
