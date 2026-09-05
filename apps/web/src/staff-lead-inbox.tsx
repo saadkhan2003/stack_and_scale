@@ -193,15 +193,21 @@ export function StaffLeadInbox() {
     const nextActionAt = form.get("nextActionAt");
     const rawEst = form.get("estimatedValue");
     const estimatedValue =
-      rawEst !== null && String(rawEst).trim() !== "" && !Number.isNaN(Number(rawEst))
+      typeof rawEst === "string" &&
+      rawEst.trim() !== "" &&
+      !Number.isNaN(Number(rawEst))
         ? Number(rawEst)
         : null;
     const rawProb = form.get("probability");
     const probability =
-      rawProb !== null && String(rawProb).trim() !== "" && !Number.isNaN(Number(rawProb))
+      typeof rawProb === "string" &&
+      rawProb.trim() !== "" &&
+      !Number.isNaN(Number(rawProb))
         ? Number(rawProb)
         : 0;
-    const chosenStage = stageValue || (typeof form.get("stage") === "string" ? form.get("stage") : undefined);
+    const chosenStage =
+      stageValue ||
+      (typeof form.get("stage") === "string" ? form.get("stage") : undefined);
     const response = await fetch(
       `/api/staff/crm/leads/${encodeURIComponent(selected.id)}`,
       {

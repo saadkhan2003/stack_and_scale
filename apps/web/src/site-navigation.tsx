@@ -7,10 +7,7 @@ import {
   simpleNavItems,
   linearDropdowns,
   type LinearDropdownData,
-  automationNavItems,
-  webDevNavItems,
   caseStudiesNavItems,
-  productsNavItems,
 } from "./navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -304,11 +301,11 @@ export function SiteMobileNav({ currentPath }: NavProps) {
                 onClick={() => setMobileOpen(false)}
               >
                 <span>Products</span>
-                <span className="text-[10px] text-neutral-400 font-mono">→</span>
+                <span className="text-[10px] text-neutral-400 font-mono">
+                  →
+                </span>
               </a>
-              <span className="text-[10px] text-neutral-500 font-mono">
-                04
-              </span>
+              <span className="text-[10px] text-neutral-500 font-mono">04</span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               <a
@@ -373,11 +370,11 @@ export function SiteMobileNav({ currentPath }: NavProps) {
                 onClick={() => setMobileOpen(false)}
               >
                 <span>Resources</span>
-                <span className="text-[10px] text-neutral-400 font-mono">→</span>
+                <span className="text-[10px] text-neutral-400 font-mono">
+                  →
+                </span>
               </a>
-              <span className="text-[10px] text-neutral-500 font-mono">
-                04
-              </span>
+              <span className="text-[10px] text-neutral-500 font-mono">04</span>
             </div>
             <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
               <a
@@ -468,7 +465,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               onClick={() => setMobileOpen(false)}
             >
               <span>Approach</span>
-              <span className="text-xs text-neutral-500 font-mono">Principles</span>
+              <span className="text-xs text-neutral-500 font-mono">
+                Principles
+              </span>
             </a>
             <a
               href="/cloud"
@@ -490,7 +489,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               onClick={() => setMobileOpen(false)}
             >
               <span>Pricing &amp; Plans</span>
-              <span className="text-xs text-neutral-500 font-mono">Sovereign</span>
+              <span className="text-xs text-neutral-500 font-mono">
+                Sovereign
+              </span>
             </a>
             <a
               href="/contact"
@@ -502,7 +503,9 @@ export function SiteMobileNav({ currentPath }: NavProps) {
               onClick={() => setMobileOpen(false)}
             >
               <span>Contact</span>
-              <span className="text-xs text-neutral-500 font-mono">Enquire</span>
+              <span className="text-xs text-neutral-500 font-mono">
+                Enquire
+              </span>
             </a>
           </div>
 

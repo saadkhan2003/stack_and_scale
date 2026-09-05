@@ -303,11 +303,15 @@ export function SiteFooter() {
         <div className="pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-xs text-zinc-400">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs">
             <span>
-              &copy; {new Date().getFullYear()}{" "}Stack &amp; Scale Technologies. All rights reserved.
+              &copy; {new Date().getFullYear()} Stack &amp; Scale Technologies.
+              All rights reserved.
             </span>
             <span className="hidden sm:inline text-zinc-700">|</span>
             <span className="inline-flex items-center gap-1.5 whitespace-nowrap w-fit px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.08] font-mono text-[10px] text-zinc-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" aria-hidden="true" />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-emerald-400/80"
+                aria-hidden="true"
+              />
               SOC 2 TYPE II · OIDC 2.0 PKCE · AES-256 GCM
             </span>
           </div>

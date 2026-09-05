@@ -37,9 +37,13 @@ export function StaffProposals() {
       .then(async (response) => {
         if (!response.ok) {
           if (response.status === 401) {
-            setNotice("Sign in with authorized staff credentials to manage commercial proposals.");
+            setNotice(
+              "Sign in with authorized staff credentials to manage commercial proposals.",
+            );
           } else if (response.status === 403) {
-            setNotice("You do not have staff permissions to view commercial proposals.");
+            setNotice(
+              "You do not have staff permissions to view commercial proposals.",
+            );
           } else if (response.status === 503) {
             setNotice("Proposal service is temporarily unavailable.");
           } else {
@@ -66,7 +70,10 @@ export function StaffProposals() {
       </div>
 
       {notice ? (
-        <div className="staff-notice-banner flex items-center justify-between gap-4" role="status">
+        <div
+          className="staff-notice-banner flex items-center justify-between gap-4"
+          role="status"
+        >
           <div className="flex items-center gap-2">
             <AlertCircle
               className="h-4 w-4 shrink-0 text-petrol"

@@ -1790,7 +1790,10 @@ button[data-slot="button"][data-variant="default"] * {
   color: var(--gray-500);
   font-weight: 400;
 }
-.lead-form input:not([type="checkbox"]):not([type="hidden"]):not([type="radio"]):not([aria-hidden="true"]),
+.lead-form
+  input:not([type="checkbox"]):not([type="hidden"]):not([type="radio"]):not(
+    [aria-hidden="true"]
+  ),
 .lead-form textarea,
 .lead-form [data-slot="select-trigger"] {
   width: 100% !important;

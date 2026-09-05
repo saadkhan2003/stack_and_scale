@@ -149,9 +149,7 @@ function parseUpdate(body: Record<string, unknown>) {
     ...(typeof stage === "string" ? { stage } : {}),
     ...(ownerId !== undefined ? { ownerId } : {}),
     ...(typeof probability === "number" ? { probability } : {}),
-    ...(estimatedValue !== undefined
-      ? { estimatedValue: estimatedValue as number | null }
-      : {}),
+    ...(estimatedValue !== undefined ? { estimatedValue } : {}),
     ...(nextActionAt !== undefined ? { nextActionAt } : {}),
     ...(lostReason !== undefined ? { lostReason } : {}),
   };
