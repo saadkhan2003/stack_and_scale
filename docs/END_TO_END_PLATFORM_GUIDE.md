@@ -9,14 +9,7 @@
 
 ### Quick Pipeline Overview
 
-```mermaid
-flowchart LR
-    P1["1. Discovery<br/>(Public Web)"] --> P2["2. Lead Intake<br/>(Demo Booking)"]
-    P2 --> P3["3. Commercial Agreement<br/>(Proposal & E-Sign)"]
-    P3 --> P4["4. Portal Onboarding<br/>(Keycloak SSO)"]
-    P4 --> P5["5. Milestone Delivery<br/>(Builds & SHA-256)"]
-    P5 --> P6["6. Ongoing Ops<br/>(Billing & 99.999% SLA)"]
-```
+![Stack & Scale End-to-End Operational Lifecycle](./lifecycle-flowchart.png)
 
 ---
 

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 340" width="100%" height="100%" style="background:#070709; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#14141a"/>
+      <stop offset="100%" stop-color="#0b0b0e"/>
+    </linearGradient>
+    <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5a0"/>
+      <stop offset="100%" stop-color="#00d8f6"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f5a0"/>
+      <stop offset="100%" stop-color="#00d8f6"/>
+    </linearGradient>
+    
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    
+    <!-- Glowing Marker Arrow -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#00f5a0"/>
+    </marker>
+  </defs>
+
+  <!-- Top Title Bar -->
+  <g transform="translate(40, 32)">
+    <text x="0" y="0" fill="#ffffff" font-size="18" font-weight="700" letter-spacing="-0.02em">STACK &amp; SCALE — END-TO-END OPERATIONAL LIFECYCLE</text>
+    <text x="0" y="20" fill="#71717a" font-size="12" font-family="'JetBrains Mono', monospace">6-STAGE ENTERPRISE PIPELINE: FROM ANONYMOUS PROSPECT TO 99.999% SLA PRODUCTION</text>
+  </g>
+
+  <!-- Flow Sequence Cards (6 Stages in 2 Rows of 3 or 1 continuous row) -->
+  <!-- Let's do 6 Stages in a clean 2x3 grid or 1 horizontal chain of cards -->
+  
+  <!-- Row 1: Stages 1, 2, 3 -->
+  <!-- CARD 1 -->
+  <g transform="translate(40, 75)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#3b82f6"/>
+    <text x="16" y="26" fill="#60a5fa" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 01 · PUBLIC WEB</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Discovery &amp; Evaluation</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Explores Landing &amp; Products</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• Interactive Console &amp; Portal Demo</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 335 127 L 375 127" stroke="#00f5a0" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CARD 2 -->
+  <g transform="translate(390, 75)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#00f5a0"/>
+    <text x="16" y="26" fill="#00f5a0" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 02 · LEAD INTAKE</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Demo &amp; Qualification</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Submits /contact &amp; Demo Slot</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• Stored in Postgres ➔ Staff Alert</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 685 127 L 725 127" stroke="#00f5a0" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CARD 3 -->
+  <g transform="translate(740, 75)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#a855f7"/>
+    <text x="16" y="26" fill="#c084fc" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 03 · AGREEMENT</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Proposal &amp; E-Signature</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Scope &amp; Milestones (PROP-2026)</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• SHA-256 Fingerprint E-Sign</text>
+  </g>
+
+  <!-- Connecting Snake Down from Row 1 to Row 2 -->
+  <path d="M 885 185 L 885 200 Q 885 210 875 210 L 800 210" stroke="rgba(255,255,255,0.2)" stroke-width="2" fill="none"/>
+  <!-- Connecting line going left to stage 4 -->
+
+  <!-- Row 2: Stages 4, 5, 6 -->
+  <!-- CARD 4 -->
+  <g transform="translate(40, 205)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#06b6d4"/>
+    <text x="16" y="26" fill="#22d3ee" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 04 · ONBOARDING</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Keycloak SSO &amp; Portal</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Client Signs in via OIDC PKCE</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• Dedicated /portal/[orgId] Active</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 -->
+  <path d="M 335 257 L 375 257" stroke="#00f5a0" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CARD 5 -->
+  <g transform="translate(390, 205)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#10b981"/>
+    <text x="16" y="26" fill="#34d399" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 05 · DELIVERY</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Build Tracking &amp; Vault</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Live Build Status &amp; Next Action</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• MinIO S3 + ClamAV Scanned Bundles</text>
+  </g>
+
+  <!-- Arrow 5 -> 6 -->
+  <path d="M 685 257 L 725 257" stroke="#00f5a0" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CARD 6 -->
+  <g transform="translate(740, 205)" filter="url(#shadow)">
+    <rect width="290" height="105" rx="8" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <rect x="0" y="0" width="4" height="105" rx="2" fill="#f59e0b"/>
+    <text x="16" y="26" fill="#fbbf24" font-size="10" font-weight="700" font-family="'JetBrains Mono', monospace">STAGE 06 · OPERATIONS</text>
+    <text x="16" y="48" fill="#ffffff" font-size="15" font-weight="600">Invoicing &amp; 99.999% SLA</text>
+    <text x="16" y="70" fill="#a1a1aa" font-size="11.5">• Milestone Invoices &amp; Receipts</text>
+    <text x="16" y="88" fill="#a1a1aa" font-size="11.5">• Support Tickets &amp; Cluster Health</text>
+  </g>
+</svg>
