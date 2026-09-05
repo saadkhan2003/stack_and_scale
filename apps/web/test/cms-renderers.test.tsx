@@ -49,7 +49,9 @@ describe("CmsPageBlocks", () => {
     };
     const html = renderToStaticMarkup(<CmsPageBlocks document={doc} />);
     expect(html).toContain("cms-testimonial-group");
-    expect(html).toContain("Stack &amp; Scale transformed our warehouse telemetry.");
+    expect(html).toContain(
+      "Stack &amp; Scale transformed our warehouse telemetry.",
+    );
     expect(html).toContain("Jane Doe");
     expect(html).toContain("CTO, GlobalLogistics");
   });
@@ -63,7 +65,8 @@ describe("CmsPageBlocks", () => {
           headline: "Flagship Cloud",
           product: {
             title: "Autonomous Edge Hub",
-            summary: "High-density retail POS register with sub-second SQLite sync.",
+            summary:
+              "High-density retail POS register with sub-second SQLite sync.",
             slug: "autonomous-edge-hub",
           },
         },

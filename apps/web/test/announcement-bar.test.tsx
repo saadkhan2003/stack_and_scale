@@ -6,7 +6,9 @@ import type { CmsAnnouncement } from "../src/cms-content.js";
 describe("AnnouncementBar", () => {
   it("renders null when announcement is not provided or disabled", () => {
     expect(renderToStaticMarkup(<AnnouncementBar />)).toBe("");
-    expect(renderToStaticMarkup(<AnnouncementBar announcement={null} />)).toBe("");
+    expect(renderToStaticMarkup(<AnnouncementBar announcement={null} />)).toBe(
+      "",
+    );
     expect(
       renderToStaticMarkup(
         <AnnouncementBar announcement={{ enabled: false, text: "Promo" }} />,

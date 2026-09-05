@@ -58,7 +58,10 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
 
         {/* Center zone: Linear Floating Capsule Navigation */}
         <div className="hidden md:flex items-center justify-center">
-          <SiteDesktopNav currentPath={currentPath} navItems={dynamicNavItems} />
+          <SiteDesktopNav
+            currentPath={currentPath}
+            navItems={dynamicNavItems}
+          />
         </div>
 
         {/* Right zone: Actions matching Linear */}
@@ -82,7 +85,10 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
             >
               Log in
             </a>
-            <SiteMobileNav currentPath={currentPath} navItems={dynamicNavItems} />
+            <SiteMobileNav
+              currentPath={currentPath}
+              navItems={dynamicNavItems}
+            />
           </div>
         </div>
       </header>

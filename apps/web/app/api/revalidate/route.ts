@@ -19,10 +19,12 @@ async function handleRevalidation(request: Request) {
 
   const providedSecret = secretParam || bearerToken;
   const configuredSecret =
-    process.env["CMS_REVALIDATE_SECRET"] ||
-    process.env["CMS_PREVIEW_SECRET"];
+    process.env["CMS_REVALIDATE_SECRET"] || process.env["CMS_PREVIEW_SECRET"];
 
-  if (!providedSecret || (configuredSecret && providedSecret !== configuredSecret)) {
+  if (
+    !providedSecret ||
+    (configuredSecret && providedSecret !== configuredSecret)
+  ) {
     return NextResponse.json(
       { error: "Unauthorized: Invalid revalidation secret" },
       { status: 401 },

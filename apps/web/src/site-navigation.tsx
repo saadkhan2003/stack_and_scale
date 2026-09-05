@@ -27,7 +27,8 @@ type NavProps = {
 };
 
 export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
-  const itemsToRender = navItems && navItems.length > 0 ? navItems : simpleNavItems;
+  const itemsToRender =
+    navItems && navItems.length > 0 ? navItems : simpleNavItems;
   const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const leaveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const navContainerRef = React.useRef<HTMLDivElement | null>(null);

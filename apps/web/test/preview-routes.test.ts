@@ -18,7 +18,9 @@ describe("Preview Routes", () => {
   it("rejects preview request with missing or incorrect secret", async () => {
     process.env["CMS_PREVIEW_SECRET"] = "valid-secret-999";
 
-    const reqMissing = new Request("https://stackandscale.org/api/preview?slug=test-page");
+    const reqMissing = new Request(
+      "https://stackandscale.org/api/preview?slug=test-page",
+    );
     const resMissing = await previewGet(reqMissing);
     expect(resMissing.status).toBe(401);
 
@@ -38,7 +40,9 @@ describe("Preview Routes", () => {
     const res = await previewGet(req);
     expect(res.status).toBe(307);
     expect(mockEnable).toHaveBeenCalled();
-    expect(res.headers.get("location")).toBe("https://stackandscale.org/enterprise-mesh");
+    expect(res.headers.get("location")).toBe(
+      "https://stackandscale.org/enterprise-mesh",
+    );
   });
 
   it("redirects to collection route when collection param is specified", async () => {
@@ -49,7 +53,9 @@ describe("Preview Routes", () => {
     );
     const res = await previewGet(req);
     expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toBe("https://stackandscale.org/products/edge-pos");
+    expect(res.headers.get("location")).toBe(
+      "https://stackandscale.org/products/edge-pos",
+    );
   });
 
   it("exit-preview disables draftMode and redirects to root", async () => {

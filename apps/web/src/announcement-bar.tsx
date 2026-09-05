@@ -31,8 +31,15 @@ export function AnnouncementBar({ announcement }: AnnouncementBarProps) {
   const handleDismiss = () => {
     setDismissed(true);
     try {
-      if (typeof window !== "undefined" && window.sessionStorage && announcement.text) {
-        window.sessionStorage.setItem("announcement_dismissed", announcement.text);
+      if (
+        typeof window !== "undefined" &&
+        window.sessionStorage &&
+        announcement.text
+      ) {
+        window.sessionStorage.setItem(
+          "announcement_dismissed",
+          announcement.text,
+        );
       }
     } catch {
       // Ignore storage errors

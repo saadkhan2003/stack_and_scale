@@ -81,7 +81,9 @@ export async function getPublishedBySlug(
 
     const options: RequestInit = isDraft
       ? { cache: "no-store" }
-      : { next: { revalidate: 60, tags: [collection, `${collection}:${slug}`] } };
+      : {
+          next: { revalidate: 60, tags: [collection, `${collection}:${slug}`] },
+        };
 
     const response = await fetch(url, options);
     if (!response.ok) return null;
