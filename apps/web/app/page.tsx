@@ -1,3 +1,4 @@
+import { getPublishedBySlug } from "../src/cms-content";
 import { homepageModel } from "../src/homepage-content";
 import { metadataForPath } from "../src/seo";
 import { SiteFooter } from "../src/site-footer";
@@ -25,7 +26,47 @@ export const metadata = metadataForPath(
   "Purposeful products, services and delivery partnership for clearer operations.",
 );
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cmsPage = await getPublishedBySlug("pages", "home");
+  const layout = Array.isArray(cmsPage?.layout)
+    ? (cmsPage.layout as readonly Record<string, unknown>[])
+    : [];
+  const heroBlock = layout.find(
+    (b) => b && typeof b === "object" && b["blockType"] === "hero",
+  );
+  const eyebrow =
+    heroBlock && typeof heroBlock["eyebrow"] === "string" && heroBlock["eyebrow"]
+      ? heroBlock["eyebrow"]
+      : homepageModel.eyebrow;
+  const heading =
+    heroBlock && typeof heroBlock["heading"] === "string" && heroBlock["heading"]
+      ? heroBlock["heading"]
+      : homepageModel.heading;
+  const description =
+    heroBlock &&
+    typeof heroBlock["subheading"] === "string" &&
+    heroBlock["subheading"]
+      ? heroBlock["subheading"]
+      : homepageModel.description;
+
+  const ctas =
+    heroBlock && Array.isArray(heroBlock["ctas"])
+      ? (heroBlock["ctas"] as readonly Record<string, unknown>[])
+      : [];
+  const primaryCta = ctas[0];
+  const primaryLabel =
+    primaryCta &&
+    typeof primaryCta["label"] === "string" &&
+    primaryCta["label"]
+      ? primaryCta["label"]
+      : homepageModel.primaryAction;
+  const primaryUrl =
+    primaryCta &&
+    typeof primaryCta["url"] === "string" &&
+    primaryCta["url"]
+      ? primaryCta["url"]
+      : "#contact";
+
   return (
     <main className="site-shell bg-black text-[#ededed]">
       <SiteHeader currentPath="/" />
@@ -59,26 +100,26 @@ export default function HomePage() {
           </div>
 
           <p className="text-xs uppercase tracking-[0.25em] text-[#80ddd1] font-mono mb-4 font-semibold">
-            {homepageModel.eyebrow}
+            {eyebrow}
           </p>
 
           <h1
             id="hero-heading"
             className="text-3xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white max-w-5xl mx-auto leading-[1.1] sm:leading-[1.08] mb-5 sm:mb-6 bg-gradient-to-b from-white via-[#f4f4f5] to-[#a1a1aa] bg-clip-text text-transparent"
           >
-            {homepageModel.heading}
+            {heading}
           </h1>
 
           <p className="text-base sm:text-xl text-zinc-400 max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal">
-            {homepageModel.description}
+            {description}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 mb-10 sm:mb-12 max-w-md sm:max-w-none mx-auto">
             <Button
-              render={<a href="#contact" />}
+              render={<a href={primaryUrl} />}
               className="w-full sm:w-auto !h-11 !px-7 !text-sm !font-semibold !rounded-lg shadow-[0_0_24px_rgba(255,255,255,0.18)] !bg-white !text-black hover:!bg-[#ededed]"
             >
-              {homepageModel.primaryAction}{" "}
+              {primaryLabel}{" "}
               <span aria-hidden="true" className="ml-1">
                 →
               </span>
