@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { StackAndScaleLogo } from "./brand-logo";
 import { getPublicSearchIndex } from "./public-search";
 import { SearchDialog } from "./search-dialog";
@@ -5,12 +6,32 @@ import { SiteDesktopNav, SiteMobileNav } from "./site-navigation";
 import { getPublishedNavigation } from "./cms-content";
 import type { SimpleNavItem } from "./navigation";
 import { AnnouncementBar } from "./announcement-bar";
+import {
+  SiteHeaderAuth,
+  MobileHeaderAuthLink,
+  type SessionState,
+} from "./site-header-auth";
 
 type SiteHeaderProps = {
   currentPath?: string | undefined;
 };
 
 export async function SiteHeader({ currentPath }: SiteHeaderProps) {
+  let initialSession: SessionState | undefined = undefined;
+  try {
+    const cookieStore = await cookies();
+    const cookieStr = cookieStore.toString();
+    if (cookieStr.includes("ss_session=")) {
+      initialSession = {
+        authenticated: true,
+        role: "staff",
+        workspaceUrl: "/staff/leads",
+      };
+    }
+  } catch {
+    // Falls back gracefully on static routes
+  }
+
   const [searchEntries, cmsNav] = await Promise.all([
     getPublicSearchIndex(),
     getPublishedNavigation(),
@@ -68,26 +89,17 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden md:flex items-center gap-2.5">
             <SearchDialog entries={searchEntries} />
-            <a
-              href="/signin"
-              className="text-[13.5px] font-medium text-black bg-white hover:bg-neutral-200 px-4 py-1.5 rounded-lg transition-all whitespace-nowrap shadow-sm"
-            >
-              Sign in
-            </a>
+            <SiteHeaderAuth initialSession={initialSession} />
           </div>
 
           {/* Mobile menu trigger, fast search, and sign-in */}
           <div className="flex items-center gap-1.5 md:hidden">
             <SearchDialog entries={searchEntries} />
-            <a
-              href="/signin"
-              className="text-xs font-medium text-neutral-300 hover:text-white px-2 py-1 hidden sm:inline"
-            >
-              Log in
-            </a>
+            <MobileHeaderAuthLink initialSession={initialSession} />
             <SiteMobileNav
               currentPath={currentPath}
               navItems={dynamicNavItems}
+              initialSession={initialSession}
             />
           </div>
         </div>

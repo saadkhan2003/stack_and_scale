@@ -7,11 +7,13 @@ export async function GET(request: Request) {
   const cookie = request.headers.get("cookie") ?? "";
   const access = await resolveStaffAccess(cookie);
   const isStaff = access.state === "ready";
+  const hasSession = isStaff || cookie.includes("ss_session=");
 
   return NextResponse.json(
     {
-      authenticated: isStaff,
-      role: isStaff ? "staff" : "anonymous",
+      authenticated: hasSession,
+      role: isStaff ? "staff" : hasSession ? "user" : "anonymous",
+      workspaceUrl: isStaff ? "/staff/leads" : "/portal/demo",
     },
     {
       headers: {

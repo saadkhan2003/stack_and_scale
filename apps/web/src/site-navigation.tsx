@@ -20,10 +20,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useSessionAuth, type SessionState } from "./site-header-auth";
 
 type NavProps = {
   currentPath?: string | undefined;
   navItems?: readonly SimpleNavItem[] | undefined;
+  initialSession?: SessionState | undefined;
 };
 
 export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
@@ -274,8 +276,9 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
   );
 }
 
-export function SiteMobileNav({ currentPath }: NavProps) {
+export function SiteMobileNav({ currentPath, initialSession }: NavProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const session = useSessionAuth(initialSession);
 
   return (
     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -520,20 +523,50 @@ export function SiteMobileNav({ currentPath }: NavProps) {
 
           {/* CTA Action Buttons */}
           <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2.5">
-            <a
-              href="/signin"
-              className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md !bg-white !text-black font-semibold text-sm hover:!bg-neutral-200 transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Sign In
-            </a>
-            <a
-              href="/#contact"
-              className="w-full inline-flex items-center justify-center py-2 px-4 rounded-md bg-black text-white border border-white/20 font-medium text-sm hover:bg-neutral-900 transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Get a Demo
-            </a>
+            {session.authenticated ? (
+              <>
+                <a
+                  href={
+                    session.role === "staff" || session.role === "admin"
+                      ? "/staff/leads"
+                      : (session.workspaceUrl ?? "/portal/demo")
+                  }
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-md !bg-white !text-black font-semibold text-sm hover:!bg-neutral-200 transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>
+                    {session.role === "staff" || session.role === "admin"
+                      ? "Staff Workspace"
+                      : "Client Portal"}
+                  </span>
+                </a>
+                <a
+                  href="/api/auth/logout"
+                  className="w-full inline-flex items-center justify-center py-2 px-4 rounded-md bg-white/5 text-neutral-300 border border-white/10 font-medium text-sm hover:bg-white/10 transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign Out
+                </a>
+              </>
+            ) : (
+              <>
+                <a
+                  href="/signin"
+                  className="w-full inline-flex items-center justify-center py-2.5 px-4 rounded-md !bg-white !text-black font-semibold text-sm hover:!bg-neutral-200 transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign In
+                </a>
+                <a
+                  href="/#contact"
+                  className="w-full inline-flex items-center justify-center py-2 px-4 rounded-md bg-black text-white border border-white/20 font-medium text-sm hover:bg-neutral-900 transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Get a Demo
+                </a>
+              </>
+            )}
           </div>
         </div>
       </SheetContent>
