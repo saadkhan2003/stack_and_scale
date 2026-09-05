@@ -138,9 +138,15 @@ function getStageBadgeVariant(stage: string) {
   }
 }
 
-async function extractErrorMessage(response: Response, fallback: string): Promise<string> {
+async function extractErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
   try {
-    const body = await response.json() as { message?: string; error?: string };
+    const body = (await response.json()) as {
+      message?: string;
+      error?: string;
+    };
     return body.message ?? body.error ?? fallback;
   } catch {
     return fallback;
@@ -182,7 +188,9 @@ export function StaffLeadInbox() {
 
   const loadStaff = async () => {
     try {
-      const response = await fetch("/api/staff/crm/staff", { cache: "no-store" });
+      const response = await fetch("/api/staff/crm/staff", {
+        cache: "no-store",
+      });
       if (response.ok) {
         const payload = (await response.json()) as { data: StaffMember[] };
         setStaffList(payload.data);
@@ -266,7 +274,10 @@ export function StaffLeadInbox() {
     );
     setIsUpdating(false);
     if (!response.ok) {
-      const msg = await extractErrorMessage(response, "Unable to update this lead.");
+      const msg = await extractErrorMessage(
+        response,
+        "Unable to update this lead.",
+      );
       setNotice(msg);
       playStaffCue("error");
       return;
@@ -290,7 +301,10 @@ export function StaffLeadInbox() {
       },
     );
     if (!response.ok) {
-      const msg = await extractErrorMessage(response, "Unable to add the note.");
+      const msg = await extractErrorMessage(
+        response,
+        "Unable to add the note.",
+      );
       setNotice(msg);
       playStaffCue("error");
       return;
@@ -303,7 +317,8 @@ export function StaffLeadInbox() {
   const task = async (form: FormData) => {
     if (!selected) return;
     const title = form.get("title");
-    const resolvedAssignee = assigneeValue === "unassigned" ? null : assigneeValue;
+    const resolvedAssignee =
+      assigneeValue === "unassigned" ? null : assigneeValue;
     const dueAt = form.get("dueAt");
     if (typeof title !== "string" || !title.trim()) return;
     const response = await fetch(
@@ -322,7 +337,10 @@ export function StaffLeadInbox() {
       },
     );
     if (!response.ok) {
-      const msg = await extractErrorMessage(response, "Unable to create the follow-up task.");
+      const msg = await extractErrorMessage(
+        response,
+        "Unable to create the follow-up task.",
+      );
       setNotice(msg);
       playStaffCue("error");
       return;
@@ -341,7 +359,10 @@ export function StaffLeadInbox() {
       { method: "PATCH" },
     );
     if (!response.ok) {
-      const msg = await extractErrorMessage(response, "Unable to complete the follow-up task.");
+      const msg = await extractErrorMessage(
+        response,
+        "Unable to complete the follow-up task.",
+      );
       setNotice(msg);
       playStaffCue("error");
     } else {
@@ -369,10 +390,10 @@ export function StaffLeadInbox() {
     : 0;
   const noteCount = selected ? selected.notes.length : 0;
 
-  const staffOptions = useMemo(() => [
-    { id: "unassigned", name: "Unassigned", email: "" },
-    ...staffList,
-  ], [staffList]);
+  const staffOptions = useMemo(
+    () => [{ id: "unassigned", name: "Unassigned", email: "" }, ...staffList],
+    [staffList],
+  );
 
   return (
     <section className="staff-crm" aria-labelledby="crm-heading">
@@ -496,7 +517,10 @@ export function StaffLeadInbox() {
             </header>
 
             {/* Tab Navigation */}
-            <nav className="staff-detail-tabs-nav" aria-label="Lead profile sections">
+            <nav
+              className="staff-detail-tabs-nav"
+              aria-label="Lead profile sections"
+            >
               <button
                 type="button"
                 className={`staff-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
@@ -546,14 +570,20 @@ export function StaffLeadInbox() {
                   aria-labelledby="sensitive-heading"
                 >
                   <div className="staff-sensitive-header">
-                    <div className="staff-sensitive-icon-wrap" aria-hidden="true">
+                    <div
+                      className="staff-sensitive-icon-wrap"
+                      aria-hidden="true"
+                    >
                       <Lock className="h-4 w-4 text-petrol" />
                     </div>
                     <div>
-                      <h3 id="sensitive-heading">Sensitive Lead Intelligence</h3>
+                      <h3 id="sensitive-heading">
+                        Sensitive Lead Intelligence
+                      </h3>
                       <p>
                         Confidential source data visible strictly to authorized
-                        staff. These values cannot be modified directly in the CRM.
+                        staff. These values cannot be modified directly in the
+                        CRM.
                       </p>
                     </div>
                   </div>
@@ -631,7 +661,10 @@ export function StaffLeadInbox() {
 
                 {/* Proposal CTA — shown when stage is proposal */}
                 {selected.stage.toLowerCase() === "proposal" ? (
-                  <section className="staff-form-card" aria-label="Proposal actions">
+                  <section
+                    className="staff-form-card"
+                    aria-label="Proposal actions"
+                  >
                     <div className="staff-section-header">
                       <FilePlus
                         className="h-4 w-4 text-solar shrink-0"
@@ -680,7 +713,9 @@ export function StaffLeadInbox() {
                       Lead Owner
                       <Select
                         value={ownerValue}
-                        onValueChange={(val) => setOwnerValue(val ?? "unassigned")}
+                        onValueChange={(val) =>
+                          setOwnerValue(val ?? "unassigned")
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select owner..." />
@@ -690,7 +725,13 @@ export function StaffLeadInbox() {
                             <SelectItem key={s.id} value={s.id}>
                               {s.name}
                               {s.email ? (
-                                <span style={{ opacity: 0.6, marginLeft: "0.4rem", fontSize: "0.8em" }}>
+                                <span
+                                  style={{
+                                    opacity: 0.6,
+                                    marginLeft: "0.4rem",
+                                    fontSize: "0.8em",
+                                  }}
+                                >
                                   {s.email}
                                 </span>
                               ) : null}
@@ -758,7 +799,9 @@ export function StaffLeadInbox() {
                     </Label>
                     <div className="staff-form-actions full-span">
                       <Button type="submit" disabled={isUpdating}>
-                        {isUpdating ? "Saving changes..." : "Save lead properties"}
+                        {isUpdating
+                          ? "Saving changes..."
+                          : "Save lead properties"}
                       </Button>
                     </div>
                   </form>
@@ -790,7 +833,9 @@ export function StaffLeadInbox() {
                       className={`staff-task-item ${item.isOverdue ? "is-overdue" : ""} ${item.status === "completed" ? "is-completed" : ""}`}
                     >
                       <div className="staff-task-info">
-                        <strong className="staff-task-title">{item.title}</strong>
+                        <strong className="staff-task-title">
+                          {item.title}
+                        </strong>
                         <div className="staff-task-tags">
                           <span
                             className={`staff-task-badge ${item.isOverdue ? "badge-overdue" : "badge-status"}`}
@@ -820,7 +865,9 @@ export function StaffLeadInbox() {
                             size="sm"
                             type="button"
                           >
-                            {busyTask === item.id ? "Saving..." : "Mark Complete"}
+                            {busyTask === item.id
+                              ? "Saving..."
+                              : "Mark Complete"}
                           </Button>
                         ) : (
                           <span
@@ -840,8 +887,8 @@ export function StaffLeadInbox() {
                   {!selected.tasks.length ? (
                     <li className="staff-task-empty">
                       <span>
-                        No active follow-up tasks. Add one below to ensure client
-                        momentum.
+                        No active follow-up tasks. Add one below to ensure
+                        client momentum.
                       </span>
                     </li>
                   ) : null}
@@ -866,7 +913,9 @@ export function StaffLeadInbox() {
                       Assign To
                       <Select
                         value={assigneeValue}
-                        onValueChange={(val) => setAssigneeValue(val ?? "unassigned")}
+                        onValueChange={(val) =>
+                          setAssigneeValue(val ?? "unassigned")
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select assignee..." />
@@ -876,7 +925,13 @@ export function StaffLeadInbox() {
                             <SelectItem key={s.id} value={s.id}>
                               {s.name}
                               {s.email ? (
-                                <span style={{ opacity: 0.6, marginLeft: "0.4rem", fontSize: "0.8em" }}>
+                                <span
+                                  style={{
+                                    opacity: 0.6,
+                                    marginLeft: "0.4rem",
+                                    fontSize: "0.8em",
+                                  }}
+                                >
                                   {s.email}
                                 </span>
                               ) : null}
@@ -909,7 +964,9 @@ export function StaffLeadInbox() {
                     className="h-4 w-4 text-petrol shrink-0"
                     aria-hidden="true"
                   />
-                  <h3 id="notes-heading">Narrative Notes &amp; Collaboration</h3>
+                  <h3 id="notes-heading">
+                    Narrative Notes &amp; Collaboration
+                  </h3>
                 </div>
                 <p className="staff-field-note">
                   Append-only narrative log for team notes, call summaries, and

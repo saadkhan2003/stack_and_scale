@@ -395,7 +395,9 @@ export class CrmService {
         input.probability < 0 ||
         input.probability > 100)
     )
-      throw new BadRequestException("Probability must be an integer from 0 to 100.");
+      throw new BadRequestException(
+        "Probability must be an integer from 0 to 100.",
+      );
     const resolvedOwnerId =
       input.ownerId !== undefined
         ? await this.resolveStaffMember(

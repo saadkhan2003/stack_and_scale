@@ -43,12 +43,18 @@ export function StaffProposals() {
 
   const loadProposals = async () => {
     try {
-      const response = await fetch("/api/staff/proposals", { cache: "no-store" });
+      const response = await fetch("/api/staff/proposals", {
+        cache: "no-store",
+      });
       if (!response.ok) {
         if (response.status === 401) {
-          setNotice("Sign in with authorized staff credentials to manage commercial proposals.");
+          setNotice(
+            "Sign in with authorized staff credentials to manage commercial proposals.",
+          );
         } else if (response.status === 403) {
-          setNotice("You do not have staff permissions to view commercial proposals.");
+          setNotice(
+            "You do not have staff permissions to view commercial proposals.",
+          );
         } else if (response.status === 503) {
           setNotice("Proposal service is temporarily unavailable.");
         } else {
@@ -102,7 +108,8 @@ export function StaffProposals() {
       const validFrom = String(form.get("validFrom") ?? "").trim();
       const validUntil = String(form.get("validUntil") ?? "").trim();
       const rawValue = String(form.get("totalValue") ?? "").trim();
-      const totalValue = rawValue && !Number.isNaN(Number(rawValue)) ? Number(rawValue) : null;
+      const totalValue =
+        rawValue && !Number.isNaN(Number(rawValue)) ? Number(rawValue) : null;
 
       if (!title) {
         setNotice("Proposal title is required.");
@@ -127,9 +134,14 @@ export function StaffProposals() {
       if (!response.ok) {
         let errMsg = "Unable to create proposal.";
         try {
-          const body = (await response.json()) as { message?: string; error?: string };
+          const body = (await response.json()) as {
+            message?: string;
+            error?: string;
+          };
           errMsg = body.message ?? body.error ?? errMsg;
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         setNotice(errMsg);
         setIsCreating(false);
         return;
@@ -224,14 +236,19 @@ export function StaffProposals() {
             <li>
               <div
                 className="staff-proposal-card"
-                style={{ textAlign: "center", padding: "2.5rem 1rem", opacity: 0.55 }}
+                style={{
+                  textAlign: "center",
+                  padding: "2.5rem 1rem",
+                  opacity: 0.55,
+                }}
               >
                 <FilePlus
                   className="h-8 w-8 mx-auto mb-3 text-muted"
                   aria-hidden="true"
                 />
                 <p style={{ fontSize: "0.9rem" }}>
-                  No proposals yet. Click <strong>New Proposal</strong> to get started.
+                  No proposals yet. Click <strong>New Proposal</strong> to get
+                  started.
                 </p>
               </div>
             </li>
@@ -254,10 +271,21 @@ export function StaffProposals() {
         onClose={() => setShowModal(false)}
       >
         <div style={{ padding: "1.75rem 2rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "1.25rem",
+            }}
+          >
             <div>
-              <p className="eyebrow" style={{ marginBottom: "0.25rem" }}>Commercial Workspace</p>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0 }}>New Proposal</h2>
+              <p className="eyebrow" style={{ marginBottom: "0.25rem" }}>
+                Commercial Workspace
+              </p>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 700, margin: 0 }}>
+                New Proposal
+              </h2>
             </div>
             <button
               type="button"
@@ -296,7 +324,13 @@ export function StaffProposals() {
                 placeholder="lead_xxxxxxxx (optional)"
               />
             </Label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
+              }}
+            >
               <Label>
                 Total Value (USD)
                 <Input
@@ -317,7 +351,13 @@ export function StaffProposals() {
                 />
               </Label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
+              }}
+            >
               <Label>
                 Valid From
                 <Input name="validFrom" type="date" />
@@ -327,7 +367,14 @@ export function StaffProposals() {
                 <Input name="validUntil" type="date" />
               </Label>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "0.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "0.75rem",
+                marginTop: "0.5rem",
+              }}
+            >
               <Button
                 type="button"
                 variant="ghost"
