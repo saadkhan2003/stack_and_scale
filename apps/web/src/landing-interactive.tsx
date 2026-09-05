@@ -137,12 +137,38 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
       >
         {/* Window Chrome Header */}
         <div className="hero-console-header">
-          <div className="window-dots" aria-hidden="true">
-            <span className="dot dot-red" />
-            <span className="dot dot-yellow" />
-            <span className="dot dot-green" />
+          <div className="hero-console-bar-top">
+            <div className="window-dots" aria-hidden="true">
+              <span className="dot dot-red" />
+              <span className="dot dot-yellow" />
+              <span className="dot dot-green" />
+            </div>
+            <div className="hero-console-file-badge">
+              <span className="file-badge-dot" />
+              <span>{snippets[activeTab].file}</span>
+            </div>
+            <button
+              type="button"
+              className="copy-button transition-transform active:scale-95"
+              onClick={copyCode}
+              aria-label="Copy code to clipboard"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="text-xs text-emerald-400 font-medium">
+                    Copied
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5 text-neutral-400" />
+                  <span className="text-xs text-neutral-400">Copy</span>
+                </>
+              )}
+            </button>
           </div>
-          <div className="window-tabs" role="tablist">
+          <div className="window-tabs" role="tablist" aria-label="Code files">
             {(
               [
                 { id: "pipeline", label: "agent-pipeline.ts" },
@@ -163,26 +189,6 @@ SET sync_state = 'RECONCILED', updated_at = clock_timestamp();`,
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            className="copy-button transition-transform active:scale-95"
-            onClick={copyCode}
-            aria-label="Copy code to clipboard"
-          >
-            {copied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs text-emerald-400 font-medium">
-                  Copied
-                </span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5 text-neutral-400" />
-                <span className="text-xs text-neutral-400">Copy</span>
-              </>
-            )}
-          </button>
         </div>
 
         {/* Window Content */}

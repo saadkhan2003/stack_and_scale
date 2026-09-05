@@ -4177,12 +4177,89 @@ a.btn-primary-white {
 }
 
 .hero-console-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
   background: #0e0e12;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 640px) {
+  .hero-console-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    gap: 12px;
+  }
+  .hero-console-bar-top {
+    display: contents;
+  }
+  .hero-console-file-badge {
+    display: none;
+  }
+  .window-dots {
+    order: 1;
+  }
+  .window-tabs {
+    order: 2;
+    flex: 1;
+    justify-content: center;
+  }
+  .copy-button {
+    order: 3;
+  }
+}
+
+@media (max-width: 639px) {
+  .hero-console-header {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: #0d0d11;
+  }
+  .hero-console-bar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: #09090c;
+  }
+  .hero-console-file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2.5px 8px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    color: #d4d4d8;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .file-badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #80ddd1;
+    flex-shrink: 0;
+  }
+  .window-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #060608;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  .window-tab {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+  }
 }
 
 .window-dots {
@@ -4231,6 +4308,8 @@ a.btn-primary-white {
   border-radius: 6px;
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: 0.75rem;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
   color: #a1a1aa;
   background: transparent;
   border: 1px solid transparent;
@@ -4263,6 +4342,8 @@ a.btn-primary-white {
   border-radius: 6px;
   cursor: pointer;
   transition: all 150ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .copy-button:hover {
