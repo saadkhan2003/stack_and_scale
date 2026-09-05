@@ -635,12 +635,6 @@
 <div class="${properties.kcLogin!} sso-page-shell">
   <div class="${properties.kcLoginContainer!}">
     
-    <!-- Hero Header Pill Badge (Matching Hero on stackandscale.org) -->
-    <div class="sso-hero-pill">
-      <span class="sso-hero-dot"></span>
-      <span class="sso-hero-text">Stack &amp; Scale v2.4 &middot; Enterprise Self-Hosted Infrastructure</span>
-    </div>
-
     <!-- Main Card (.pf-v5-c-login__main) -->
     <main class="${properties.kcLoginMain!}">
       
@@ -680,29 +674,6 @@
               </div>
           </div>
         </#if>
-      </div>
-
-      <!-- Enterprise Helper Callout (exact match to apps/web/src/signin-view.tsx) -->
-      <div class="sso-helper-callout">
-        <svg class="sso-helper-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        <div>
-          <p class="sso-helper-title">Client or Staff Access?</p>
-          <p class="sso-helper-text">
-            Use your provisioned organizational email. Zero-trust sessions are backed by Keycloak SSO and hardware WebAuthn security keys.
-          </p>
-        </div>
-      </div>
-
-      <!-- Security & Legal Notes -->
-      <div class="sso-card-notes">
-        <div class="sso-note-item">
-          <svg class="sso-note-icon text-seafoam" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span class="sso-note-text">Self-Hosted Sovereign Authentication Cluster</span>
-        </div>
-        <div class="sso-note-item">
-          <svg class="sso-note-icon text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span class="sso-note-text">FIDO2 &bull; PKCE S256 &bull; Hardware Token Enforcement</span>
-        </div>
       </div>
     </main>
 
