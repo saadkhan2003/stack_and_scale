@@ -8,29 +8,32 @@ This comprehensive guide explains the complete lifecycle of how business data fl
 
 ```mermaid
 flowchart TD
-    subgraph STAGE1["Stage 1: Lead Capture"]
-        C["Real Client Prospect"] -->|Fills Contact Form| W["Public Web<br/><code>stackandscale.org/contact</code>"]
-        W -->|POST /api/leads| API["Platform API<br/><code>platform.leads</code>"]
+    subgraph STAGE1["Stage 1: Inbound Lead Capture"]
+        C["Client Prospect"] -->|"Submits Contact Form"| W["Public Website (stackandscale.org/contact)"]
+        W -->|"POST /api/leads"| API["Platform API Engine (platform.leads)"]
     end
 
     subgraph STAGE2["Stage 2: Staff CRM Triage & Conversion"]
-        API --> S["Staff CRM Inbox<br/><code>stackandscale.org/staff/leads</code>"]
-        TS["Talha Shams"] -->|Logs in via Keycloak SSO| S
-        TS -->|Qualifies Lead & Adds Notes| S
-        TS -->|Converts Lead| OPP["Commercial Opportunity<br/><code>platform.opportunities</code>"]
-        TS -->|Generates Proposal| PROP["Proposal & Line Items<br/><code>platform.proposals</code>"]
+        API -->|"New Lead Alert"| S["Staff CRM Inbox (stackandscale.org/staff/leads)"]
+        TS["Talha Shams (Staff Lead)"] -->|"SSO Login via Keycloak"| S
+        S -->|"Qualify Lead & Add Notes"| QUAL["Qualified Lead"]
+        QUAL -->|"Convert to Opportunity"| OPP["Commercial Opportunity ($45,000 USD)"]
+        OPP -->|"Generate Pricing & Scope"| PROP["Commercial Proposal & Line Items"]
     end
 
-    subgraph STAGE3["Stage 3: Client Portal & Contract"]
-        PROP --> CP["Client Portal<br/><code>/portal/[orgId]</code>"]
-        HK["Hanzala Khan"] -->|Invites Client Contact| CP
-        CP -->|Digital E-Signature| SIGN["Signed Contract & Milestone"]
-        CP -->|Uploads Specs & Assets| MINIO["MinIO S3 Vault<br/>(Scanned by ClamAV)"]
+    subgraph STAGE3["Stage 3: Client Portal & Contract Execution"]
+        PROP -->|"Publish Link"| CP["Client Portal (/portal/org-id)"]
+        HK["Hanzala Khan (Client Success)"] -->|"Onboards Client"| CP
+        CP -->|"Digital Acceptance"| SIGN["Signed Contract & Active Milestone"]
+        CP -->|"Upload Architecture Spec"| MINIO["MinIO S3 Encrypted Vault"]
+        MINIO -->|"Stream Scan"| CLAM["ClamAV Antivirus Daemon"]
     end
 
-    subgraph STAGE4["Stage 4: Infrastructure & Telemetry"]
-        MK["Mehran Khan"] -->|Monitors Telemetry| GRAF["Grafana & Loki<br/><code>localhost:3001</code>"]
-        MK -->|Runs Automated Backups| BAK["Encrypted SQL Snapshots<br/><code>/opt/stack-and-scale/backup</code>"]
+    subgraph STAGE4["Stage 4: Reliability, Telemetry & DR"]
+        SIGN -->|"Audit Logs & Metrics"| GRAF["Grafana & Loki Telemetry (localhost:3001)"]
+        CLAM -->|"Scan Events"| GRAF
+        MK["Mehran Khan (Infra Lead)"] -->|"Monitors System Health"| GRAF
+        MK -->|"Triggers Scheduled Snapshots"| BAK["Encrypted Database Dumps (/opt/stack-and-scale/backup)"]
     end
 ```
 
