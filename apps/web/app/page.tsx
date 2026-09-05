@@ -35,11 +35,15 @@ export default async function HomePage() {
     (b) => b && typeof b === "object" && b["blockType"] === "hero",
   );
   const eyebrow =
-    heroBlock && typeof heroBlock["eyebrow"] === "string" && heroBlock["eyebrow"]
+    heroBlock &&
+    typeof heroBlock["eyebrow"] === "string" &&
+    heroBlock["eyebrow"]
       ? heroBlock["eyebrow"]
       : homepageModel.eyebrow;
   const heading =
-    heroBlock && typeof heroBlock["heading"] === "string" && heroBlock["heading"]
+    heroBlock &&
+    typeof heroBlock["heading"] === "string" &&
+    heroBlock["heading"]
       ? heroBlock["heading"]
       : homepageModel.heading;
   const description =
@@ -55,15 +59,11 @@ export default async function HomePage() {
       : [];
   const primaryCta = ctas[0];
   const primaryLabel =
-    primaryCta &&
-    typeof primaryCta["label"] === "string" &&
-    primaryCta["label"]
+    primaryCta && typeof primaryCta["label"] === "string" && primaryCta["label"]
       ? primaryCta["label"]
       : homepageModel.primaryAction;
   const primaryUrl =
-    primaryCta &&
-    typeof primaryCta["url"] === "string" &&
-    primaryCta["url"]
+    primaryCta && typeof primaryCta["url"] === "string" && primaryCta["url"]
       ? primaryCta["url"]
       : "#contact";
 
