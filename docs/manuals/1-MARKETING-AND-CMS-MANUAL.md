@@ -22,14 +22,14 @@ As the **Marketing & CMS Lead**, you are responsible for:
 ### Payload CMS Admin Console
 - **Console URL:** `https://cms.stackandscale.org/admin`
 - **Email:** `msaad.official6@gmail.com`
-- **Password:** `Saad_@123` OR '087908`
+- **Password:** `StackScale2026!#Saad`
 - **Role:** `admin` (Full Editorial & Publishing Rights)
 
 ### Keycloak Staff Account
 - **IAM Console:** `https://identity.stackandscale.org`
 - **Username:** `saadkhan`
 - **Email:** `saad.khan@stackandscale.org`
-- **Password:** `Saad_@123' OR '087908`
+- **Password:** `StackScale2026!#Saad`
 - **Roles:** `admin`, `owner`, `member`
 
 ---
