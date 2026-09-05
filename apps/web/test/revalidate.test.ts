@@ -26,7 +26,11 @@ describe("/api/revalidate", () => {
     );
     const res = await POST(req);
     expect(res.status).toBe(200);
-    const json = await res.json();
+    const json = (await res.json()) as {
+      revalidated?: boolean;
+      path?: string;
+      tag?: string;
+    };
     expect(json.revalidated).toBe(true);
     expect(json.path).toBe("/products");
     expect(revalidatePath).toHaveBeenCalledWith("/products");
@@ -41,7 +45,11 @@ describe("/api/revalidate", () => {
     );
     const res = await POST(req);
     expect(res.status).toBe(200);
-    const json = await res.json();
+    const json = (await res.json()) as {
+      revalidated?: boolean;
+      path?: string;
+      tag?: string;
+    };
     expect(json.revalidated).toBe(true);
     expect(json.tag).toBe("products");
     expect(revalidatePath).toHaveBeenCalledWith("/products", "layout");

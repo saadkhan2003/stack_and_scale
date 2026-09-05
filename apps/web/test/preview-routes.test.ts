@@ -4,11 +4,13 @@ const mockEnable = vi.fn();
 const mockDisable = vi.fn();
 
 vi.mock("next/headers", () => ({
-  draftMode: vi.fn(async () => ({
-    enable: mockEnable,
-    disable: mockDisable,
-    isEnabled: false,
-  })),
+  draftMode: vi.fn(() =>
+    Promise.resolve({
+      enable: mockEnable,
+      disable: mockDisable,
+      isEnabled: false,
+    }),
+  ),
 }));
 
 import { GET as previewGet } from "../app/api/preview/route.js";

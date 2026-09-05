@@ -1,15 +1,15 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  return handleRevalidation(request);
+  return Promise.resolve(handleRevalidation(request));
 }
 
 export async function GET(request: Request) {
-  return handleRevalidation(request);
+  return Promise.resolve(handleRevalidation(request));
 }
 
-async function handleRevalidation(request: Request) {
+function handleRevalidation(request: Request) {
   const url = new URL(request.url);
   const secretParam = url.searchParams.get("secret");
   const authHeader = request.headers.get("authorization");
