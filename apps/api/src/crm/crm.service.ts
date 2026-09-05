@@ -328,7 +328,7 @@ export class CrmService {
       [organizationId],
     );
     return {
-      data: (result.rows as Array<Record<string, unknown>>).map((row) => ({
+      data: result.rows.map((row) => ({
         id: String(row["id"]),
         name: String(row["name"]),
         email: String(row["email"]),
