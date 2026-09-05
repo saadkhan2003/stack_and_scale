@@ -1,481 +1,577 @@
 /* ==========================================================================
-   STACK & SCALE — ENTERPRISE KEYCLOAK SSO THEME (v2.2)
-   Linear / Vercel Dark Glassmorphism Aesthetic
+   STACK & SCALE — NATIVE BRAND SSO THEME
+   Directly derived from apps/web/app/globals.css design tokens
    ========================================================================== */
 
-/* 1. Global Variables & Base Resets */
+/* 1. Global Reset & Brand Tokens */
 :root {
   --font-brand: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --bg-pitch: #09090b;
-  --card-bg: rgba(18, 18, 24, 0.88);
-  --card-border: rgba(255, 255, 255, 0.09);
-  --input-bg: rgba(255, 255, 255, 0.04);
-  --input-border: rgba(255, 255, 255, 0.12);
-  --input-border-focus: #3b82f6;
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #1d4ed8;
-  --text-main: #f4f4f5;
-  --text-muted: #a1a1aa;
-  --text-subtle: #71717a;
+  --font-mono: 'Geist Mono', monospace;
+  --background: #000000;
+  --card: #0c0c0c;
+  --seafoam: #80ddd1;
+  --petrol: #135d61;
+  --foreground: #ededed;
+  --muted: #888888;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --input-bg: #141414;
 }
 
 *, *::before, *::after {
   box-sizing: border-box !important;
 }
 
-html, body, #keycloak-bg {
+html, body, #keycloak-bg, .sso-body {
   margin: 0 !important;
   padding: 0 !important;
   width: 100% !important;
   min-height: 100vh !important;
-  font-family: var(--font-body) !important;
-  background-color: var(--bg-pitch) !important;
+  background-color: var(--background) !important;
   background-image: none !important;
-  color: var(--text-main) !important;
+  color: var(--foreground) !important;
+  font-family: var(--font-body) !important;
   -webkit-font-smoothing: antialiased !important;
   -moz-osx-font-smoothing: grayscale !important;
+  overflow-x: hidden;
 }
 
+/* Remove PatternFly default body styles */
 .pf-v5-c-login,
 #keycloak-bg {
-  background: var(--bg-pitch) !important;
-  background-image: none !important;
+  background: transparent !important;
 }
 
-/* 2. Ambient Lighting & Geometric Grid */
-.grid-background {
+/* 2. Architectural Blueprint Grid (exact match to apps/web/src/hero-backdrop.tsx) */
+.hero-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  select-none: none;
+  z-index: 0;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.hero-horizon {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1280px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+}
+
+.hero-grid-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black 20%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black 20%, transparent 80%);
+}
+
+.sso-ambient-orb {
+  position: fixed;
+  top: -150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 450px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(128, 221, 209, 0.08) 0%, rgba(19, 93, 97, 0.04) 40%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 3. Top Navigation Header */
+.sso-top-nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(circle at center, black 45%, transparent 85%);
-  -webkit-mask-image: radial-gradient(circle at center, black 45%, transparent 85%);
+  height: 64px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
 }
 
-.ambient-glow {
-  position: fixed;
-  border-radius: 9999px;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
-}
-
-.ambient-glow-1 {
-  top: -10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 650px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.24) 0%, rgba(29, 78, 216, 0.08) 50%, transparent 70%);
-}
-
-.ambient-glow-2 {
-  bottom: -5%;
-  right: 15%;
-  width: 480px;
-  height: 320px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
-}
-
-/* 3. Page Shell Layout */
-.pf-v5-c-login,
-.sso-page-shell {
-  position: relative !important;
-  z-index: 1 !important;
-  min-height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 40px 16px 56px !important;
-}
-
-.pf-v5-c-login__container,
-.sso-container {
-  width: 100% !important;
-  max-width: 420px !important;
-  margin: 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-}
-
-/* 4. Brand Header & Flagship Logomark */
-.pf-v5-c-login__header,
-.sso-brand-header,
-#kc-header {
-  width: 100% !important;
-  margin-bottom: 26px !important;
-  text-align: center !important;
-  padding: 0 !important;
-  display: flex !important;
-  justify-content: center !important;
-}
-
-.sso-brand-wrapper,
-#kc-header-wrapper {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  padding: 0 !important;
+.sso-top-nav-inner {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .brand-logo-link {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  text-decoration: none !important;
-  transition: opacity 0.2s ease, transform 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
 }
 
 .brand-logo-link:hover {
-  opacity: 0.92 !important;
-  transform: translateY(-1px) !important;
+  opacity: 0.85;
 }
 
 .brand-logo-icon {
-  width: 36px !important;
-  height: 36px !important;
-  display: block !important;
+  width: 26px;
+  height: 26px;
 }
 
 .brand-logo-text {
-  font-family: var(--font-brand) !important;
-  font-weight: 700 !important;
-  font-size: 21px !important;
-  letter-spacing: -0.03em !important;
-  color: #ffffff !important;
-  display: flex !important;
-  align-items: center !important;
+  font-family: var(--font-brand);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
 }
 
 .brand-part {
-  color: #ffffff !important;
-  font-weight: 700 !important;
+  color: #ffffff;
 }
 
 .brand-amp {
-  color: rgba(255, 255, 255, 0.45) !important;
-  margin: 0 4px !important;
-  font-weight: 500 !important;
-  font-size: 0.9em !important;
-  display: inline-block !important;
-  transform: translateY(-0.5px) !important;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 3px;
+  font-size: 0.88em;
 }
 
-.brand-subtitle {
-  margin: 8px 0 0 0 !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.04em !important;
-  text-transform: uppercase !important;
-  color: var(--text-subtle) !important;
+.sso-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.15s ease;
 }
 
-/* 5. Sleek Glassmorphic Card */
-.pf-v5-c-login__main,
-.sso-glass-card {
+.sso-back-link:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* 4. Layout Wrapper */
+.sso-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 16px 48px;
+}
+
+.sso-content-box {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 5. Header Pill Badge */
+.sso-header-copy {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.sso-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.sso-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--seafoam);
+  box-shadow: 0 0 8px var(--seafoam);
+}
+
+.sso-pill-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #d4d4d8;
+  letter-spacing: -0.01em;
+}
+
+/* 6. Signature .signin-card Surface */
+.sso-card {
   width: 100% !important;
-  background: var(--card-bg) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border: 1px solid var(--card-border) !important;
-  border-radius: 16px !important;
-  padding: 36px 32px 30px !important;
+  background: var(--card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  padding: 2rem !important;
   box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    0 24px 48px -12px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.04) !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
+  gap: 1.5rem !important;
 }
 
-/* 6. Card Header & Title */
-.pf-v5-c-login__main-header,
+/* Card Header matching apps/web/src/signin-view.tsx */
 .sso-card-header {
-  margin-bottom: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
   padding: 0 !important;
+  margin: 0 !important;
+}
+
+.sso-icon-wrap {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--seafoam) !important;
+  flex-shrink: 0 !important;
+}
+
+.sso-card-title-group {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.sso-card-title {
+  font-family: var(--font-brand) !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.3 !important;
+}
+
+.sso-card-subtitle {
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important;
+  color: var(--muted) !important;
+  margin-top: 0.25rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+.sso-card-body {
+  display: flex !important;
+  flex-direction: column !important;
   width: 100% !important;
 }
 
-.pf-v5-c-title,
-.sso-page-title,
-h1#kc-page-title {
-  font-family: var(--font-brand) !important;
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.025em !important;
-  color: #ffffff !important;
-  margin: 0 !important;
-  text-align: left !important;
+/* 7. Input Controls — Complete PatternFly Overhaul */
+/* Nullify PatternFly pseudo elements */
+.pf-v5-c-form-control::before,
+.pf-v5-c-form-control::after,
+.pf-v5-c-input-group::before,
+.pf-v5-c-input-group::after {
+  display: none !important;
+  content: none !important;
+  border: none !important;
 }
 
-/* 7. Form Structure — Force 100% Full Width Everywhere */
-.pf-v5-c-login__main-body,
-.sso-card-body,
-#kc-content,
-#kc-content-wrapper,
-#kc-form,
-#kc-form-wrapper,
 .pf-v5-c-form,
 #kc-form-login {
   width: 100% !important;
-  max-width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
+  gap: 1rem !important;
 }
 
 .pf-v5-c-form__group {
   width: 100% !important;
-  max-width: 100% !important;
-  margin-bottom: 18px !important;
+  margin: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: stretch !important;
 }
 
 .pf-v5-c-form__label,
 label {
   font-family: var(--font-body) !important;
-  font-size: 13px !important;
+  font-size: 0.8125rem !important;
   font-weight: 500 !important;
-  letter-spacing: -0.01em !important;
-  color: var(--text-muted) !important;
-  margin-bottom: 7px !important;
+  color: #a1a1aa !important;
+  margin-bottom: 0.5rem !important;
   display: block !important;
 }
 
 .pf-v5-c-form__label-text {
-  color: var(--text-muted) !important;
+  color: #a1a1aa !important;
+  font-weight: 500 !important;
 }
 
-/* 8. Input Fields — Override PatternFly v5 pseudo-borders and display */
-.pf-v5-c-form-control::before,
-.pf-v5-c-form-control::after {
-  display: none !important;
-}
-
+/* Single clean input box */
 .pf-v5-c-form-control {
+  all: unset !important;
   display: flex !important;
-  align-items: center !important;
   width: 100% !important;
-  max-width: 100% !important;
-  height: 44px !important;
-  background: var(--input-bg) !important;
-  border: 1px solid var(--input-border) !important;
-  border-radius: 9px !important;
-  padding: 0 !important;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25) !important;
-  overflow: hidden !important;
-}
-
-.pf-v5-c-form-control:focus-within {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: var(--input-border-focus) !important;
-  box-shadow: 
-    0 0 0 3px rgba(59, 130, 246, 0.25),
-    inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  box-sizing: border-box !important;
 }
 
 .pf-v5-c-form-control input,
-.pf-v5-c-form-control > input,
-#username,
-#password {
-  flex: 1 1 100% !important;
+#username {
   width: 100% !important;
-  min-width: 0 !important;
-  height: 100% !important;
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+  height: 44px !important;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--line-strong) !important;
+  border-radius: 8px !important;
   color: #ffffff !important;
   font-family: var(--font-body) !important;
-  font-size: 14px !important;
+  font-size: 0.875rem !important;
   padding: 0 14px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.pf-v5-c-form-control input::placeholder {
-  color: rgba(255, 255, 255, 0.25) !important;
+.pf-v5-c-form-control input:focus,
+#username:focus {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+  background: #181818 !important;
 }
 
-/* 9. Password Input Group & Toggle Button */
+/* Password Input Group */
 .pf-v5-c-input-group {
   display: flex !important;
+  align-items: center !important;
   width: 100% !important;
-  max-width: 100% !important;
   height: 44px !important;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--line-strong) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.pf-v5-c-input-group:focus-within {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1) !important;
+  background: #181818 !important;
 }
 
 .pf-v5-c-input-group__item.pf-m-fill {
   flex: 1 1 auto !important;
-  width: auto !important;
   min-width: 0 !important;
+  height: 100% !important;
 }
 
-.pf-v5-c-input-group .pf-v5-c-form-control {
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  border-right: none !important;
+.pf-v5-c-input-group .pf-v5-c-form-control,
+.pf-v5-c-input-group .pf-v5-c-form-control input {
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 14px !important;
 }
 
 .pf-v5-c-input-group__item:not(.pf-m-fill) {
   flex: 0 0 auto !important;
+  height: 100% !important;
 }
 
 .pf-v5-c-input-group button.pf-v5-c-button,
 .pf-v5-c-button.pf-m-control {
-  height: 44px !important;
+  all: unset !important;
+  height: 100% !important;
   width: 44px !important;
-  background: var(--input-bg) !important;
-  border: 1px solid var(--input-border) !important;
-  border-left: none !important;
-  border-radius: 0 9px 9px 0 !important;
-  color: var(--text-subtle) !important;
-  padding: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: color 0.15s ease, background 0.15s ease !important;
-}
-
-.pf-v5-c-input-group:focus-within button.pf-v5-c-button {
-  border-color: var(--input-border-focus) !important;
+  color: var(--muted) !important;
+  transition: color 0.15s ease !important;
 }
 
 .pf-v5-c-input-group button.pf-v5-c-button:hover {
   color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* 10. Links ("Forgot Password?") */
+/* 8. Links ("Forgot Password?") */
 .pf-v5-c-form__helper-text {
-  margin-top: 8px !important;
+  margin-top: 6px !important;
   text-align: right !important;
   width: 100% !important;
 }
 
-.pf-v5-c-helper-text__item-text a,
-a,
-.sso-subtle-link {
-  color: #60a5fa !important;
-  font-size: 13px !important;
+.pf-v5-c-helper-text__item-text a {
+  color: var(--muted) !important;
+  font-size: 0.8125rem !important;
   font-weight: 500 !important;
   text-decoration: none !important;
-  transition: color 0.15s ease, text-decoration 0.15s ease !important;
+  transition: color 0.15s ease !important;
 }
 
-.pf-v5-c-helper-text__item-text a:hover,
-a:hover,
-.sso-subtle-link:hover {
-  color: #93c5fd !important;
+.pf-v5-c-helper-text__item-text a:hover {
+  color: #ffffff !important;
   text-decoration: underline !important;
 }
 
-/* 11. Primary Action Button ("Sign In") */
+/* 9. Signature Vercel/Linear White Primary Button (exact match to .signin-button) */
 .pf-v5-c-form__actions {
   width: 100% !important;
-  max-width: 100% !important;
-  margin-top: 24px !important;
-  display: flex !important;
+  margin-top: 0.75rem !important;
 }
 
 button.pf-v5-c-button.pf-m-primary,
 #kc-login {
-  width: 100% !important;
-  height: 44px !important;
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%) !important;
-  border: 1px solid rgba(59, 130, 246, 0.6) !important;
-  border-radius: 9px !important;
-  color: #ffffff !important;
-  font-family: var(--font-brand) !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  letter-spacing: -0.01em !important;
-  cursor: pointer !important;
-  box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 4px 14px rgba(37, 99, 235, 0.45) !important;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  all: unset !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  width: 100% !important;
+  height: 44px !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-family: var(--font-brand) !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
 }
 
 button.pf-v5-c-button.pf-m-primary:hover,
 #kc-login:hover {
-  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
-  border-color: rgba(96, 165, 250, 0.8) !important;
-  box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 6px 20px rgba(37, 99, 235, 0.6) !important;
+  background: #ededed !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15) !important;
 }
 
 button.pf-v5-c-button.pf-m-primary:active,
 #kc-login:active {
   transform: translateY(0) !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  background: #e4e4e7 !important;
 }
 
-/* 12. Security Trust Badges */
-.sso-footer-badges {
-  margin-top: 28px !important;
-  padding-top: 20px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  font-size: 11px !important;
-  color: var(--text-subtle) !important;
-  letter-spacing: 0.02em !important;
+/* 10. Helper Callout (matching .signin-helper-callout) */
+.sso-helper-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
 }
 
-.badge-item {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 5px !important;
-  color: var(--text-muted) !important;
+.sso-helper-icon {
+  color: var(--seafoam);
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-.badge-item svg {
-  color: #3b82f6 !important;
+.sso-helper-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
 }
 
-.badge-separator {
-  color: rgba(255, 255, 255, 0.2) !important;
+.sso-helper-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
 }
 
-/* 13. Mobile Responsiveness */
+/* 11. Security & Legal Notes (matching .signin-notes) */
+.sso-card-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.sso-note-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sso-note-icon {
+  flex-shrink: 0;
+}
+
+.text-seafoam {
+  color: var(--seafoam);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.sso-note-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+/* 12. Alert Banners */
+.sso-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.alert-error,
+.alert-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+/* 13. Mobile Adaptation */
 @media (max-width: 480px) {
-  .pf-v5-c-login__main,
-  .sso-glass-card {
-    padding: 28px 20px 24px !important;
-    border-radius: 14px !important;
+  .sso-wrapper {
+    padding: 80px 12px 32px;
   }
-  
-  .sso-page-title,
-  h1#kc-page-title {
-    font-size: 20px !important;
+  .sso-card {
+    padding: 1.5rem 1.15rem !important;
+    gap: 1.25rem !important;
   }
-
-  .sso-footer-badges {
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+  .sso-top-nav {
+    padding: 0 16px;
   }
 }
