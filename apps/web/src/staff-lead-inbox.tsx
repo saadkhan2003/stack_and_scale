@@ -15,6 +15,10 @@ import {
   Shield,
   Sparkles,
   TrendingUp,
+  FilePlus,
+  LayoutList,
+  ClipboardList,
+  Activity,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +89,15 @@ type KnowledgeSuggestion = {
   review_at: string;
 };
 
+type StaffMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+type TabId = "overview" | "tasks" | "notes" | "timeline";
+
 export const sensitiveLeadFields = [
   { key: "email", label: "Email", editable: false },
   { key: "phone", label: "Phone", editable: false },
@@ -125,6 +138,15 @@ function getStageBadgeVariant(stage: string) {
   }
 }
 
+async function extractErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = await response.json() as { message?: string; error?: string };
+    return body.message ?? body.error ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export function StaffLeadInbox() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selected, setSelected] = useState<Detail | null>(null);
@@ -134,6 +156,10 @@ export function StaffLeadInbox() {
   const [suggestions, setSuggestions] = useState<KnowledgeSuggestion[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stageValue, setStageValue] = useState<string>("new");
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [ownerValue, setOwnerValue] = useState<string>("unassigned");
+  const [assigneeValue, setAssigneeValue] = useState<string>("unassigned");
 
   const refresh = async () => {
     const response = await fetch("/api/staff/crm/leads", { cache: "no-store" });
@@ -154,8 +180,21 @@ export function StaffLeadInbox() {
     setNotice(payload.data.length ? "" : "No leads yet.");
   };
 
+  const loadStaff = async () => {
+    try {
+      const response = await fetch("/api/staff/crm/staff", { cache: "no-store" });
+      if (response.ok) {
+        const payload = (await response.json()) as { data: StaffMember[] };
+        setStaffList(payload.data);
+      }
+    } catch {
+      // Staff list is optional — form still works without it
+    }
+  };
+
   useEffect(() => {
     void refresh();
+    void loadStaff();
   }, []);
 
   const open = async (leadId: string) => {
@@ -171,6 +210,8 @@ export function StaffLeadInbox() {
     const payload = (await response.json()) as { data: Detail };
     setSelected(payload.data);
     setStageValue(payload.data.stage.toLowerCase());
+    setOwnerValue(payload.data.ownerId ?? "unassigned");
+    setAssigneeValue("unassigned");
     const suggestionsResponse = await fetch(
       `/api/staff/operations/knowledge/suggestions?leadId=${encodeURIComponent(leadId)}`,
       { cache: "no-store" },
@@ -189,7 +230,7 @@ export function StaffLeadInbox() {
   const update = async (form: FormData) => {
     if (!selected) return;
     setIsUpdating(true);
-    const ownerId = form.get("ownerId");
+    const resolvedOwner = ownerValue === "unassigned" ? null : ownerValue;
     const nextActionAt = form.get("nextActionAt");
     const rawEst = form.get("estimatedValue");
     const estimatedValue =
@@ -205,22 +246,16 @@ export function StaffLeadInbox() {
       !Number.isNaN(Number(rawProb))
         ? Number(rawProb)
         : 0;
-    const chosenStage =
-      stageValue ||
-      (typeof form.get("stage") === "string" ? form.get("stage") : undefined);
     const response = await fetch(
       `/api/staff/crm/leads/${encodeURIComponent(selected.id)}`,
       {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          stage: chosenStage,
+          stage: stageValue,
           probability,
           estimatedValue,
-          ownerId:
-            typeof ownerId === "string" && ownerId.trim()
-              ? ownerId.trim()
-              : null,
+          ownerId: resolvedOwner,
           nextActionAt:
             typeof nextActionAt === "string" && nextActionAt
               ? new Date(nextActionAt).toISOString()
@@ -231,10 +266,12 @@ export function StaffLeadInbox() {
     );
     setIsUpdating(false);
     if (!response.ok) {
-      setNotice("Unable to update this lead.");
+      const msg = await extractErrorMessage(response, "Unable to update this lead.");
+      setNotice(msg);
       playStaffCue("error");
       return;
     }
+    setNotice("");
     await open(selected.id);
     await refresh();
     playStaffCue("success");
@@ -253,10 +290,12 @@ export function StaffLeadInbox() {
       },
     );
     if (!response.ok) {
-      setNotice("Unable to add the note.");
+      const msg = await extractErrorMessage(response, "Unable to add the note.");
+      setNotice(msg);
       playStaffCue("error");
       return;
     }
+    setNotice("");
     await open(selected.id);
     playStaffCue("success");
   };
@@ -264,7 +303,7 @@ export function StaffLeadInbox() {
   const task = async (form: FormData) => {
     if (!selected) return;
     const title = form.get("title");
-    const assigneeId = form.get("assigneeId");
+    const resolvedAssignee = assigneeValue === "unassigned" ? null : assigneeValue;
     const dueAt = form.get("dueAt");
     if (typeof title !== "string" || !title.trim()) return;
     const response = await fetch(
@@ -274,10 +313,7 @@ export function StaffLeadInbox() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           title,
-          assigneeId:
-            typeof assigneeId === "string" && assigneeId.trim()
-              ? assigneeId.trim()
-              : null,
+          assigneeId: resolvedAssignee,
           dueAt:
             typeof dueAt === "string" && dueAt
               ? new Date(dueAt).toISOString()
@@ -286,10 +322,13 @@ export function StaffLeadInbox() {
       },
     );
     if (!response.ok) {
-      setNotice("Unable to create the follow-up task.");
+      const msg = await extractErrorMessage(response, "Unable to create the follow-up task.");
+      setNotice(msg);
       playStaffCue("error");
       return;
     }
+    setNotice("");
+    setAssigneeValue("unassigned");
     await open(selected.id);
     playStaffCue("success");
   };
@@ -302,9 +341,11 @@ export function StaffLeadInbox() {
       { method: "PATCH" },
     );
     if (!response.ok) {
-      setNotice("Unable to complete the follow-up task.");
+      const msg = await extractErrorMessage(response, "Unable to complete the follow-up task.");
+      setNotice(msg);
       playStaffCue("error");
     } else {
+      setNotice("");
       await open(selected.id);
       playStaffCue("check");
     }
@@ -323,11 +364,21 @@ export function StaffLeadInbox() {
     );
   }, [leads, searchQuery]);
 
+  const openTaskCount = selected
+    ? selected.tasks.filter((t) => t.status !== "completed").length
+    : 0;
+  const noteCount = selected ? selected.notes.length : 0;
+
+  const staffOptions = useMemo(() => [
+    { id: "unassigned", name: "Unassigned", email: "" },
+    ...staffList,
+  ], [staffList]);
+
   return (
     <section className="staff-crm" aria-labelledby="crm-heading">
       <div className="staff-crm-header">
         <div>
-          <p className="eyebrow">Staff CRM &middot; Pipeline Desk</p>
+          <p className="eyebrow">Staff CRM · Pipeline Desk</p>
           <h1 id="crm-heading">Lead inbox</h1>
           <p className="staff-crm-lede">
             A verified operational record of client relationships, stage
@@ -444,384 +495,500 @@ export function StaffLeadInbox() {
               </div>
             </header>
 
-            {/* Sensitive Customer Intelligence Card */}
-            <section
-              className="staff-sensitive"
-              aria-labelledby="sensitive-heading"
-            >
-              <div className="staff-sensitive-header">
-                <div className="staff-sensitive-icon-wrap" aria-hidden="true">
-                  <Lock className="h-4 w-4 text-petrol" />
-                </div>
-                <div>
-                  <h3 id="sensitive-heading">Sensitive Lead Intelligence</h3>
-                  <p>
-                    Confidential source data visible strictly to authorized
-                    staff. These values cannot be modified directly in the CRM.
-                  </p>
-                </div>
-              </div>
-              <dl>
-                <div>
-                  <dt>
-                    <Mail
-                      className="h-3 w-3 inline mr-1 text-muted"
-                      aria-hidden="true"
-                    />
-                    Email
-                  </dt>
-                  <dd>{selected.email}</dd>
-                </div>
-                <div>
-                  <dt>
-                    <Phone
-                      className="h-3 w-3 inline mr-1 text-muted"
-                      aria-hidden="true"
-                    />
-                    Phone
-                  </dt>
-                  <dd>{selected.phone ?? "Not provided"}</dd>
-                </div>
-                <div className="full-span">
-                  <dt>
-                    <MessageSquare
-                      className="h-3 w-3 inline mr-1 text-muted"
-                      aria-hidden="true"
-                    />
-                    Original enquiry
-                  </dt>
-                  <dd>{selected.message ?? "Not provided"}</dd>
-                </div>
-                <div>
-                  <dt>
-                    <Shield
-                      className="h-3 w-3 inline mr-1 text-muted"
-                      aria-hidden="true"
-                    />
-                    Consent recorded
-                  </dt>
-                  <dd>{formatDate(selected.consentAt)}</dd>
-                </div>
-              </dl>
-            </section>
+            {/* Tab Navigation */}
+            <nav className="staff-detail-tabs-nav" aria-label="Lead profile sections">
+              <button
+                type="button"
+                className={`staff-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("overview")}
+              >
+                <LayoutList className="h-3.5 w-3.5" aria-hidden="true" />
+                Overview &amp; Deal
+              </button>
+              <button
+                type="button"
+                className={`staff-tab-btn ${activeTab === "tasks" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("tasks")}
+              >
+                <ClipboardList className="h-3.5 w-3.5" aria-hidden="true" />
+                Follow-up Tasks
+                {openTaskCount > 0 ? (
+                  <span className="staff-tab-count">{openTaskCount}</span>
+                ) : null}
+              </button>
+              <button
+                type="button"
+                className={`staff-tab-btn ${activeTab === "notes" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("notes")}
+              >
+                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+                Narrative Notes
+                {noteCount > 0 ? (
+                  <span className="staff-tab-count">{noteCount}</span>
+                ) : null}
+              </button>
+              <button
+                type="button"
+                className={`staff-tab-btn ${activeTab === "timeline" ? "is-active" : ""}`}
+                onClick={() => setActiveTab("timeline")}
+              >
+                <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+                Audit Timeline
+              </button>
+            </nav>
 
-            {/* Suggested Procedures / Knowledge */}
-            {suggestions.length ? (
+            {/* ── TAB 1: Overview & Deal ── */}
+            {activeTab === "overview" ? (
+              <>
+                {/* Sensitive Customer Intelligence Card */}
+                <section
+                  className="staff-sensitive"
+                  aria-labelledby="sensitive-heading"
+                >
+                  <div className="staff-sensitive-header">
+                    <div className="staff-sensitive-icon-wrap" aria-hidden="true">
+                      <Lock className="h-4 w-4 text-petrol" />
+                    </div>
+                    <div>
+                      <h3 id="sensitive-heading">Sensitive Lead Intelligence</h3>
+                      <p>
+                        Confidential source data visible strictly to authorized
+                        staff. These values cannot be modified directly in the CRM.
+                      </p>
+                    </div>
+                  </div>
+                  <dl>
+                    <div>
+                      <dt>
+                        <Mail
+                          className="h-3 w-3 inline mr-1 text-muted"
+                          aria-hidden="true"
+                        />
+                        Email
+                      </dt>
+                      <dd>{selected.email}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <Phone
+                          className="h-3 w-3 inline mr-1 text-muted"
+                          aria-hidden="true"
+                        />
+                        Phone
+                      </dt>
+                      <dd>{selected.phone ?? "Not provided"}</dd>
+                    </div>
+                    <div className="full-span">
+                      <dt>
+                        <MessageSquare
+                          className="h-3 w-3 inline mr-1 text-muted"
+                          aria-hidden="true"
+                        />
+                        Original enquiry
+                      </dt>
+                      <dd>{selected.message ?? "Not provided"}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <Shield
+                          className="h-3 w-3 inline mr-1 text-muted"
+                          aria-hidden="true"
+                        />
+                        Consent recorded
+                      </dt>
+                      <dd>{formatDate(selected.consentAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                {/* Suggested Procedures / Knowledge */}
+                {suggestions.length ? (
+                  <section
+                    className="staff-knowledge-card"
+                    aria-labelledby="knowledge-suggestions-heading"
+                  >
+                    <div className="staff-section-header">
+                      <Sparkles
+                        className="h-4 w-4 text-solar shrink-0"
+                        aria-hidden="true"
+                      />
+                      <h3 id="knowledge-suggestions-heading">
+                        Suggested SOP &amp; Playbooks
+                      </h3>
+                    </div>
+                    <ul className="staff-suggestion-list">
+                      {suggestions.map((item) => (
+                        <li key={item.id}>
+                          <span className="staff-suggestion-title">
+                            {item.title}
+                          </span>
+                          <Badge variant="secondary">{item.content_type}</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
+
+                {/* Proposal CTA — shown when stage is proposal */}
+                {selected.stage.toLowerCase() === "proposal" ? (
+                  <section className="staff-form-card" aria-label="Proposal actions">
+                    <div className="staff-section-header">
+                      <FilePlus
+                        className="h-4 w-4 text-solar shrink-0"
+                        aria-hidden="true"
+                      />
+                      <h3>Create Commercial Proposal</h3>
+                    </div>
+                    <p className="staff-field-note">
+                      This lead is in the <strong>Proposal</strong> stage. Draft
+                      a commercial proposal to advance the opportunity.
+                    </p>
+                    <a
+                      href={`/staff/proposals?leadId=${encodeURIComponent(selected.id)}&title=${encodeURIComponent((selected.name ?? selected.email) + " — Proposal")}&value=${encodeURIComponent(String(selected.estimatedValue ?? ""))}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold"
+                      style={{
+                        background: "rgba(250, 204, 21, 0.15)",
+                        border: "1px solid rgba(250, 204, 21, 0.35)",
+                        color: "var(--solar)",
+                      }}
+                    >
+                      <FilePlus className="h-3.5 w-3.5" aria-hidden="true" />
+                      New Proposal for {selected.name ?? selected.email}
+                    </a>
+                  </section>
+                ) : null}
+
+                {/* Commercial Management Form */}
+                <section
+                  className="staff-form-card"
+                  aria-labelledby="lead-controls-heading"
+                >
+                  <div className="staff-section-header">
+                    <TrendingUp
+                      className="h-4 w-4 text-petrol shrink-0"
+                      aria-hidden="true"
+                    />
+                    <h3 id="lead-controls-heading">
+                      Stage, Valuation &amp; Ownership
+                    </h3>
+                  </div>
+                  <form
+                    action={(form) => void update(form)}
+                    className="staff-lead-form-grid"
+                  >
+                    <Label>
+                      Lead Owner
+                      <Select
+                        value={ownerValue}
+                        onValueChange={(val) => setOwnerValue(val ?? "unassigned")}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select owner..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {staffOptions.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name}
+                              {s.email ? (
+                                <span style={{ opacity: 0.6, marginLeft: "0.4rem", fontSize: "0.8em" }}>
+                                  {s.email}
+                                </span>
+                              ) : null}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Label>
+                    <Label>
+                      Stage
+                      <Select
+                        value={stageValue}
+                        onValueChange={(val) => {
+                          if (typeof val === "string") setStageValue(val);
+                        }}
+                        name="stage"
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="qualified">Qualified</SelectItem>
+                          <SelectItem value="proposal">Proposal</SelectItem>
+                          <SelectItem value="won">Won</SelectItem>
+                          <SelectItem value="lost">Lost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Label>
+                    <Label>
+                      Probability (%)
+                      <Input
+                        defaultValue={selected.probability ?? 0}
+                        max="100"
+                        min="0"
+                        name="probability"
+                        type="number"
+                      />
+                    </Label>
+                    <Label>
+                      Estimated Value ($ USD)
+                      <Input
+                        defaultValue={selected.estimatedValue ?? ""}
+                        min="0"
+                        name="estimatedValue"
+                        placeholder="45000"
+                        type="number"
+                      />
+                    </Label>
+                    <Label>
+                      Next Scheduled Action
+                      <Input
+                        defaultValue={selected.nextActionAt?.slice(0, 16) ?? ""}
+                        name="nextActionAt"
+                        type="datetime-local"
+                      />
+                    </Label>
+                    <Label>
+                      Lost Reason (if applicable)
+                      <Input
+                        defaultValue={selected.lostReason ?? ""}
+                        name="lostReason"
+                        placeholder="Pricing, timing, competitor..."
+                      />
+                    </Label>
+                    <div className="staff-form-actions full-span">
+                      <Button type="submit" disabled={isUpdating}>
+                        {isUpdating ? "Saving changes..." : "Save lead properties"}
+                      </Button>
+                    </div>
+                  </form>
+                </section>
+              </>
+            ) : null}
+
+            {/* ── TAB 2: Follow-up Tasks ── */}
+            {activeTab === "tasks" ? (
               <section
-                className="staff-knowledge-card"
-                aria-labelledby="knowledge-suggestions-heading"
+                className="staff-tasks-card"
+                aria-labelledby="follow-up-heading"
               >
                 <div className="staff-section-header">
-                  <Sparkles
-                    className="h-4 w-4 text-solar shrink-0"
+                  <CheckCircle2
+                    className="h-4 w-4 text-petrol shrink-0"
                     aria-hidden="true"
                   />
-                  <h3 id="knowledge-suggestions-heading">
-                    Suggested SOP &amp; Playbooks
-                  </h3>
+                  <h3 id="follow-up-heading">Follow-up Tasks</h3>
                 </div>
-                <ul className="staff-suggestion-list">
-                  {suggestions.map((item) => (
-                    <li key={item.id}>
-                      <span className="staff-suggestion-title">
-                        {item.title}
-                      </span>
-                      <Badge variant="secondary">{item.content_type}</Badge>
+                <p className="staff-field-note">
+                  Action items required to keep the opportunity moving forward.
+                  Overdue items are automatically prioritized as high urgency.
+                </p>
+                <ul className="staff-task-list">
+                  {selected.tasks.map((item) => (
+                    <li
+                      key={item.id}
+                      className={`staff-task-item ${item.isOverdue ? "is-overdue" : ""} ${item.status === "completed" ? "is-completed" : ""}`}
+                    >
+                      <div className="staff-task-info">
+                        <strong className="staff-task-title">{item.title}</strong>
+                        <div className="staff-task-tags">
+                          <span
+                            className={`staff-task-badge ${item.isOverdue ? "badge-overdue" : "badge-status"}`}
+                          >
+                            {item.status}
+                          </span>
+                          <span className="staff-task-priority">
+                            {item.priority} priority
+                          </span>
+                          <span className="staff-task-due">
+                            <Clock
+                              className="h-3 w-3 inline mr-1 text-muted"
+                              aria-hidden="true"
+                            />
+                            {item.due_at
+                              ? `Due ${formatDate(item.due_at)}`
+                              : "No due date"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="staff-task-action">
+                        {item.status !== "completed" ? (
+                          <Button
+                            aria-label={`Complete ${item.title}`}
+                            disabled={busyTask === item.id}
+                            onClick={() => void completeTask(item.id)}
+                            size="sm"
+                            type="button"
+                          >
+                            {busyTask === item.id ? "Saving..." : "Mark Complete"}
+                          </Button>
+                        ) : (
+                          <span
+                            className="staff-task-completed-label"
+                            aria-label="Completed"
+                          >
+                            <CheckCircle2
+                              className="h-3.5 w-3.5 inline mr-1 text-emerald-600"
+                              aria-hidden="true"
+                            />
+                            Completed {formatDate(item.completed_at)}
+                          </span>
+                        )}
+                      </div>
                     </li>
                   ))}
+                  {!selected.tasks.length ? (
+                    <li className="staff-task-empty">
+                      <span>
+                        No active follow-up tasks. Add one below to ensure client
+                        momentum.
+                      </span>
+                    </li>
+                  ) : null}
                 </ul>
+
+                {/* Add New Task Form */}
+                <form
+                  action={(form) => void task(form)}
+                  className="staff-new-task-form"
+                >
+                  <p className="staff-form-subtitle">Add follow-up task</p>
+                  <div className="staff-task-form-grid">
+                    <Label className="title-field">
+                      Task Title
+                      <Input
+                        name="title"
+                        placeholder="e.g. Schedule discovery workshop"
+                        required
+                      />
+                    </Label>
+                    <Label>
+                      Assign To
+                      <Select
+                        value={assigneeValue}
+                        onValueChange={(val) => setAssigneeValue(val ?? "unassigned")}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select assignee..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {staffOptions.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name}
+                              {s.email ? (
+                                <span style={{ opacity: 0.6, marginLeft: "0.4rem", fontSize: "0.8em" }}>
+                                  {s.email}
+                                </span>
+                              ) : null}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Label>
+                    <Label>
+                      Due Date &amp; Time
+                      <Input name="dueAt" type="datetime-local" />
+                    </Label>
+                  </div>
+                  <Button type="submit" variant="secondary" size="sm">
+                    <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                    Create Task
+                  </Button>
+                </form>
               </section>
             ) : null}
 
-            {/* Commercial Management Form */}
-            <section
-              className="staff-form-card"
-              aria-labelledby="lead-controls-heading"
-            >
-              <div className="staff-section-header">
-                <TrendingUp
-                  className="h-4 w-4 text-petrol shrink-0"
-                  aria-hidden="true"
-                />
-                <h3 id="lead-controls-heading">
-                  Stage, Valuation &amp; Ownership
-                </h3>
-              </div>
-              <form
-                action={(form) => void update(form)}
-                className="staff-lead-form-grid"
+            {/* ── TAB 3: Narrative Notes ── */}
+            {activeTab === "notes" ? (
+              <section
+                className="staff-notes-card"
+                aria-labelledby="notes-heading"
               >
-                <Label>
-                  Owner ID
-                  <Input
-                    defaultValue={selected.ownerId ?? ""}
-                    name="ownerId"
-                    placeholder="e.g. staff-user-1"
+                <div className="staff-section-header">
+                  <MessageSquare
+                    className="h-4 w-4 text-petrol shrink-0"
+                    aria-hidden="true"
                   />
-                </Label>
-                <Label>
-                  Stage
-                  <Select
-                    value={stageValue}
-                    onValueChange={(val) => {
-                      if (typeof val === "string") setStageValue(val);
-                    }}
-                    name="stage"
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="qualified">Qualified</SelectItem>
-                      <SelectItem value="proposal">Proposal</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Label>
-                <Label>
-                  Probability (%)
-                  <Input
-                    defaultValue={selected.probability ?? 0}
-                    max="100"
-                    min="0"
-                    name="probability"
-                    type="number"
-                  />
-                </Label>
-                <Label>
-                  Estimated Value ($ USD)
-                  <Input
-                    defaultValue={selected.estimatedValue ?? ""}
-                    min="0"
-                    name="estimatedValue"
-                    placeholder="45000"
-                    type="number"
-                  />
-                </Label>
-                <Label>
-                  Next Scheduled Action
-                  <Input
-                    defaultValue={selected.nextActionAt?.slice(0, 16) ?? ""}
-                    name="nextActionAt"
-                    type="datetime-local"
-                  />
-                </Label>
-                <Label>
-                  Lost Reason (if applicable)
-                  <Input
-                    defaultValue={selected.lostReason ?? ""}
-                    name="lostReason"
-                    placeholder="Pricing, timing, competitor..."
-                  />
-                </Label>
-                <div className="staff-form-actions full-span">
-                  <Button type="submit" disabled={isUpdating}>
-                    {isUpdating ? "Saving changes..." : "Save lead properties"}
-                  </Button>
+                  <h3 id="notes-heading">Narrative Notes &amp; Collaboration</h3>
                 </div>
-              </form>
-            </section>
-
-            {/* Follow-up Tasks */}
-            <section
-              className="staff-tasks-card"
-              aria-labelledby="follow-up-heading"
-            >
-              <div className="staff-section-header">
-                <CheckCircle2
-                  className="h-4 w-4 text-petrol shrink-0"
-                  aria-hidden="true"
-                />
-                <h3 id="follow-up-heading">Follow-up Tasks</h3>
-              </div>
-              <p className="staff-field-note">
-                Action items required to keep the opportunity moving forward.
-                Overdue items are automatically prioritized as high urgency.
-              </p>
-              <ul className="staff-task-list">
-                {selected.tasks.map((item) => (
-                  <li
-                    key={item.id}
-                    className={`staff-task-item ${item.isOverdue ? "is-overdue" : ""} ${item.status === "completed" ? "is-completed" : ""}`}
-                  >
-                    <div className="staff-task-info">
-                      <strong className="staff-task-title">{item.title}</strong>
-                      <div className="staff-task-tags">
-                        <span
-                          className={`staff-task-badge ${item.isOverdue ? "badge-overdue" : "badge-status"}`}
-                        >
-                          {item.status}
-                        </span>
-                        <span className="staff-task-priority">
-                          {item.priority} priority
-                        </span>
-                        <span className="staff-task-due">
-                          <Clock
-                            className="h-3 w-3 inline mr-1 text-muted"
-                            aria-hidden="true"
-                          />
-                          {item.due_at
-                            ? `Due ${formatDate(item.due_at)}`
-                            : "No due date"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="staff-task-action">
-                      {item.status !== "completed" ? (
-                        <Button
-                          aria-label={`Complete ${item.title}`}
-                          disabled={busyTask === item.id}
-                          onClick={() => void completeTask(item.id)}
-                          size="sm"
-                          type="button"
-                        >
-                          {busyTask === item.id ? "Saving..." : "Mark Complete"}
-                        </Button>
-                      ) : (
-                        <span
-                          className="staff-task-completed-label"
-                          aria-label="Completed"
-                        >
-                          <CheckCircle2
-                            className="h-3.5 w-3.5 inline mr-1 text-emerald-600"
-                            aria-hidden="true"
-                          />
-                          Completed {formatDate(item.completed_at)}
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-                {!selected.tasks.length ? (
-                  <li className="staff-task-empty">
-                    <span>
-                      No active follow-up tasks. Add one below to ensure client
-                      momentum.
-                    </span>
-                  </li>
-                ) : null}
-              </ul>
-
-              {/* Add New Task Form */}
-              <form
-                action={(form) => void task(form)}
-                className="staff-new-task-form"
-              >
-                <p className="staff-form-subtitle">Add follow-up task</p>
-                <div className="staff-task-form-grid">
-                  <Label className="title-field">
-                    Task Title
-                    <Input
-                      name="title"
-                      placeholder="e.g. Schedule discovery workshop"
+                <p className="staff-field-note">
+                  Append-only narrative log for team notes, call summaries, and
+                  deal context.
+                </p>
+                <ul className="staff-notes-list">
+                  {selected.notes.map((item) => (
+                    <li key={item.id} className="staff-note-bubble">
+                      <p className="staff-note-text">{item.body}</p>
+                      <small className="staff-note-meta">
+                        Logged {formatDate(item.created_at)}
+                      </small>
+                    </li>
+                  ))}
+                  {!selected.notes.length ? (
+                    <li className="staff-notes-empty">
+                      <span>No collaboration notes recorded yet.</span>
+                    </li>
+                  ) : null}
+                </ul>
+                <form
+                  action={(form) => void note(form)}
+                  className="staff-note-form"
+                >
+                  <Label>
+                    Add narrative note
+                    <Textarea
+                      name="body"
+                      placeholder="Log call minutes, client feedback, or proposal requirements..."
                       required
+                      rows={3}
                     />
                   </Label>
-                  <Label>
-                    Assignee ID
-                    <Input name="assigneeId" placeholder="staff-1" />
-                  </Label>
-                  <Label>
-                    Due Date &amp; Time
-                    <Input name="dueAt" type="datetime-local" />
-                  </Label>
-                </div>
-                <Button type="submit" variant="secondary" size="sm">
-                  <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                  Create Task
-                </Button>
-              </form>
-            </section>
+                  <Button type="submit" variant="secondary" size="sm">
+                    Add note
+                  </Button>
+                </form>
+              </section>
+            ) : null}
 
-            {/* Activity & Audit Timeline */}
-            <section
-              className="staff-timeline-card"
-              aria-labelledby="timeline-heading"
-            >
-              <div className="staff-section-header">
-                <Clock
-                  className="h-4 w-4 text-petrol shrink-0"
-                  aria-hidden="true"
-                />
-                <h3 id="timeline-heading">Activity &amp; Audit Timeline</h3>
-              </div>
-              <ol className="staff-timeline">
-                {selected.timeline.map((item) => (
-                  <li
-                    key={`${item.kind}-${item.id}`}
-                    className="staff-timeline-item"
-                  >
-                    <span className="staff-timeline-kind">{item.kind}</span>
-                    <div className="staff-timeline-content">
-                      <strong className="staff-timeline-title">
-                        {item.title}
-                      </strong>
-                      <p className="staff-timeline-detail">
-                        {item.detail ?? item.status ?? item.eventType}
-                      </p>
-                      <time
-                        dateTime={String(item.occurredAt)}
-                        className="staff-timeline-time"
-                      >
-                        {formatDate(String(item.occurredAt))}
-                      </time>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-
-            {/* Narrative Notes */}
-            <section
-              className="staff-notes-card"
-              aria-labelledby="notes-heading"
-            >
-              <div className="staff-section-header">
-                <MessageSquare
-                  className="h-4 w-4 text-petrol shrink-0"
-                  aria-hidden="true"
-                />
-                <h3 id="notes-heading">Narrative Notes &amp; Collaboration</h3>
-              </div>
-              <p className="staff-field-note">
-                Append-only narrative log for team notes, call summaries, and
-                deal context.
-              </p>
-              <ul className="staff-notes-list">
-                {selected.notes.map((item) => (
-                  <li key={item.id} className="staff-note-bubble">
-                    <p className="staff-note-text">{item.body}</p>
-                    <small className="staff-note-meta">
-                      Logged {formatDate(item.created_at)}
-                    </small>
-                  </li>
-                ))}
-                {!selected.notes.length ? (
-                  <li className="staff-notes-empty">
-                    <span>No collaboration notes recorded yet.</span>
-                  </li>
-                ) : null}
-              </ul>
-              <form
-                action={(form) => void note(form)}
-                className="staff-note-form"
+            {/* ── TAB 4: Audit Timeline ── */}
+            {activeTab === "timeline" ? (
+              <section
+                className="staff-timeline-card"
+                aria-labelledby="timeline-heading"
               >
-                <Label>
-                  Add narrative note
-                  <Textarea
-                    name="body"
-                    placeholder="Log call minutes, client feedback, or proposal requirements..."
-                    required
-                    rows={3}
+                <div className="staff-section-header">
+                  <Clock
+                    className="h-4 w-4 text-petrol shrink-0"
+                    aria-hidden="true"
                   />
-                </Label>
-                <Button type="submit" variant="secondary" size="sm">
-                  Add note
-                </Button>
-              </form>
-            </section>
+                  <h3 id="timeline-heading">Activity &amp; Audit Timeline</h3>
+                </div>
+                <ol className="staff-timeline">
+                  {selected.timeline.map((item) => (
+                    <li
+                      key={`${item.kind}-${item.id}`}
+                      className="staff-timeline-item"
+                    >
+                      <span className="staff-timeline-kind">{item.kind}</span>
+                      <div className="staff-timeline-content">
+                        <strong className="staff-timeline-title">
+                          {item.title}
+                        </strong>
+                        <p className="staff-timeline-detail">
+                          {item.detail ?? item.status ?? item.eventType}
+                        </p>
+                        <time
+                          dateTime={String(item.occurredAt)}
+                          className="staff-timeline-time"
+                        >
+                          {formatDate(String(item.occurredAt))}
+                        </time>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
           </article>
         ) : (
           <div className="staff-empty-selection">

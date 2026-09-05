@@ -114,6 +114,12 @@ export class CrmSummaryController {
     const actor = await this.access.require(request, "crm:read");
     return this.crm.getSummary(actor.organizationId);
   }
+
+  @Get("staff")
+  public async staff(@Req() request: FastifyRequest) {
+    const actor = await this.access.require(request, "crm:read");
+    return this.crm.listStaff(actor.organizationId);
+  }
 }
 
 function parseUpdate(body: Record<string, unknown>) {

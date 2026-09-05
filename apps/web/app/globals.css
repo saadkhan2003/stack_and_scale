@@ -3077,6 +3077,56 @@ button[class*="group/button"][class*="secondary"]:hover {
   font-weight: 650;
   padding: 0.25rem 0.65rem;
 }
+/* Lead Detail Tabs Navigation */
+.staff-detail-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.staff-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.staff-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.staff-tab-btn.is-active {
+  color: #ffffff;
+  background: rgba(128, 221, 209, 0.14);
+  border-color: rgba(128, 221, 209, 0.35);
+}
+
+.staff-tab-count {
+  font-size: 0.7rem;
+  font-weight: 750;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.staff-tab-btn.is-active .staff-tab-count {
+  background: var(--seafoam);
+  color: #0b1517;
+}
 
 /* Sensitive Intelligence Card */
 .staff-sensitive {

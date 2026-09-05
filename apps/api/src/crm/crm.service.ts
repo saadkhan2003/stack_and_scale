@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 
 import { PlatformDatabaseService } from "../platform-database.service.js";
@@ -308,6 +313,67 @@ export class CrmService {
     };
   }
 
+  public async listStaff(organizationId: string): Promise<{
+    data: Array<{ id: string; name: string; email: string; role: string }>;
+  }> {
+    const result = await this.database.query(
+      `SELECT m.user_id AS id,
+              COALESCE(NULLIF(u.display_name, ''), split_part(u.email, '@', 1)) AS name,
+              u.email,
+              m.role
+         FROM identity.memberships m
+         JOIN identity.users u ON u.id = m.user_id
+        WHERE m.organization_id = $1 AND m.status = 'active'
+        ORDER BY name ASC`,
+      [organizationId],
+    );
+    return {
+      data: (result.rows as Array<Record<string, unknown>>).map((row) => ({
+        id: String(row["id"]),
+        name: String(row["name"]),
+        email: String(row["email"]),
+        role: String(row["role"]),
+      })),
+    };
+  }
+
+  public async resolveStaffMember(
+    identifier: string | null | undefined,
+    organizationId: string,
+    roleLabel: "Lead owner" | "Task assignee",
+  ): Promise<string | null> {
+    if (
+      identifier === undefined ||
+      identifier === null ||
+      identifier.trim() === "" ||
+      identifier.trim().toLowerCase() === "unassigned"
+    ) {
+      return null;
+    }
+    const trimmed = identifier.trim();
+    const result = await this.database.query(
+      `SELECT m.user_id
+         FROM identity.memberships m
+         JOIN identity.users u ON u.id = m.user_id
+        WHERE m.organization_id = $1
+          AND m.status = 'active'
+          AND (
+            m.user_id = $2
+            OR LOWER(u.email) = LOWER($2)
+            OR LOWER(COALESCE(u.display_name, '')) = LOWER($2)
+            OR LOWER(u.external_subject) = LOWER($2)
+          )
+        LIMIT 1`,
+      [organizationId, trimmed],
+    );
+    if (!result.rows[0]) {
+      throw new BadRequestException(
+        `${roleLabel} must be an active CRM staff member.`,
+      );
+    }
+    return String(result.rows[0]["user_id"]);
+  }
+
   public async updateLead(
     leadId: string,
     input: {
@@ -322,22 +388,22 @@ export class CrmService {
     organizationId: string,
   ): Promise<{ data: unknown }> {
     if (input.stage !== undefined && !stages.has(input.stage))
-      throw new Error("Invalid lead stage.");
+      throw new BadRequestException("Invalid lead stage.");
     if (
       input.probability !== undefined &&
       (!Number.isInteger(input.probability) ||
         input.probability < 0 ||
         input.probability > 100)
     )
-      throw new Error("Probability must be an integer from 0 to 100.");
-    if (input.ownerId) {
-      const member = await this.database.query(
-        "SELECT 1 FROM identity.memberships WHERE organization_id = $1 AND user_id = $2 AND status = 'active'",
-        [organizationId, input.ownerId],
-      );
-      if (!member.rows[0])
-        throw new Error("Lead owner must be an active CRM staff member.");
-    }
+      throw new BadRequestException("Probability must be an integer from 0 to 100.");
+    const resolvedOwnerId =
+      input.ownerId !== undefined
+        ? await this.resolveStaffMember(
+            input.ownerId,
+            organizationId,
+            "Lead owner",
+          )
+        : undefined;
     const result = await this.database.query(
       `UPDATE platform.leads
           SET stage = COALESCE($2, stage), owner_id = CASE WHEN $3::boolean THEN $4 ELSE owner_id END,
@@ -349,8 +415,8 @@ export class CrmService {
       [
         leadId,
         input.stage ?? null,
-        input.ownerId !== undefined,
-        input.ownerId ?? null,
+        resolvedOwnerId !== undefined,
+        resolvedOwnerId ?? null,
         input.probability ?? null,
         input.estimatedValue !== undefined,
         input.estimatedValue ?? null,
@@ -412,20 +478,17 @@ export class CrmService {
     organizationId: string,
   ): Promise<{ data: unknown }> {
     await this.assertLead(leadId);
-    if (assigneeId) {
-      const member = await this.database.query(
-        "SELECT 1 FROM identity.memberships WHERE organization_id = $1 AND user_id = $2 AND status = 'active'",
-        [organizationId, assigneeId],
-      );
-      if (!member.rows[0])
-        throw new Error("Task assignee must be an active CRM staff member.");
-    }
+    const resolvedAssigneeId = await this.resolveStaffMember(
+      assigneeId,
+      organizationId,
+      "Task assignee",
+    );
     const result = await this.database.query(
       `INSERT INTO platform.lead_tasks (id, lead_id, assignee_id, title, due_at)
        VALUES ($1, $2, $3, $4, $5::timestamptz)
        RETURNING id, assignee_id, title, due_at, completed_at, created_at,
                  'open' AS status, 'normal' AS priority`,
-      [`task_${randomUUID()}`, leadId, assigneeId, title, dueAt],
+      [`task_${randomUUID()}`, leadId, resolvedAssigneeId, title, dueAt],
     );
     await this.recordActivity(leadId, actorId, "task.created", {});
     return { data: toTask(result.rows[0] as LeadRow) };
