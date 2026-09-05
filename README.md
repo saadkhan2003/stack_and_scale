@@ -14,6 +14,7 @@ is in [status.md](./status.md).
 >
 > :books: **Documentation & Operational Manuals:**
 >
+> - [CMS Operations & Content Extensibility Guide](./docs/CMS_OPERATIONS_GUIDE.md)
 > - [Official Platform User Manuals](./docs/manuals/README.md)
 > - [Security Policy](./SECURITY.md)
 > - [Contributing Guide](./CONTRIBUTING.md)

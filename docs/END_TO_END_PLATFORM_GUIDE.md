@@ -15,14 +15,14 @@
 
 ### Phase Summary Matrix
 
-| Phase | Primary Actor | Key Surface / Tool | What Happens | Concrete Result |
-| :--- | :--- | :--- | :--- | :--- |
-| **1. Discovery & Evaluation** | Prospective Client | [`/`](file:///media/saad/Data/stack_and_scale/apps/web/app/page.tsx), [`/portal/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) | Client tours public site, checks edge latency, tests code console, previews demo portals | Verifies 99.999% SLA and zero lock-in architecture |
-| **2. Lead Intake & Scheduling** | Prospective Client & System | [`/contact`](file:///media/saad/Data/stack_and_scale/apps/web/app/contact/page.tsx), Resend API | Submits project inquiry and selects live demo slot | Lead stored in PostgreSQL; client gets email confirmation; staff alerted |
-| **3. Proposal & Digital E-Sign** | Solutions Lead & Client Signatory | [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts), Client Portal | Staff drafts proposal (`PROP-2026-xxxx`); client reviews scope and signs digitally | Contract transitions to `EXECUTED` with SHA-256 fingerprint; initial invoice issued |
-| **4. Onboarding & Member Setup** | Client Admin | [`/signin`](file:///media/saad/Data/stack_and_scale/apps/web/app/signin/page.tsx), [`/portal/[orgId]`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) | Client signs in via Keycloak OIDC PKCE; invites auditors and engineers | Multi-tenant team provisioned with role-based access |
-| **5. Build Tracking & Delivery** | Developers & Client Auditors | Client Portal, MinIO S3, ClamAV | Client monitors development in real time; reviews and approves SHA-256 checksums | Client downloads signed, malware-scanned release tarballs (`.tar.gz`) |
-| **6. Billing, Support & SLA** | Finance, Support & Client | Client Portal, [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx) | Automated milestone billing, PDF receipts, ticketing, and live cluster health | Long-term operational relationship maintained under SLA |
+| Phase                            | Primary Actor                     | Key Surface / Tool                                                                                                                                                                                  | What Happens                                                                             | Concrete Result                                                                     |
+| :------------------------------- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| **1. Discovery & Evaluation**    | Prospective Client                | [`/`](file:///media/saad/Data/stack_and_scale/apps/web/app/page.tsx), [`/portal/demo`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx)                 | Client tours public site, checks edge latency, tests code console, previews demo portals | Verifies 99.999% SLA and zero lock-in architecture                                  |
+| **2. Lead Intake & Scheduling**  | Prospective Client & System       | [`/contact`](file:///media/saad/Data/stack_and_scale/apps/web/app/contact/page.tsx), Resend API                                                                                                     | Submits project inquiry and selects live demo slot                                       | Lead stored in PostgreSQL; client gets email confirmation; staff alerted            |
+| **3. Proposal & Digital E-Sign** | Solutions Lead & Client Signatory | [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts), Client Portal                                                                                  | Staff drafts proposal (`PROP-2026-xxxx`); client reviews scope and signs digitally       | Contract transitions to `EXECUTED` with SHA-256 fingerprint; initial invoice issued |
+| **4. Onboarding & Member Setup** | Client Admin                      | [`/signin`](file:///media/saad/Data/stack_and_scale/apps/web/app/signin/page.tsx), [`/portal/[orgId]`](file:///media/saad/Data/stack_and_scale/apps/web/app/portal/[clientOrganizationId]/page.tsx) | Client signs in via Keycloak OIDC PKCE; invites auditors and engineers                   | Multi-tenant team provisioned with role-based access                                |
+| **5. Build Tracking & Delivery** | Developers & Client Auditors      | Client Portal, MinIO S3, ClamAV                                                                                                                                                                     | Client monitors development in real time; reviews and approves SHA-256 checksums         | Client downloads signed, malware-scanned release tarballs (`.tar.gz`)               |
+| **6. Billing, Support & SLA**    | Finance, Support & Client         | Client Portal, [`/health`](file:///media/saad/Data/stack_and_scale/apps/web/app/health/page.tsx)                                                                                                    | Automated milestone billing, PDF receipts, ticketing, and live cluster health            | Long-term operational relationship maintained under SLA                             |
 
 ---
 
@@ -80,7 +80,7 @@
 
 1. **Staff Lead Review**:
    - The Solutions Architect logs into the Staff CRM at [`/staff/leads`](file:///media/saad/Data/stack_and_scale/apps/web/app/api/staff/crm/leads/route.ts).
-   - *Security Note*: This console is strictly protected by Keycloak; anonymous visitors receive an unauthorized denial.
+   - _Security Note_: This console is strictly protected by Keycloak; anonymous visitors receive an unauthorized denial.
 2. **Scoping the Commercial Agreement**:
    - Staff structures the project deliverables (e.g., `$45,000 USD` total scope):
      - **Milestone 1 ($15,000)**: Sovereign Cloud Infrastructure & Security Hardening
@@ -105,7 +105,7 @@
      - Transparent milestone billing schedule.
 2. **Executing the Digital Signature**:
    - Signatory enters their **Legal Full Name** (e.g., `Alex Mercer`) and **Title** (e.g., `VP of Infrastructure`).
-   - Checks the legal consent checkbox: *"I confirm that I am an authorized representative and agree to these commercial terms."*
+   - Checks the legal consent checkbox: _"I confirm that I am an authorized representative and agree to these commercial terms."_
    - Clicks the green **"Accept & Sign Agreement"** button.
 3. **Cryptographic Transition**:
    - The system computes an immutable SHA-256 digital fingerprint across the agreement text, signatory name, title, and UTC timestamp.
@@ -141,9 +141,9 @@
 
 1. **Real-Time Project Dashboard**:
    - The client logs in at any time to inspect **Active Projects**:
-     - **Project Name**: e.g., *Edge Mesh POS Replication Pipeline*
+     - **Project Name**: e.g., _Edge Mesh POS Replication Pipeline_
      - **Live Status**: `Planning` ➔ `Under Development` ➔ `Staging` ➔ `In Production`
-     - **Next Action**: Clear, transparent milestones (e.g., *"Canary build deployment scheduled for Sept 18"*).
+     - **Next Action**: Clear, transparent milestones (e.g., _"Canary build deployment scheduled for Sept 18"_).
 2. **Reviewing Deliverables (Client Decision Gate)**:
    - When a development milestone is completed, it appears under **Reviews & Decisions**:
      - **Target Release Version**: `v2.4.19`
@@ -178,16 +178,16 @@
 
 ### Essential URLs Quick-Reference
 
-| Role / Audience | Area | URL | Access Requirements |
-| :--- | :--- | :--- | :--- |
-| **Public / Clients** | Landing & Products | `https://stackandscale.org/` | Public (No auth) |
-| **Public / Clients** | Contact & Demo Booking | `https://stackandscale.org/contact` | Public (No auth) |
-| **Prospects** | Client Portal Demo | `https://stackandscale.org/portal/demo` | Public (Mock data) |
-| **Active Clients** | Private Client Portal | `https://stackandscale.org/portal/[orgId]` | Keycloak `client_admin` or `client_member` |
-| **Active Clients** | Sovereign Account & Billing | `https://stackandscale.org/account/[orgId]` | Keycloak `client_admin` |
-| **Staff / Owners** | CMS & Edge Admin Console | `https://stackandscale.org/admin` | Keycloak Staff session (`ss_session`) |
-| **Staff / Owners** | CRM & Opportunity Leads | `https://stackandscale.org/staff/leads` | Keycloak Staff `manager` / `admin` |
-| **All Users** | System SLA & Edge Health | `https://stackandscale.org/health` | Public (Real-time telemetry) |
+| Role / Audience      | Area                        | URL                                                                        | Access Requirements                        |
+| :------------------- | :-------------------------- | :------------------------------------------------------------------------- | :----------------------------------------- |
+| **Public / Clients** | Landing & Products          | `https://stackandscale.org/`                                               | Public (No auth)                           |
+| **Public / Clients** | Contact & Demo Booking      | `https://stackandscale.org/contact`                                        | Public (No auth)                           |
+| **Prospects**        | Client Portal Demo          | `https://stackandscale.org/portal/demo`                                    | Public (Mock data)                         |
+| **Active Clients**   | Private Client Portal       | `https://stackandscale.org/portal/[orgId]`                                 | Keycloak `client_admin` or `client_member` |
+| **Active Clients**   | Sovereign Account & Billing | `https://stackandscale.org/account/[orgId]`                                | Keycloak `client_admin`                    |
+| **Staff / Owners**   | CMS & Content Operations    | `https://cms.stackandscale.org/admin` ([Guide](./CMS_OPERATIONS_GUIDE.md)) | CMS Admin user                             |
+| **Staff / Owners**   | CRM & Opportunity Leads     | `https://stackandscale.org/staff/leads`                                    | Keycloak Staff `manager` / `admin`         |
+| **All Users**        | System SLA & Edge Health    | `https://stackandscale.org/health`                                         | Public (Real-time telemetry)               |
 
 ---
 
@@ -213,7 +213,7 @@
 
 ## 4. Verification & Testing Evidence
 
-* **TypeScript Strict Compilation**: Clean pass across all monorepo packages (`tsc --noEmit`).
-* **Automated Test Suite**: **268 automated tests** passing across unit, integration, and Keycloak E2E.
-* **Mobile Responsiveness**: 24/24 routes verified with **0 horizontal overflow** down to 320px screens.
-* **Security & Antivirus**: MinIO private S3 storage verified with active ClamAV daemon virus scanner.
+- **TypeScript Strict Compilation**: Clean pass across all monorepo packages (`tsc --noEmit`).
+- **Automated Test Suite**: **268 automated tests** passing across unit, integration, and Keycloak E2E.
+- **Mobile Responsiveness**: 24/24 routes verified with **0 horizontal overflow** down to 320px screens.
+- **Security & Antivirus**: MinIO private S3 storage verified with active ClamAV daemon virus scanner.
