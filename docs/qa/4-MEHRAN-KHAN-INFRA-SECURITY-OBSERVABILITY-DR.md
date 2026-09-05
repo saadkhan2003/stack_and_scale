@@ -1,6 +1,6 @@
-# QA Runbook — Dragoooo: Infrastructure, Security, Observability & Disaster Recovery
+# QA Runbook — Mehran Khan: Infrastructure, Security, Observability & Disaster Recovery
 
-**Assigned Engineer:** Dragoooo  
+**Assigned Engineer:** Mehran Khan  
 **Assigned Roles & Boundaries:** Single-Server VPS Production Fabric, Network Perimeter & Firewall Hardening, API Gateway Liveness & Abuse Defense, Observability Telemetry (Prometheus, Grafana, Loki), Container Chaos Resilience & Database Disaster Recovery  
 **Architecture Grounding:** [Blueprint §2.1 & §2.2](file:///media/saad/Data/stack_and_scale/STACK_AND_SCALE_PLATFORM_BLUEPRINT_V1.md), [Q026, Q027](file:///media/saad/Data/stack_and_scale/question-decisions/026-infrastructure-provider.md), [Q047–Q053](file:///media/saad/Data/stack_and_scale/question-decisions/047-release-and-environment-tracking.md), [Q071–Q073](file:///media/saad/Data/stack_and_scale/question-decisions/071-database-domain-architecture.md), [Q081, Q082, Q096–Q098](file:///media/saad/Data/stack_and_scale/question-decisions/081-infrastructure-as-code.md)  
 **Primary Target Hosts & Endpoints:**
@@ -21,7 +21,7 @@ Stack & Scale operates on an industrial **Cost-First Single-Server Production To
 - **Unified Observability Fabric:** Prometheus (metrics engine), Grafana (visualization), Loki (log aggregator), Promtail (log shipper), cAdvisor (container telemetry), and Node Exporter (host metrics).
 - **Hardened Kernel Sandbox:** Rootless containers where applicable, strict `cap_drop` capabilities, and non-routable database/storage ports.
 
-As **Dragoooo**, you are the platform reliability, security, and infrastructure authority. Your mission is to verify that internal ports are completely hidden from the internet, test API rate-limiting defenses, audit live telemetry in Grafana and Loki, execute a live container crash recovery chaos drill, verify database backups, and assemble the Master Production Launch Sign-Off.
+As **Mehran Khan**, you are the platform reliability, security, and infrastructure authority. Your mission is to verify that internal ports are completely hidden from the internet, test API rate-limiting defenses, audit live telemetry in Grafana and Loki, execute a live container crash recovery chaos drill, verify database backups, and assemble the Master Production Launch Sign-Off.
 
 ---
 
@@ -262,7 +262,7 @@ Per **Q050 and Q097**, database snapshots are executed via automated scripts and
 
 ## 4. Master Team Sign-Off Assembly & Launch Gate
 
-Once all 4 engineers have completed their respective runbooks and signed their sheets, **Dragoooo** collects the signed checklists and executes the master sign-off:
+Once all 4 engineers have completed their respective runbooks and signed their sheets, **Mehran Khan** collects the signed checklists and executes the master sign-off:
 
 ```text
 ================================================================================
@@ -275,7 +275,7 @@ Sign-Off Timestamp: [Record UTC Date & Time]
 Member 1 (Muhammad Saad Khan) — Marketing & CMS:         [ ] APPROVED (Signature: ________________)
 Member 2 (Talha Shams)        — Identity & Staff CRM:    [ ] APPROVED (Signature: ________________)
 Member 3 (Hanzala Khan)       — Client Portal & Storage: [ ] APPROVED (Signature: ________________)
-Member 4 (Dragoooo)           — Infra & Observability:   [ ] APPROVED (Signature: ________________)
+Member 4 (Mehran Khan)        — Infra & Observability:   [ ] APPROVED (Signature: ________________)
 
 FINAL VERDICT: [ ] 100% PRODUCTION READY FOR PUBLIC LAUNCH
 ================================================================================
@@ -283,7 +283,7 @@ FINAL VERDICT: [ ] 100% PRODUCTION READY FOR PUBLIC LAUNCH
 
 ---
 
-## 5. Official Dragoooo Sign-Off Sheet
+## 5. Official Mehran Khan Sign-Off Sheet
 
 | Test Case | Description | Pass / Fail | Operator Signature | Timestamp |
 |---|---|---|---|---|

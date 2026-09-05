@@ -206,13 +206,13 @@ Per **Q011, Q030, Q032, and Q090**, product customers (e.g., POS, SaaS, Tailor M
 
 ---
 
-## 4. Handoff Protocol to Dragoooo (Member 4)
+## 4. Handoff Protocol to Mehran Khan (Member 4)
 
-Copy and send this handoff block to **Dragoooo**:
+Copy and send this handoff block to **Mehran Khan**:
 
 ```text
 ================================================================================
-QA HANDOFF: HANZALA KHAN (M3) -> DRAGOOOO (M4)
+QA HANDOFF: HANZALA KHAN (M3) -> MEHRAN KHAN (M4)
 ================================================================================
 Timestamp: [Record UTC Date & Time]
 Client Portal Organization: org-acme-prod
@@ -222,7 +222,7 @@ Storage Clean Upload: architecture-blueprint.pdf (MinIO Verified)
 Storage Malware Test: Eicar-Test-Signature (Quarantined by ClamAV)
 Product Account Tested: acct-saas-prod (Active POS Subscriptions)
 
-Instructions for Dragoooo:
+Instructions for Mehran Khan:
 Please log into the VPS production host (ubuntu@vps-5d4dfcb1), inspect Grafana &
 Loki for the ClamAV malware intercept event, verify port perimeter blocking,
 execute the container self-healing chaos drill, and test database backups.

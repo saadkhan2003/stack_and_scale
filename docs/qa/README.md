@@ -19,7 +19,7 @@ flowchart LR
     M1["Muhammad Saad Khan<br/><b>Marketing, CMS & Inbound Leads</b><br/>• Brand Logo & Mobile Navigation<br/>• Cmd+K Search & FAQ Accordions<br/>• Payload CMS Publishing<br/>• /blog 308 Redirects<br/>• Lead Submission (Alex Mercer)"]
     --> |"Lead Ref & Metadata"| M2["Talha Shams<br/><b>Identity, Staff CRM & Operations</b><br/>• Keycloak OIDC Intercept & RBAC<br/>• Lead 360 Triage & Status Audit<br/>• Timeline Collaboration Notes<br/>• Convert to $45k Opportunity<br/>• Outbox Queue Telemetry"]
     --> |"Client Org & Opp ID"| M3["Hanzala Khan<br/><b>Portals, Storage & Contracts</b><br/>• $45k Proposal Structuring<br/>• Multi-Tenant URL Tampering Denial<br/>• Digital E-Signature as Alex Mercer<br/>• Invoicing & PDF Downloads<br/>• MinIO Upload & ClamAV Quarantine<br/>• Product Customer Accounts"]
-    --> |"Storage & Security Digest"| M4["Dragoooo<br/><b>Infra, Security & Observability</b><br/>• Edge TLS 1.3 & HSTS Inspection<br/>• Port Scan (5432, 9000, 3310 Blocked)<br/>• API Health & Rate-Limiting<br/>• Grafana & Loki Telemetry<br/>• Chaos Self-Healing Recovery Drill<br/>• Database SQL Backup Dump"]
+    --> |"Storage & Security Digest"| M4["Mehran Khan<br/><b>Infra, Security & Observability</b><br/>• Edge TLS 1.3 & HSTS Inspection<br/>• Port Scan (5432, 9000, 3310 Blocked)<br/>• API Health & Rate-Limiting<br/>• Grafana & Loki Telemetry<br/>• Chaos Self-Healing Recovery Drill<br/>• Database SQL Backup Dump"]
     --> |"All 4 Signed Checklists"| GO["MASTER PRODUCTION<br/>LAUNCH CERTIFICATE"]
 ```
 
@@ -34,7 +34,7 @@ flowchart LR
 | **Member 1** | **Muhammad Saad Khan** | Public Web, Design System, Command Palette, Payload CMS Editorial Lifecycle, `/blog` 308 Redirects & Inbound Lead Funnel                                                                                       | [`1-MUHAMMAD-SAAD-KHAN-MARKETING-CMS-CONVERSION.md`](./1-MUHAMMAD-SAAD-KHAN-MARKETING-CMS-CONVERSION.md)                 |
 | **Member 2** | **Talha Shams**        | Keycloak OIDC Gateway, RBAC Protection, Staff Lead 360 Inbox, Opportunity Pipeline Conversion ($45,000 USD), Operations Outbox Telemetry & Knowledge Base                                                      | [`2-TALHA-SHAMS-IDENTITY-STAFF-CRM-OPERATIONS.md`](./2-TALHA-SHAMS-IDENTITY-STAFF-CRM-OPERATIONS.md)                     |
 | **Member 3** | **Hanzala Khan**       | Commercial Proposals, Multi-Tenant Client Portal (`/portal/[id]`), Product Customer Account Portal (`/account/[id]`), Digital E-Signatures, Invoicing, MinIO S3 File Vault & ClamAV Antivirus Quarantine Drill | [`3-HANZALA-KHAN-CLIENT-PORTAL-PRODUCT-ACCOUNTS-STORAGE.md`](./3-HANZALA-KHAN-CLIENT-PORTAL-PRODUCT-ACCOUNTS-STORAGE.md) |
-| **Member 4** | **Dragoooo**           | Network Perimeter Hardening, Port Scans, API Probes & Rate Limiting, Grafana Telemetry, Loki LogQL Queries, Container Chaos Self-Healing Drill & Disaster Recovery Backups                                     | [`4-DRAGOOOO-INFRA-SECURITY-OBSERVABILITY-DR.md`](./4-DRAGOOOO-INFRA-SECURITY-OBSERVABILITY-DR.md)                       |
+| **Member 4** | **Mehran Khan**        | Network Perimeter Hardening, Port Scans, API Probes & Rate Limiting, Grafana Telemetry, Loki LogQL Queries, Container Chaos Self-Healing Drill & Disaster Recovery Backups                                     | [`4-MEHRAN-KHAN-INFRA-SECURITY-OBSERVABILITY-DR.md`](./4-MEHRAN-KHAN-INFRA-SECURITY-OBSERVABILITY-DR.md)                 |
 
 ---
 
@@ -43,4 +43,4 @@ flowchart LR
 1. **Sequential Execution:** Runbooks are executed in sequence from Member 1 &rarr; Member 2 &rarr; Member 3 &rarr; Member 4.
 2. **Real Production Evidence:** Do not skip tests. Every operator must record their real timestamps, correlation IDs, and sign their respective verification sheets.
 3. **No Zero-Byte Mocking:** Files uploaded and SQL dumps created must contain genuine bytes and pass structural validation.
-4. **Final Gate Assembly:** Once all 4 sign-off tables are marked `Pass`, Dragoooo signs the Master Launch Summary to confirm complete platform readiness.
+4. **Final Gate Assembly:** Once all 4 sign-off tables are marked `Pass`, Mehran Khan signs the Master Launch Summary to confirm complete platform readiness.
