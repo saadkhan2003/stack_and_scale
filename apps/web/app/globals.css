@@ -81,11 +81,58 @@
 }
 
 /* ==========================================================================
-   BASE RESETS
+   BASE RESETS & GLOBAL CUSTOM SCROLLBAR THEME (Linear Dark System)
    ========================================================================== */
+:root {
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.38);
+  --scrollbar-track: rgba(8, 8, 12, 0.7);
+}
+
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
+
+/* Chrome, Edge, Safari, Opera (WebKit & Blink) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(8, 8, 12, 0.7);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 150ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.38);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Eliminate default OS arrow buttons (the white/grey arrows) */
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -4373,6 +4420,43 @@ a.btn-primary-white {
   font-size: 0.8125rem;
   line-height: 1.65;
   color: #d4d4d8;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) rgba(8, 8, 12, 0.9);
+}
+
+.code-block::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.code-block::-webkit-scrollbar-track {
+  background: rgba(10, 10, 14, 0.8);
+  border-radius: 9999px;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 150ms ease;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.code-block::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 245, 160, 0.5);
+}
+
+.code-block::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.code-block::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .telemetry-widget {
