@@ -89,6 +89,8 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 body {
   margin: 0;
@@ -96,6 +98,8 @@ body {
   color: var(--gray-100);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 @layer base {
   a {
@@ -911,6 +915,16 @@ button[data-slot="button"][data-variant="default"] * {
   padding: clamp(5rem, 8vw, 7rem) 1.5rem 6rem;
   min-height: 80vh;
 }
+@media (max-width: 640px) {
+  .detail-page {
+    padding: 3.5rem 1.25rem 4rem;
+  }
+  .detail-intro {
+    font-size: 1.0625rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+  }
+}
 .detail-page .eyebrow {
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.75rem;
@@ -986,6 +1000,11 @@ button[data-slot="button"][data-variant="default"] * {
   gap: 1rem;
   margin: 1.5rem 0;
 }
+@media (max-width: 480px) {
+  .metric-list {
+    grid-template-columns: 1fr;
+  }
+}
 .metric-list > div {
   background: #0d0d0d;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1012,6 +1031,11 @@ button[data-slot="button"][data-variant="default"] * {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin: 1rem 0;
+}
+@media (max-width: 480px) {
+  .interface-gallery {
+    grid-template-columns: 1fr;
+  }
 }
 .interface-gallery img {
   border-radius: 10px;
@@ -1395,6 +1419,12 @@ button[data-slot="button"][data-variant="default"] * {
     transparent 70%
   );
 }
+@media (max-width: 480px) {
+  .signin-page,
+  .signin {
+    padding: 2.5rem 1rem;
+  }
+}
 .signin-panel {
   flex: 1;
   display: flex;
@@ -1451,6 +1481,12 @@ button[data-slot="button"][data-variant="default"] * {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+@media (max-width: 480px) {
+  .signin-card {
+    padding: 1.5rem 1.15rem;
+    gap: 1.25rem;
+  }
 }
 .signin-card-header {
   display: flex;
@@ -2021,6 +2057,11 @@ button[class*="group/button"][class*="secondary"]:hover {
   justify-content: center;
   padding: 3rem 1.5rem;
 }
+@media (max-width: 480px) {
+  .portal-unauth-container {
+    padding: 2rem 1rem;
+  }
+}
 .portal-unauth-card {
   background: #0d0d0d;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2033,6 +2074,11 @@ button[class*="group/button"][class*="secondary"]:hover {
   flex-direction: column;
   align-items: center;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+@media (max-width: 480px) {
+  .portal-unauth-card {
+    padding: 2rem 1.25rem;
+  }
 }
 .portal-unauth-card .eyebrow {
   font-family: var(--font-geist-mono), monospace;
@@ -2061,6 +2107,11 @@ button[class*="group/button"][class*="secondary"]:hover {
   margin: 0 auto;
   padding: clamp(3rem, 6vw, 5rem) 1.5rem 5rem;
   min-height: 70vh;
+}
+@media (max-width: 640px) {
+  .portal-layout {
+    padding: 2rem 1rem 3rem;
+  }
 }
 .portal-layout .eyebrow {
   font-family: var(--font-geist-mono), monospace;
@@ -3908,6 +3959,14 @@ button[class*="group/button"][class*="secondary"]:hover {
     margin-left: 0;
     order: 3;
     width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .staff-nav::-webkit-scrollbar {
+    display: none;
   }
   .staff-tools {
     margin-left: auto;
@@ -5200,7 +5259,6 @@ a.btn-primary-white {
 .admin-top-bar {
   display: flex;
   flex-direction: column;
-  sm-flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -5841,4 +5899,9 @@ a.btn-primary-white {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 2rem;
+}
+@media (max-width: 640px) {
+  .admin-cache-console {
+    padding: 1.25rem 1rem;
+  }
 }
