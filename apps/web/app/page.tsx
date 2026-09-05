@@ -109,7 +109,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Interactive Console Preview */}
-        <div className="mt-14 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mt-14 w-full max-w-[960px] mx-auto px-4 sm:px-6 lg:px-8">
           <HeroConsole />
         </div>
       </section>
