@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, LogOut, ShieldCheck } from "lucide-react";
+import { ArrowRight, LogOut } from "lucide-react";
+
+type SessionApiResponse = {
+  authenticated: boolean;
+  role?: string;
+  workspaceUrl?: string;
+};
 
 export type SessionState = {
   authenticated: boolean;
@@ -20,12 +26,14 @@ export function useSessionAuth(initialSession?: SessionState) {
       cache: "no-store",
       headers: { "cache-control": "no-cache" },
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) =>
+        res.ok ? (res.json() as Promise<SessionApiResponse>) : null,
+      )
       .then((data) => {
-        if (isMounted && data && typeof data.authenticated === "boolean") {
+        if (isMounted && data && data.authenticated) {
           setSession({
             authenticated: data.authenticated,
-            role: data.role ?? (data.authenticated ? "staff" : "anonymous"),
+            role: data.role ?? "staff",
             workspaceUrl: data.workspaceUrl ?? "/staff/leads",
           });
         }

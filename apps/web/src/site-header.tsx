@@ -4,7 +4,9 @@ import { getPublicSearchIndex } from "./public-search";
 import { SearchDialog } from "./search-dialog";
 import { SiteDesktopNav, SiteMobileNav } from "./site-navigation";
 import { getPublishedNavigation } from "./cms-content";
+import type { CmsNavigationItem } from "./cms-content";
 import type { SimpleNavItem } from "./navigation";
+
 import { AnnouncementBar } from "./announcement-bar";
 import {
   SiteHeaderAuth,
@@ -39,7 +41,7 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
 
   const dynamicNavItems: readonly SimpleNavItem[] | undefined =
     cmsNav?.items && cmsNav.items.length > 0
-      ? cmsNav.items.map((item) => {
+      ? cmsNav.items.map((item: CmsNavigationItem) => {
           let href = "/";
           if (item.linkType === "external" && item.url) {
             href = item.url;
@@ -53,7 +55,7 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
 
           const mappedChildren =
             Array.isArray(item.children) && item.children.length > 0
-              ? item.children.map((child) => {
+              ? item.children.map((child: CmsNavigationItem) => {
                   let childHref = "/";
                   if (child.linkType === "external" && child.url) {
                     childHref = child.url;

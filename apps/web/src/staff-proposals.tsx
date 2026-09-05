@@ -100,14 +100,19 @@ export function StaffProposals() {
   }, [showModal]);
 
   const createProposal = async (form: FormData) => {
+    // Helper: safely extract only string values from FormData (File entries return "")
+    const str = (key: string, fallback = ""): string => {
+      const v = form.get(key);
+      return typeof v === "string" ? v.trim() : fallback;
+    };
     setIsCreating(true);
     try {
-      const title = String(form.get("title") ?? "").trim();
-      const leadId = String(form.get("leadId") ?? "").trim();
-      const currency = String(form.get("currency") ?? "USD").trim();
-      const validFrom = String(form.get("validFrom") ?? "").trim();
-      const validUntil = String(form.get("validUntil") ?? "").trim();
-      const rawValue = String(form.get("totalValue") ?? "").trim();
+      const title = str("title");
+      const leadId = str("leadId");
+      const currency = str("currency", "USD");
+      const validFrom = str("validFrom");
+      const validUntil = str("validUntil");
+      const rawValue = str("totalValue");
       const totalValue =
         rawValue && !Number.isNaN(Number(rawValue)) ? Number(rawValue) : null;
 
