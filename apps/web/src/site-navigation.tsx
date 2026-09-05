@@ -40,7 +40,8 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
       clearTimeout(leaveTimeoutRef.current);
       leaveTimeoutRef.current = null;
     }
-    if (linearDropdowns[href]) {
+    const item = itemsToRender.find((i) => i.href === href);
+    if ((item?.children && item.children.length > 0) || linearDropdowns[href]) {
       setActiveMenu(href);
     } else {
       setActiveMenu(null);
@@ -84,9 +85,16 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
     };
   }, []);
 
+  const activeItem = itemsToRender.find((i) => i.href === activeMenu);
   const activeDropdown: LinearDropdownData | undefined = activeMenu
     ? linearDropdowns[activeMenu]
     : undefined;
+  const hasCustomChildren = Boolean(
+    activeItem?.children && activeItem.children.length > 0,
+  );
+  const showDropdown = Boolean(
+    activeMenu && (activeDropdown || hasCustomChildren),
+  );
 
   return (
     <div
@@ -101,7 +109,8 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
       >
         {itemsToRender.map((item) => {
           const hasDropdown =
-            item.hasSubmenu && Boolean(linearDropdowns[item.href]);
+            Boolean(item.children && item.children.length > 0) ||
+            (item.hasSubmenu && Boolean(linearDropdowns[item.href]));
           const isOpen = activeMenu === item.href;
           const isCurrent = currentPath === item.href;
 
@@ -156,8 +165,11 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
       {/* Linear-style floating dropdown card (anchored under the nav items) */}
       <div
         className={cn(
-          "linear-dropdown-panel absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 w-[760px] max-w-[94vw] bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/[0.12] rounded-xl p-5 shadow-[0_24px_64px_rgba(0,0,0,0.95)] z-50 text-left transition-all duration-200",
-          activeDropdown && activeMenu
+          "linear-dropdown-panel absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/[0.12] rounded-xl shadow-[0_24px_64px_rgba(0,0,0,0.95)] z-50 text-left transition-all duration-200",
+          !activeDropdown && hasCustomChildren
+            ? "w-[260px] p-3"
+            : "w-[760px] max-w-[94vw] p-5",
+          showDropdown
             ? "opacity-100 translate-y-0 pointer-events-auto visible"
             : "opacity-0 -translate-y-2 pointer-events-none invisible",
         )}
@@ -169,7 +181,7 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
         {/* Subtle top hairline highlight */}
         <div className="absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
 
-        {activeDropdown && (
+        {activeDropdown ? (
           <>
             {/* 3 Columns Layout */}
             <div className="grid grid-cols-12 gap-5 pb-4 border-b border-white/[0.08]">
@@ -247,6 +259,20 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
                       <span>{link.title}</span>
                     </a>
                   ))}
+                  {hasCustomChildren &&
+                    activeItem?.children?.map((child) => (
+                      <a
+                        key={child.label}
+                        href={child.href}
+                        onClick={() => setActiveMenu(null)}
+                        className="text-[12px] text-emerald-400 hover:text-white hover:translate-x-0.5 transition-all py-1 font-medium flex items-center justify-between group/link"
+                      >
+                        <span>{child.label}</span>
+                        <span className="text-[9px] text-neutral-500 font-mono">
+                          CMS
+                        </span>
+                      </a>
+                    ))}
                 </div>
               </div>
             </div>
@@ -270,13 +296,38 @@ export function SiteDesktopNav({ currentPath, navItems }: NavProps) {
               </a>
             </div>
           </>
-        )}
+        ) : hasCustomChildren && activeItem ? (
+          <div className="flex flex-col gap-1 min-w-[220px]">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-semibold px-2 py-1 border-b border-white/[0.08]">
+              {activeItem.label} Links
+            </span>
+            <div className="flex flex-col gap-0.5 mt-1">
+              {activeItem.children!.map((child) => (
+                <a
+                  key={child.label}
+                  href={child.href}
+                  onClick={() => setActiveMenu(null)}
+                  className="group/item flex items-center justify-between p-2 rounded-lg hover:bg-white/[0.08] text-neutral-300 hover:text-white transition-all text-xs font-medium"
+                >
+                  <span>{child.label}</span>
+                  <span className="text-neutral-500 group-hover/item:text-white group-hover/item:translate-x-0.5 transition-all">
+                    →
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
 
-export function SiteMobileNav({ currentPath, initialSession }: NavProps) {
+export function SiteMobileNav({
+  currentPath,
+  navItems,
+  initialSession,
+}: NavProps) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const session = useSessionAuth(initialSession);
 
@@ -302,226 +353,280 @@ export function SiteMobileNav({ currentPath, initialSession }: NavProps) {
           </SheetDescription>
         </SheetHeader>
 
-        {/* Categorized Mobile Navigation */}
+        {/* Dynamic Mobile Navigation from CMS or Fallback */}
         <div className="flex flex-col gap-6 py-4">
-          {/* 1. PRODUCTS */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <a
-                href="/products"
-                className="text-[12px] font-mono uppercase tracking-widest text-[#80ddd1] font-semibold flex items-center gap-1.5 hover:underline"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Products</span>
-                <span className="text-[10px] text-neutral-400 font-mono">
-                  →
-                </span>
-              </a>
-              <span className="text-[10px] text-neutral-500 font-mono">04</span>
-            </div>
-            <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
-              <a
-                href="/products"
-                className="py-1.5 text-sm font-medium text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>All Products Overview</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Explore
-                </span>
-              </a>
-              <a
-                href="/products/retail-operations"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Retail POS &amp; Edge Sync</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  v2.4
-                </span>
-              </a>
-              <a
-                href="/products/workflow-hub"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Workflow Automation Hub</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  Core
-                </span>
-              </a>
-              <a
-                href="/cloud"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Autonomous CRM &amp; Pipeline</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  Cloud
-                </span>
-              </a>
-              <a
-                href="/#pricing"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Sovereign Cloud Deploy</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  Private
-                </span>
-              </a>
-            </div>
-          </div>
-
-          {/* 2. RESOURCES */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <a
-                href="/resources"
-                className="text-[12px] font-mono uppercase tracking-widest text-[#80ddd1] font-semibold flex items-center gap-1.5 hover:underline"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Resources</span>
-                <span className="text-[10px] text-neutral-400 font-mono">
-                  →
-                </span>
-              </a>
-              <span className="text-[10px] text-neutral-500 font-mono">04</span>
-            </div>
-            <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
-              <a
-                href="/resources"
-                className="py-1.5 text-sm font-medium text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Resources Hub &amp; Docs</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  Docs
-                </span>
-              </a>
-              <a
-                href="/#architecture"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Architecture Blueprints</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  Specs
-                </span>
-              </a>
-              <a
-                href="/design-system"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>Design System &amp; Tokens</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                  UI Kit
-                </span>
-              </a>
-              <a
-                href="/health"
-                className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>System Health &amp; SLA</span>
-                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  99.999%
-                </span>
-              </a>
-            </div>
-          </div>
-
-          {/* 3. CASE STUDIES & WORK */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <a
-                href="/work"
-                className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold hover:text-white"
-                onClick={() => setMobileOpen(false)}
-              >
-                Customers &amp; Work
-              </a>
-              <span className="text-[10px] text-neutral-500 font-mono">
-                0{caseStudiesNavItems.length}
+          {navItems && navItems.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-semibold">
+                Menu
               </span>
+              <div className="flex flex-col gap-2">
+                {navItems.map((item) => (
+                  <div key={item.label} className="flex flex-col gap-1">
+                    <a
+                      href={item.href}
+                      className={cn(
+                        "text-sm font-medium text-neutral-300 hover:text-white py-1 flex items-center justify-between",
+                        currentPath === item.href && "text-white font-semibold",
+                      )}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span>{item.label}</span>
+                      {item.badge && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                          {item.badge}
+                        </span>
+                      )}
+                    </a>
+                    {item.children && item.children.length > 0 && (
+                      <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08] my-1">
+                        {item.children.map((child) => (
+                          <a
+                            key={child.label}
+                            href={child.href}
+                            className="py-1 text-xs text-neutral-400 hover:text-white flex items-center justify-between"
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            <span>{child.label}</span>
+                            <span className="text-neutral-500">→</span>
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
-              {caseStudiesNavItems.map((item) => (
+          ) : (
+            <>
+              {/* 1. PRODUCTS */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <a
+                    href="/products"
+                    className="text-[12px] font-mono uppercase tracking-widest text-[#80ddd1] font-semibold flex items-center gap-1.5 hover:underline"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Products</span>
+                    <span className="text-[10px] text-neutral-400 font-mono">
+                      →
+                    </span>
+                  </a>
+                  <span className="text-[10px] text-neutral-500 font-mono">
+                    04
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
+                  <a
+                    href="/products"
+                    className="py-1.5 text-sm font-medium text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>All Products Overview</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      Explore
+                    </span>
+                  </a>
+                  <a
+                    href="/products/retail-operations"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Retail POS &amp; Edge Sync</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      v2.4
+                    </span>
+                  </a>
+                  <a
+                    href="/products/workflow-hub"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Workflow Automation Hub</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      Core
+                    </span>
+                  </a>
+                  <a
+                    href="/cloud"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Autonomous CRM &amp; Pipeline</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      Cloud
+                    </span>
+                  </a>
+                  <a
+                    href="/#pricing"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Sovereign Cloud Deploy</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      Private
+                    </span>
+                  </a>
+                </div>
+              </div>
+
+              {/* 2. RESOURCES */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <a
+                    href="/resources"
+                    className="text-[12px] font-mono uppercase tracking-widest text-[#80ddd1] font-semibold flex items-center gap-1.5 hover:underline"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Resources</span>
+                    <span className="text-[10px] text-neutral-400 font-mono">
+                      →
+                    </span>
+                  </a>
+                  <span className="text-[10px] text-neutral-500 font-mono">
+                    04
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
+                  <a
+                    href="/resources"
+                    className="py-1.5 text-sm font-medium text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Resources Hub &amp; Docs</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      Docs
+                    </span>
+                  </a>
+                  <a
+                    href="/#architecture"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Architecture Blueprints</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      Specs
+                    </span>
+                  </a>
+                  <a
+                    href="/design-system"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Design System &amp; Tokens</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                      UI Kit
+                    </span>
+                  </a>
+                  <a
+                    href="/health"
+                    className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>System Health &amp; SLA</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      99.999%
+                    </span>
+                  </a>
+                </div>
+              </div>
+
+              {/* 3. CASE STUDIES & WORK */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <a
+                    href="/work"
+                    className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 font-semibold hover:text-white"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Customers &amp; Work
+                  </a>
+                  <span className="text-[10px] text-neutral-500 font-mono">
+                    0{caseStudiesNavItems.length}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08]">
+                  {caseStudiesNavItems.map((item) => (
+                    <a
+                      key={item.title}
+                      href={item.href}
+                      className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span>{item.title}</span>
+                      {item.badge && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                          {item.badge}
+                        </span>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. MAIN DESTINATIONS */}
+              <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-1.5">
                 <a
-                  key={item.title}
-                  href={item.href}
-                  className="py-1.5 text-sm text-neutral-300 hover:text-white flex items-center justify-between"
+                  href="/approach"
+                  aria-current={
+                    currentPath === "/approach" ? "page" : undefined
+                  }
+                  className={cn(
+                    "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
+                    currentPath === "/approach" && "text-white font-semibold",
+                  )}
                   onClick={() => setMobileOpen(false)}
                 >
-                  <span>{item.title}</span>
-                  {item.badge && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                      {item.badge}
-                    </span>
-                  )}
+                  <span>Approach</span>
+                  <span className="text-xs text-neutral-500 font-mono">
+                    Principles
+                  </span>
                 </a>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. MAIN DESTINATIONS */}
-          <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-1.5">
-            <a
-              href="/approach"
-              aria-current={currentPath === "/approach" ? "page" : undefined}
-              className={cn(
-                "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
-                currentPath === "/approach" && "text-white font-semibold",
-              )}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span>Approach</span>
-              <span className="text-xs text-neutral-500 font-mono">
-                Principles
-              </span>
-            </a>
-            <a
-              href="/cloud"
-              aria-current={currentPath === "/cloud" ? "page" : undefined}
-              className={cn(
-                "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
-                currentPath === "/cloud" && "text-white font-semibold",
-              )}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span>Cloud Directory</span>
-              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
-                Apps
-              </span>
-            </a>
-            <a
-              href="/#pricing"
-              className="text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between"
-              onClick={() => setMobileOpen(false)}
-            >
-              <span>Pricing &amp; Plans</span>
-              <span className="text-xs text-neutral-500 font-mono">
-                Sovereign
-              </span>
-            </a>
-            <a
-              href="/contact"
-              aria-current={currentPath === "/contact" ? "page" : undefined}
-              className={cn(
-                "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
-                currentPath === "/contact" && "text-white font-semibold",
-              )}
-              onClick={() => setMobileOpen(false)}
-            >
-              <span>Contact</span>
-              <span className="text-xs text-neutral-500 font-mono">
-                Enquire
-              </span>
-            </a>
-          </div>
+                <a
+                  href="/cloud"
+                  aria-current={currentPath === "/cloud" ? "page" : undefined}
+                  className={cn(
+                    "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
+                    currentPath === "/cloud" && "text-white font-semibold",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span>Cloud Directory</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-neutral-400">
+                    Apps
+                  </span>
+                </a>
+                <a
+                  href="/#pricing"
+                  className="text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span>Pricing &amp; Plans</span>
+                  <span className="text-xs text-neutral-500 font-mono">
+                    Sovereign
+                  </span>
+                </a>
+                <a
+                  href="/contact"
+                  aria-current={currentPath === "/contact" ? "page" : undefined}
+                  className={cn(
+                    "text-sm font-medium text-neutral-300 hover:text-white py-1.5 flex items-center justify-between",
+                    currentPath === "/contact" && "text-white font-semibold",
+                  )}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span>Contact</span>
+                  <span className="text-xs text-neutral-500 font-mono">
+                    Enquire
+                  </span>
+                </a>
+              </div>
+            </>
+          )}
 
           {/* CTA Action Buttons */}
+
           <div className="pt-3 border-t border-white/[0.08] flex flex-col gap-2.5">
             {session.authenticated ? (
               <>

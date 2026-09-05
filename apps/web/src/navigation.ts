@@ -6,11 +6,19 @@ export const primaryNavigation = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
+export type SimpleNavChild = {
+  readonly label: string;
+  readonly href: string;
+  readonly description?: string | undefined;
+  readonly badge?: string | undefined;
+};
+
 export type SimpleNavItem = {
   readonly label: string;
   readonly href: string;
   readonly hasSubmenu?: boolean | undefined;
   readonly badge?: string | undefined;
+  readonly children?: readonly SimpleNavChild[] | undefined;
 };
 
 /**

@@ -50,11 +50,36 @@ export async function SiteHeader({ currentPath }: SiteHeaderProps) {
           } else if (item.url) {
             href = item.url;
           }
+
+          const mappedChildren =
+            Array.isArray(item.children) && item.children.length > 0
+              ? item.children.map((child) => {
+                  let childHref = "/";
+                  if (child.linkType === "external" && child.url) {
+                    childHref = child.url;
+                  } else if (
+                    typeof child.page === "object" &&
+                    child.page?.slug
+                  ) {
+                    childHref = `/${child.page.slug}`;
+                  } else if (typeof child.page === "string") {
+                    childHref = `/${child.page}`;
+                  } else if (child.url) {
+                    childHref = child.url;
+                  }
+                  return {
+                    label: child.label,
+                    href: childHref,
+                  };
+                })
+              : undefined;
+
           return {
             label: item.label,
             href,
-            hasSubmenu: Boolean(item.children && item.children.length > 0),
+            hasSubmenu: Boolean(mappedChildren && mappedChildren.length > 0),
             ...(item.badge ? { badge: item.badge } : {}),
+            ...(mappedChildren ? { children: mappedChildren } : {}),
           };
         })
       : undefined;
