@@ -1743,7 +1743,7 @@ button[data-slot="button"][data-variant="default"] * {
   color: var(--gray-500);
   font-weight: 400;
 }
-.lead-form input,
+.lead-form input:not([type="checkbox"]):not([type="hidden"]):not([type="radio"]):not([aria-hidden="true"]),
 .lead-form textarea,
 .lead-form [data-slot="select-trigger"] {
   width: 100% !important;
@@ -1755,6 +1755,20 @@ button[data-slot="button"][data-variant="default"] * {
   font-size: 0.9375rem !important;
   font-family: inherit;
   transition: all 150ms ease;
+}
+.lead-form input[type="checkbox"],
+.lead-form input[type="hidden"],
+.lead-form input[aria-hidden="true"] {
+  width: 1px !important;
+  max-width: 1px !important;
+  height: 1px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: auto !important;
+  pointer-events: none !important;
 }
 .lead-form input:focus,
 .lead-form textarea:focus,
@@ -1772,6 +1786,7 @@ button[data-slot="button"][data-variant="default"] * {
   gap: 0.75rem;
   margin-top: 0.5rem;
   cursor: pointer;
+  position: relative;
 }
 .lead-form .consent-check span {
   font-size: 0.8125rem;
@@ -2104,6 +2119,9 @@ button[class*="group/button"][class*="secondary"]:hover {
 }
 .portal-layout {
   max-width: 900px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0 auto;
   padding: clamp(3rem, 6vw, 5rem) 1.5rem 5rem;
   min-height: 70vh;
@@ -2111,6 +2129,7 @@ button[class*="group/button"][class*="secondary"]:hover {
 @media (max-width: 640px) {
   .portal-layout {
     padding: 2rem 1rem 3rem;
+    max-width: 100%;
   }
 }
 .portal-layout .eyebrow {

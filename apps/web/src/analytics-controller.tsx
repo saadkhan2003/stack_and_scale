@@ -135,7 +135,7 @@ export function AnalyticsController() {
   return (
     <aside
       aria-label="Privacy & Tracking Preferences"
-      className="fixed bottom-6 left-6 z-50 max-w-md w-[calc(100vw-3rem)] rounded-xl bg-[#0c0c0e]/95 backdrop-blur-xl border border-white/10 p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-zinc-200 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
+      className="fixed bottom-3 sm:bottom-6 inset-x-3 sm:inset-x-auto sm:left-6 z-50 max-w-md w-auto sm:w-[calc(100vw-3rem)] rounded-xl bg-[#0c0c0e]/95 backdrop-blur-xl border border-white/10 p-4 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.85)] text-zinc-200 transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
     >
       {!showSettings ? (
         /* Linear exact default view */
@@ -145,19 +145,19 @@ export function AnalyticsController() {
             the use of these technologies.
           </p>
 
-          <div className="flex items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
               <button
                 onClick={handleDeny}
                 type="button"
-                className="px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
               >
                 Deny
               </button>
               <button
                 onClick={handleAcceptAll}
                 type="button"
-                className="px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 rounded-lg border border-white/20 bg-white/[0.04] text-white hover:bg-white/10 hover:border-white/30 text-xs font-medium transition-all cursor-pointer"
               >
                 Accept all
               </button>
@@ -166,7 +166,7 @@ export function AnalyticsController() {
             <button
               onClick={() => setShowSettings(true)}
               type="button"
-              className="px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+              className="px-3 sm:px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold transition-all shadow-sm cursor-pointer whitespace-nowrap"
             >
               Consent Settings
             </button>
@@ -272,7 +272,7 @@ export function AnalyticsController() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-white/[0.08]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.08]">
             <button
               onClick={() => setShowSettings(false)}
               type="button"
@@ -280,7 +280,7 @@ export function AnalyticsController() {
             >
               Back
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleDeny}
                 type="button"
@@ -291,7 +291,7 @@ export function AnalyticsController() {
               <button
                 onClick={handleSaveDetailed}
                 type="button"
-                className="px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold shadow-sm"
+                className="px-3 sm:px-4 py-1.5 rounded-lg !bg-white !text-black hover:!bg-zinc-200 text-xs font-semibold shadow-sm"
               >
                 Save Preferences
               </button>

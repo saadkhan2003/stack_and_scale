@@ -282,7 +282,7 @@ export function SiteMobileNav({ currentPath }: NavProps) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="bg-[#050505] border-white/10 text-white w-full sm:max-w-md overflow-y-auto"
+        className="bg-[#050505] border-white/10 text-white w-full sm:max-w-md overflow-y-auto p-6 pt-12"
       >
         <SheetHeader className="text-left pb-4 border-b border-white/[0.08]">
           <SheetTitle className="text-white flex items-center gap-2">
