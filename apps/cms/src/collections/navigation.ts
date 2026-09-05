@@ -53,7 +53,6 @@ export const navigation: CollectionConfig = {
   },
   admin: {
     group: "Configuration",
-    defaultColumns: ["items"],
   },
   labels: {
     singular: "Navigation",
