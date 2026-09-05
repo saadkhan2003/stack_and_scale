@@ -329,6 +329,19 @@ export class OidcFlowService {
       return "/staff/leads";
     }
 
+    // 1b. Fallback: check if the user has an active membership in the staff CRM
+    const staffMembership = await this.database.query(
+      `SELECT role FROM identity.memberships
+        WHERE user_id = $1
+          AND organization_id = 'stack-and-scale-crm'
+          AND status = 'active'
+        LIMIT 1`,
+      [userId],
+    );
+    if (staffMembership.rows.length > 0) {
+      return "/staff/leads";
+    }
+
     // 2. Check for an active client portal membership
     const clientResult = await this.database.query(
       `SELECT membership.client_organization_id
