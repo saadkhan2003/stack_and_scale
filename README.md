@@ -9,11 +9,15 @@ deployment foundation. Product decisions and implementation authority are in
 [docs/program/AUTHORITY.md](./docs/program/AUTHORITY.md); the current handoff
 is in [status.md](./status.md).
 
-> **Current state:** Phases 00–10 are implemented and verified locally where
-> possible. Phase 11 has a verified local telemetry, monitoring, backup and
-> recovery foundation. An OVH VPS production host is baseline-hardened, but the
-> application, DNS, backups and launch verification are not deployed. Do not
-> treat the repository as a live production deployment.
+> **Current State:** **Live in Production** at [https://stackandscale.org](https://stackandscale.org)  
+> Automated immutable CI/CD delivery is active on GitHub Actions and GHCR. Edge TLS 1.3 Full (Strict), Keycloak 26 OIDC, MinIO encrypted S3 vault with ClamAV antivirus, and Prometheus/Grafana telemetry are healthy on OVHcloud host `51.195.136.215`.  
+>  
+> :books: **Documentation & Operational Manuals:**  
+> - [Official Platform User Manuals](./docs/manuals/README.md)  
+> - [Security Policy](./SECURITY.md)  
+> - [Contributing Guide](./CONTRIBUTING.md)  
+> - [Emergency Incident Response Runbook](./docs/operations/INCIDENT-RESPONSE.md)  
+> - [Team QA Credentials & Environment](./docs/qa/TEAM-CREDENTIALS-AND-ENVIRONMENT.md)
 
 ## What is included
 
