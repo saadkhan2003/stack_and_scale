@@ -199,4 +199,43 @@ VALUES (5, 1, 'nav-item-cloud', 'Cloud Apps', 'external', '/cloud');
 INSERT INTO navigation_items (_order, _parent_id, id, label, link_type, url)
 VALUES (6, 1, 'nav-item-contact', 'Contact', 'external', '/#contact');
 
+-- 6. DRAFT/LATEST VERSIONS (Required for Payload CMS Admin list views)
+INSERT INTO _pages_v (id, parent_id, version_title, version_slug, version_seo_meta_title, version_seo_meta_description, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Home', 'home', 'Software for real operations | Stack & Scale', 'Keep registers scanning and orders moving even when your internet drops. Stack & Scale runs on your own hardware, syncs in milliseconds, and eliminates per-seat SaaS bills.', 'published', NOW(), NOW(), true),
+  (2, 2, 'About Us', 'about', 'About Us | Stack & Scale', 'Our mission is to build robust, sovereign software for businesses that operate in the physical world.', 'published', NOW(), NOW(), true),
+  (3, 3, 'Contact', 'contact', 'Contact & Project Discovery | Stack & Scale', 'Discuss your retail POS, edge infrastructure, or warehouse automation project with our engineering team.', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+INSERT INTO _products_v (id, parent_id, version_title, version_slug, version_tagline, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Retail POS & Edge Sync', 'retail-operations', 'Offline-first shop floor register with SQLite local sync and <2ms barcode scan latency', 'published', NOW(), NOW(), true),
+  (2, 2, 'Workflow Automation Hub', 'workflow-automation', 'Resilient event-driven automation engine connecting inventory to CRM', 'published', NOW(), NOW(), true),
+  (3, 3, 'Sovereign Cloud Deploy', 'cloud-infrastructure', 'Private VPC and air-gapped on-premise infrastructure without SaaS taxes', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version_tagline = EXCLUDED.version_tagline,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
+INSERT INTO _services_v (id, parent_id, version_title, version_slug, version_summary, version__status, created_at, updated_at, latest)
+VALUES
+  (1, 1, 'Edge Architecture Advisory', 'edge-architecture', 'Design edge networks that survive severe connectivity blackouts without downtime', 'published', NOW(), NOW(), true),
+  (2, 2, 'Turnkey Retail Rollout', 'turnkey-rollout', 'Full hardware provisioning, barcode integration, and staff on-boarding', 'published', NOW(), NOW(), true),
+  (3, 3, 'Sovereignty Migration', 'sovereignty-migration', 'Eliminate recurring per-seat SaaS tax by bringing operations onto owned servers', 'published', NOW(), NOW(), true)
+ON CONFLICT (id) DO UPDATE SET
+  parent_id = EXCLUDED.parent_id,
+  version_title = EXCLUDED.version_title,
+  version_slug = EXCLUDED.version_slug,
+  version_summary = EXCLUDED.version_summary,
+  version__status = EXCLUDED.version__status,
+  latest = true;
+
 COMMIT;

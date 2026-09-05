@@ -96,7 +96,7 @@ ssh "${remote}" "${compose} run --rm api node packages/database/dist/migrate.js"
 # cannot enter a restart loop while querying collections that do not exist yet.
 ssh "${remote}" "${compose} run --rm cms node_modules/.bin/payload migrate"
 # Seed default CMS content (Navigation, Pages, Products, Services) if not already present.
-ssh "${remote}" "cat ${remote_root}/infra/seed-cms-data.sql | ${compose} exec -T postgres psql -U \"\$POSTGRES_USER\" -d stack_and_scale || true"
+ssh "${remote}" "cat ${remote_root}/infra/seed-cms-data.sql | ${compose} exec -T postgres psql -U stack_and_scale -d stack_and_scale || true"
 # Caddy reads its bind-mounted configuration only at startup. Recreate only the
 # edge container so routing/header changes take effect without restarting the
 # application services unnecessarily.
