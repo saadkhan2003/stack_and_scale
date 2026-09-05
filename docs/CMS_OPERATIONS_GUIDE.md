@@ -17,9 +17,21 @@ Because the automatic application boot seeder has been removed and seeding has b
 
 ## 1. Adding More Content Directly from the CMS Admin (No Coding Needed)
 
-For any of the existing collections, you can simply click the **`Create New`** button at `https://cms.stackandscale.org/admin`:
+### Quick Reference Cheatsheet
 
-### A. New Pages & Dynamic Landing Layouts
+For any of the existing collections, you can simply click the **Create New** button at [https://cms.stackandscale.org/admin](https://cms.stackandscale.org/admin):
+
+- **New Pages**: Go to [Pages](https://cms.stackandscale.org/admin/collections/pages) → Click **Create New** → Give it a slug (e.g., `pricing`, `enterprise`, `whitepaper`), and use the **Block Builder** to assemble Heros, Metric Groups, FAQs, CTAs, and Rich Text.
+- **New Products / Services**: Go to [Products](https://cms.stackandscale.org/admin/collections/products) or [Services](https://cms.stackandscale.org/admin/collections/services) → Click **Create New** to add your offer details, features, and taglines.
+- **New Navigation Links**: Go to [Navigation](https://cms.stackandscale.org/admin/collections/navigation/1) → Scroll to **Menu items** → Click **Add Menu Item** (you can create top-level buttons or nested dropdown child links).
+- **New FAQs & Testimonials**: Go to [Faqs](https://cms.stackandscale.org/admin/collections/faqs) or [Testimonials](https://cms.stackandscale.org/admin/collections/testimonials) → Click **Create New** to publish more quotes, case study metrics, or client questions.
+- **New Projects, Careers, & Resources**: Click **Create New** in any of their respective tabs ([Projects](https://cms.stackandscale.org/admin/collections/projects), [Careers](https://cms.stackandscale.org/admin/collections/careers), [Resources](https://cms.stackandscale.org/admin/collections/resources)) to publish new job listings, case studies, or articles.
+
+> **Note**: Every time you hit **"Publish changes"**, it saves directly to your PostgreSQL database.
+
+---
+
+### Step-by-Step Collection Guide
 
 - **URL**: [`https://cms.stackandscale.org/admin/collections/pages`](https://cms.stackandscale.org/admin/collections/pages)
 - **How to Add**:
