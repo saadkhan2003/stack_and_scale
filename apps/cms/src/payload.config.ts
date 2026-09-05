@@ -23,6 +23,7 @@ import { faqs } from "./collections/faqs.js";
 import { media } from "./collections/media.js";
 
 import { cmsUsers } from "./access/cms-users.js";
+import { seedCmsDefaults } from "./seed.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -63,6 +64,9 @@ export default buildConfig({
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
+  },
+  onInit: async (payload) => {
+    await seedCmsDefaults(payload);
   },
   telemetry: false,
 });
