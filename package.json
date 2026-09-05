@@ -23,6 +23,7 @@
     "db:down": "docker compose -f infra/compose.yaml down",
     "db:logs": "docker compose -f infra/compose.yaml logs -f postgres",
     "db:reset": "./scripts/reset-local-database.sh",
+    "db:seed:cms": "docker exec -i stack-and-scale-postgres psql -U stack_and_scale -d stack_and_scale < infra/seed-cms-data.sql",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
